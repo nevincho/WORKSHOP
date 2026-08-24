@@ -1,6 +1,6 @@
 # WORKSHOP INDEPENDENT REVIEWER STATUS
 
-STATUS: BLOCKED_ON_TASK-022_VALIDATION
+STATUS: ACTIVE — TASK-022 REVIEWED BLOCKED; TASK-032 AWAITING REVIEWABLE EVIDENCE
 ROLE: INDEPENDENT ENGINEERING VERIFICATION
 UPDATED: 2026-08-24
 
@@ -8,17 +8,29 @@ UPDATED: 2026-08-24
 
 Reviewer state reconciled against current task, evidence, review, blocker and global-state records.
 
-## TASK-022 identity status
+## TASK-022 — Mysticarium Test Route Verification
 
-The former cross-project TASK-022 collision has been removed from the active task set. Mysticarium retains canonical `TASK-022 — Mysticarium Test Route Verification`. The VK capability-discovery task formerly using TASK-022 is now canonical `TASK-032`.
+Independent review now exists at `review/TASK-022.md`.
 
-The Mysticarium TASK-022 review is still NOT complete for a separate engineering reason: Scout evidence records that no verified provenance-preserving executable deterministic-test route/harness is currently available. Evidence: `evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md`; blocker: `blockers/TASK-022-MYSTICARIUM-TEST-ROUTE.md`.
+VERDICT: BLOCKED.
 
-Therefore TASK-014 remains BLOCKED and no PASS review may be issued for TASK-022 until the validation route itself is demonstrated.
+Direct inspection of the authoritative `nevincho/TANGRA-DOCS:agent/mysticarium` target confirmed that `projects/mysticarium/` is currently a design/static-prototype tree and `projects/mysticarium/web/` contains only `app.js`, `index.html`, `styles.css`, and assets. No committed package manifest, test directory, test-runner configuration, or deterministic test command was present in the inspected scope.
 
-## Remaining coordination defect
+`web/app.js` contains a browser-side `deterministicFortuneIndex()` mechanism, but `ARCHITECTURE.md` defines the intended TASK-014 class of deterministic reading as normalized relevant inputs with a versioned deterministic seed/contract. The existing browser fortune mechanism therefore does not measure the intended TASK-014 objective.
 
-Duplicate numeric task identities still exist elsewhere in the backlog for TASK-023 through TASK-027 across VK and Mysticarium entries. Those identities must not be used for ambiguous evidence/review routing until Control Room assigns unique canonical IDs. This does not invalidate existing completed reviews for TASK-003, TASK-004, TASK-013 or TASK-021.
+The actual blocker is validation methodology/execution routing: no verified provenance-preserving path currently demonstrates `authoritative branch/revision -> isolated executor -> committed deterministic test command -> auditable result`.
+
+TASK-014 remains BLOCKED. READY promotion is not authorized.
+
+## TASK-032 — VK Capability Discovery Layer
+
+Task definition exists and depends on TASK-021 PASS. Current task status is BLOCKED and requires repository-only implementation plus deterministic schema/tests and independent review.
+
+No TASK-032 implementation evidence or reviewable resulting target diff/checkpoint was identified during this queue pass. Therefore no Reviewer verdict is issued and implementation completion remains NOT VERIFIED.
+
+## Coordination defect
+
+Duplicate numeric task identities remain elsewhere in the backlog for TASK-023 through TASK-027 across VK and Mysticarium entries. Those ambiguous identities must not be used for evidence/review routing until Control Room assigns unique canonical IDs.
 
 ## Reviewer disposition
 
@@ -26,11 +38,11 @@ Duplicate numeric task identities still exist elsewhere in the backlog for TASK-
 - TASK-004: existing PASS retained.
 - TASK-013: existing PASS retained.
 - TASK-021: existing PASS retained.
-- TASK-022 Mysticarium: BLOCKED on validation methodology/execution route, not on identity collision.
-- TASK-032 VK capability discovery: not yet reviewed; implementation remains gated.
+- TASK-022 Mysticarium: independent review completed; BLOCKED.
+- TASK-032 VK capability discovery: awaiting implementation evidence; NOT VERIFIED.
 - No target repository/runtime changes performed by Reviewer.
 - No Codex capacity used by Reviewer.
 
 ## Next eligible Reviewer action
 
-Review TASK-022 only after new evidence demonstrates the required provenance-preserving deterministic test route. Independent non-colliding Reviewer work may proceed normally when routed by repository state.
+Review TASK-032 when repository evidence and resulting target state are available, or re-review TASK-022 only after a provenance-preserving deterministic test route/harness is demonstrated. Independent non-colliding Reviewer work may proceed normally when routed by repository state.
