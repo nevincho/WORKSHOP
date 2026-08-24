@@ -1,0 +1,88 @@
+name: WORKSHOP Cron Fallback
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: workshop-cron-controller
+  cancel-in-progress: false
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Record scheduler heartbeat
+        shell: bash
+        run: |
+          mkdir -p logs
+          ts="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          printf '\n## %s — GITHUB_CRON_STARTED\n- event: %s\n- ref: %s\n- sha: %s\n' "$ts" "${GITHUB_EVENT_NAME}" "${GITHUB_REF}" "${GITHUB_SHA}" >> logs/GITHUB_CRON_RUNS.md
+
+      - name: Queue snapshot
+        shell: bash
+        run: |
+          echo '### Queue snapshot' >> logs/GITHUB_CRON_RUNS.md
+          if [ -d tasks ]; then
+            grep -R -H -E '^(TASK_ID|STATUS|PRIORITY|PROJECT|DEPENDS_ON|DEPENDENCIES):' tasks 2>/dev/null | head -n 250 >> logs/GITHUB_CRON_RUNS.md || true
+          else
+            echo 'tasks directory not found' >> logs/GITHUB_CRON_RUNS.md
+          fi
+
+      - name: Commit heartbeat
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add logs/GITHUB_CRON_RUNS.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'controller: record GitHub cron heartbeat'
+          git push
+
+  codex-controller:
+    needs: heartbeat
+    if: ${{ vars.WORKSHOP_CODEX_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Codex controller
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt: |
+            Read the current nevincho/WORKSHOP repository state from this checkout.
+            Execute one WORKSHOP controller cycle according to repository policies.
+            Process only eligible tasks, preserve dependency gates and protected components,
+            record all evidence/reviews/state changes in the repository, and do not claim
+            runtime validation without direct evidence. TANGRA remains on hold unless the
+            repository explicitly reactivates it. Conserve Codex use and stop affected chains
+            when prerequisites are unavailable.
+
+      - name: Commit controller changes
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'controller: GitHub cron Codex cycle'
+          git push
