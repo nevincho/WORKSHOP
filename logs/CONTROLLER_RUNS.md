@@ -58,3 +58,17 @@ Rules:
 - selected_task_ids: TASK-022 first; TASK-007 only if its stated execution/test prerequisite can be directly evidenced in this run
 - actions_started: mandatory policies/backlog read; telemetry persisted; current task/evidence/review state inspection initiated
 - Codex_used: no
+
+## 2026-08-24 WORKSHOP Controller run 2 — BLOCKED
+- observed_completion_time_uk: 2026-08-24 23:29
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 2 / BLOCKED
+- queue_snapshot: no canonical task became eligible for repository implementation in this run; TASK-022 remains blocked by missing committed deterministic harness plus provenance-preserving repository-to-executor route; VK TASK-007 remains blocked by its required verified bounded execution/test/checkpoint route; downstream canonical tasks remain dependency-blocked
+- selected_task_ids: TASK-022; TASK-007 prerequisite check
+- actions_completed: read mandatory autonomy/Codex/backlog policy; persisted STARTED telemetry; inspected TASK-022 task/evidence/review and confirmed the recorded blocker still matches authoritative coordination state; inspected VK TASK-007 and TASK-021 evidence; checked nevincho/LIVE Legacy for an existing GitHub Actions workflow route and found none at .github/workflows
+- actions_failed_or_blocked: TASK-022 cannot create/claim TASK-014 validation because its own scope only verifies an existing harmless route and current evidence shows no committed harness/runner; no separate canonical unblock task exists and controller is prohibited from creating a new task ID; TASK-007 cannot advance because repository write access alone does not prove executable tests/checkpoint/rollback, and current Codex/runtime execution is human-gated
+- Codex_used: no
+- repository_commits_created: a53c926e84a69e885554a839ae4ce44936b465e5; this ledger completion commit
+- evidence/review files created: none; existing TASK-022 evidence/review remained current and was not duplicated
+- exit_reason: real prerequisite blockers remain and no independent canonical task is eligible without violating the no-new-task-ID, validation-route, or human Codex gate policies
+- next_expected_run: next scheduled controller cycle; re-evaluate only if repository state/policy supplies an authorized bounded test-route unblock or Vlad explicitly authorizes a specific Codex/runtime action
