@@ -1,19 +1,19 @@
-# TASK-011 — Horoscopes Five-Reader Pipeline Audit
+# TASK-011 — Mysticarium Pi4 Implementation Reconciliation
 
 TASK_ID: TASK-011
-PROJECT: HOROSCOPES
+PROJECT: HOROSCOPES / MYSTICARIUM
 PRIORITY: HIGH
 STATUS: BLOCKED
-OBJECTIVE: Discover and verify the actual five reader/fortune-teller components configured in the Horoscopes system, their current code/runtime state, data flow, inputs, outputs, dependencies, and canonical plan before any implementation expansion.
-SOURCE_PLAN_OR_REQUEST: Vlad request 2026-08-24; exact five-reader definitions must come from current Pi4/project evidence.
-CURRENT_STATE: Exact project path, repository, five-reader names/components, canonical plan and runtime state NOT VERIFIED.
-PREREQUISITES: TASK-004 PASS for Horoscopes/Pi4 route or equivalent verified read-only access.
-DEPENDENCIES: TASK-004 PASS for HOROSCOPES route.
-AFFECTED_COMPONENTS: read-only audit of Horoscopes project/runtime.
-PROTECTED_COMPONENTS: existing validated horoscope outputs/data and any working production service; preserve until evidence supports change.
+OBJECTIVE: Reconcile the verified canonical Mysticarium design on `nevincho/TANGRA-DOCS` branch `agent/mysticarium` with the actual Pi4 implementation/runtime before implementation expansion.
+SOURCE_PLAN_OR_REQUEST: Verified Mysticarium canon + Vlad request 2026-08-24.
+CURRENT_STATE: Canonical branch, project path and five characters VERIFIED from repository. Pi4 project path/runtime implementation state/SSH route remain NOT VERIFIED.
+PREREQUISITES: verified Pi4 read-only execution route or equivalent direct runtime evidence.
+DEPENDENCIES: Pi4 route verification; repository-only canon audit may proceed independently under TASK-013.
+AFFECTED_COMPONENTS: read-only comparison of Pi4 project/runtime against canonical design.
+PROTECTED_COMPONENTS: any existing validated Mysticarium outputs/data/services; preserve until evidence supports change.
 EXECUTION_CLASS: WORKER
 CODEX_ALLOWED: NO for discovery/audit.
-ACCEPTANCE_CRITERIA: all five reader components are named from direct evidence; current implementation status and interfaces are mapped; canonical plan/TODO is identified; duplicates/missing prerequisites are reported; end-to-end target chain is defined without inventing missing behavior.
+ACCEPTANCE_CRITERIA: Pi4 project root identified; Git/runtime state established; existing implementation mapped against canonical components and five characters; missing/duplicate/stale components reported; runtime entrypoint/services/tests identified; smallest justified implementation backlog proposed.
 VALIDATION_METHOD: direct Pi4/repository inspection + code/config/runtime evidence + independent review.
 PRE_CHANGE_CHECKPOINT: NOT APPLICABLE — read-only.
 ROLLBACK_METHOD: NOT APPLICABLE — no target changes.
