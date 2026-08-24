@@ -24,3 +24,13 @@ Rules:
 4. Do not treat this ledger as implementation authority; it is coordination telemetry only.
 
 ---
+
+## 2026-08-24 Fresh Controller run 1 — STARTED
+- scheduled_time_uk: 2026-08-24 15:10
+- observed_start_time_uk: 2026-08-24 15:21
+- controller_name: WORKSHOP Fresh Controller
+- run_sequence/status: 1 / STARTED
+- queue_snapshot: pending repository-state read; READY/BLOCKED counts NOT VERIFIED at telemetry write
+- selected_task_ids: pending repository-state read
+- actions_started: controller reached WORKSHOP; telemetry initialized
+- Codex_used: no
