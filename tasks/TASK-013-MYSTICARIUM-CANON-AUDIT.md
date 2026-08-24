@@ -3,7 +3,7 @@
 TASK_ID: TASK-013
 PROJECT: HOROSCOPES / MYSTICARIUM
 PRIORITY: HIGH
-STATUS: READY
+STATUS: REVIEW
 TYPE: REPOSITORY-ONLY / NON-DESTRUCTIVE
 OBJECTIVE: Audit the verified Mysticarium canonical branch and produce an evidence-backed implementation map for the existing repository-only prototype.
 
@@ -32,3 +32,16 @@ OUTPUTS:
 - `review/TASK-013.md`
 
 ACCEPTANCE: repository state is mapped against canon with every claim evidenced; next task may be unlocked only if it can be done safely in repository scope without runtime deployment.
+
+## Scout / Planner routing record — 2026-08-24
+
+Executor route used: SCOUT / PLANNER repository reconnaissance via verified GitHub read access.
+
+Execution evidence now exists at:
+- `evidence/TASK-013/MYSTICARIUM_REPO_AUDIT.md`
+
+No target repository files were modified. No Pi4/runtime path was used. No Codex was invoked.
+
+Task is routed to independent REVIEW. Final PASS/COMPLETE is not claimed.
+
+Subsequent `TASK-014` remains BLOCKED pending TASK-013 Reviewer PASS and independent verification of a repository code-execution/test route sufficient to run its required deterministic tests; repository write access alone is not a valid test route.
