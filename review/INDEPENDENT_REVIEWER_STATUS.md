@@ -1,32 +1,36 @@
 # WORKSHOP INDEPENDENT REVIEWER STATUS
 
-STATUS: BLOCKED
+STATUS: BLOCKED_ON_TASK-022_VALIDATION
 ROLE: INDEPENDENT ENGINEERING VERIFICATION
 UPDATED: 2026-08-24
 
 ## Repository-controlled operation
 
-Reviewer bootstrap and queue state were reloaded from the current repository. Applicable mandatory entrypoint, policies, role definition, queue protocol, task schema, global state, Control Room handoff, task/evidence/review listings and active blocker records were inspected.
+Reviewer state reconciled against current task, evidence, review, blocker and global-state records.
 
-## Current incomplete Reviewer output
+## TASK-022 identity status
 
-`tasks/TASK-022-MYSTICARIUM-TEST-ROUTE-VERIFICATION.md` has Scout evidence at `evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md` but no Reviewer artifact at its declared output path `review/TASK-022.md`.
+The former cross-project TASK-022 collision has been removed from the active task set. Mysticarium retains canonical `TASK-022 — Mysticarium Test Route Verification`. The VK capability-discovery task formerly using TASK-022 is now canonical `TASK-032`.
 
-Retry was attempted. The output remains BLOCKED because the repository also contains `tasks/TASK-022-VK-CAPABILITY-DISCOVERY.md` with the same canonical `TASK_ID: TASK-022`. The active coordination blocker `blockers/CODEX-GATE-TASK-ID-COLLISIONS.md` identifies this collision class and the risk of cross-project evidence/review contamination.
+The Mysticarium TASK-022 review is still NOT complete for a separate engineering reason: Scout evidence records that no verified provenance-preserving executable deterministic-test route/harness is currently available. Evidence: `evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md`; blocker: `blockers/TASK-022-MYSTICARIUM-TEST-ROUTE.md`.
 
-Reviewer recorded the specific retry blocker in:
-- `blockers/REVIEWER-TASK-022-IDENTITY-COLLISION.md`
+Therefore TASK-014 remains BLOCKED and no PASS review may be issued for TASK-022 until the validation route itself is demonstrated.
 
-No ambiguous `review/TASK-022.md` was created.
+## Remaining coordination defect
+
+Duplicate numeric task identities still exist elsewhere in the backlog for TASK-023 through TASK-027 across VK and Mysticarium entries. Those identities must not be used for ambiguous evidence/review routing until Control Room assigns unique canonical IDs. This does not invalidate existing completed reviews for TASK-003, TASK-004, TASK-013 or TASK-021.
 
 ## Reviewer disposition
 
-- Mysticarium TASK-022 review: BLOCKED pending unique task identity / canonical project-qualified artifact mapping.
-- VK TASK-022 review: not authorized; task itself remains BLOCKED and no Reviewer evidence package is present.
-- Existing completed/PASS tasks were not re-reviewed or duplicated.
-- No target repository/runtime changes were performed.
-- No Codex capacity was used.
+- TASK-003: existing PASS retained.
+- TASK-004: existing PASS retained.
+- TASK-013: existing PASS retained.
+- TASK-021: existing PASS retained.
+- TASK-022 Mysticarium: BLOCKED on validation methodology/execution route, not on identity collision.
+- TASK-032 VK capability discovery: not yet reviewed; implementation remains gated.
+- No target repository/runtime changes performed by Reviewer.
+- No Codex capacity used by Reviewer.
 
 ## Next eligible Reviewer action
 
-Retry the incomplete Mysticarium review only after Control Room/task-authoring coordination resolves the TASK_ID collision and remaps evidence/review paths without loss. Until then the affected chain must remain isolated; independent non-colliding Reviewer work may proceed when routed by repository state.
+Review TASK-022 only after new evidence demonstrates the required provenance-preserving deterministic test route. Independent non-colliding Reviewer work may proceed normally when routed by repository state.
