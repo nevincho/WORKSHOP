@@ -12,27 +12,31 @@ DATE: 2026-08-24
 - `policies/VALIDATION_POLICY.md`
 - applicable execution routing, human gate, checkpoint/backup, reporting, repository communication and Control Room policies per `AGENTS.md`
 
-## Queue processing result
+## Queue retry result
 
-- `queue/` contains only protocol documentation; executable queue state is represented by task `STATUS` per `schemas/QUEUE_PROTOCOL.md`.
-- Current repository state records TASK-003, TASK-004 and TASK-021 COMPLETE/PASS.
+- Re-read `status/WORKSHOP_STATE.yaml`, `control_room/CURRENT.md`, `schemas/QUEUE_PROTOCOL.md`, current task inventory, current blockers and this role state.
+- `queue/` contains protocol documentation only; executable queue eligibility is task-STATUS driven.
+- Current completed coordination tasks recorded by state include TASK-003, TASK-004, TASK-013 and TASK-021.
 - TASK-005 remains blocked by `NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE`.
-- Mysticarium TASK-014 remains BLOCKED because TASK-022 test-route verification is blocked on missing provenance-preserving executable validation route/harness.
-- VK repository-preparation chain TASK-022 through TASK-027 is BLOCKED by dependency progression beginning with TASK-022.
-- No inspected READY task currently requires or justifies Codex execution.
-- Existing `evidence/TASK-008/CODEX_GATE.md` remains a HOLD decision; no Codex handoff was created.
+- Mysticarium TASK-014 remains blocked on TASK-022 test-route verification.
+- Mysticarium TASK-022 remains blocked by `NO_VERIFIED_PROVENANCE_PRESERVING_TEST_EXECUTION_ROUTE`.
+- VK TASK-032 remains blocked because repository implementation is not yet authorized and runtime remains NOT VERIFIED.
+- No currently verified READY task requires or justifies Codex execution.
+- No incomplete Codex Gate task output was identified that can be safely completed without violating current blockers or task identity constraints.
 
-## Coordination blocker discovered during retry
+## Coordination blockers
 
-Distinct project tasks currently reuse TASK_ID values TASK-022 through TASK-027. This makes Codex handoff/evidence identity ambiguous and risks cross-project coordination contamination. Recorded in `blockers/CODEX-GATE-TASK-ID-COLLISIONS.md`.
-
-Codex Gate will not authorize any handoff using a colliding task ID until Control Room establishes a unique canonical task identity or explicit project-qualified identity convention and affected coordination artifacts are reconciled.
+- Duplicate numeric task IDs remain open for TASK-023 through TASK-027 across VK and Mysticarium.
+- `blockers/CODEX-GATE-TASK-ID-COLLISIONS.md` remains applicable.
+- Do not create or route a Codex handoff using an ambiguous colliding task ID until Control Room assigns unique canonical identities or an explicit project-qualified identity convention and reconciles affected artifacts.
 
 ## Codex authorization
 
-HOLD. No currently inspected task is eligible for Codex handoff. Required prerequisites and inexpensive preparation are incomplete, blocked tasks remain blocked, and colliding task identifiers prevent safe unambiguous handoff construction for affected tasks.
+HOLD.
 
-Repository discovery, broad audit, inventory, documentation reading, task decomposition, mechanical work, log summarization, evidence collection, routine validation, dependency discovery, and task-ID cleanup must not be escalated to Codex.
+No current task meets all required Codex-gate prerequisites: verified necessity, non-duplication, verified target state, prerequisites, unique task identity where applicable, exact affected components/interfaces, acceptance criteria, validation route, rollback/checkpoint, protected scope and proof that a cheaper capable worker route is insufficient.
+
+Repository discovery, broad audit, inventory, documentation reading, task decomposition, mechanical work, log summarization, evidence collection, routine validation, dependency discovery, task-ID cleanup and other worker-capable preparation remain forbidden Codex uses.
 
 ## Operating rule
 
