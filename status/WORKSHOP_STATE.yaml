@@ -1,12 +1,16 @@
 workshop_version: 0.1
-status: BOOTSTRAPPED_FOR_AUTONOMY_TEST
+status: AUTONOMY_DISCOVERY_VALIDATED
 updated: 2026-08-24
 project_priority:
   - TANGRA
   - VK
   - HOROSCOPES
-active_tests:
-  - TEST-002
+active_tests: []
+completed_tests:
+  TEST-002:
+    verdict: PASS
+    evidence: evidence/TEST-002/INVENTORY.md
+    review: review/TEST-002.md
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -27,9 +31,15 @@ protected:
   tangra_autonomous_implementation_default: false
 connections:
   tangra_repo: nevincho/TANGRA-DOCS
+  tangra_runtime: NOT_VERIFIED
   vk_design_repo: nevincho/TANGRA-DOCS
+  vk_design_ref: family-guardian-ai
+  vk_plan: family_guardian_ai/ROADMAP.md
   vk_ui_repo: nevincho/LIVE
+  vk_ui_ref: Legacy
+  vk_runtime: NOT_VERIFIED
   horoscopes_target: NOT_VERIFIED
 notes:
   - Do not infer runtime access from this file.
   - Read current task/review/checkpoint evidence before acting.
+  - TEST-002 validated autonomous scheduled Controller discovery without four-agent chat trigger.
