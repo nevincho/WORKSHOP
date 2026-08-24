@@ -12,3 +12,7 @@ OVERRIDE: ONLY VLAD / WORKSHOP CONTROL ROOM
 6. Stop or isolate a dependency chain on real blocker, protected change, destructive operation, missing prerequisite, or unverifiable acceptance method.
 7. Prefer the smallest justified change. No speculative redesign or unrelated refactoring.
 8. Never claim completion without evidence.
+9. `decisions/CANONICAL_BACKLOG_2026-08-24.md` is the active deduplication/routing authority for the current VK and Mysticarium backlog. Tasks marked SUPERSEDED there MUST NOT be implemented or sent to Codex.
+10. SAME-RUN CHAINING: after independent PASS, recompute dependencies immediately. If another non-duplicate task is eligible and all execution, validation, checkpoint/rollback and protection requirements are satisfied, continue to that task in the same controller run. Do not wait for the next hourly trigger solely because a prior task completed.
+11. Same-run chaining stops on a real blocker, human gate, protected/destructive operation, unavailable validation method, unavailable required Codex capacity, or when no eligible task remains.
+12. A BLOCKED task may become READY only when its stated prerequisite is directly evidenced as satisfied; do not mass-promote backlog tasks.
