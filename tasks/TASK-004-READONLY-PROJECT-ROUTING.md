@@ -1,8 +1,8 @@
 # TASK-004 — Read-Only Project Routing Validation
 
-STATUS: BLOCKED
+STATUS: READY
 PRIORITY: HIGH
-DEPENDS_ON: TASK-003 PASS
+DEPENDS_ON: TASK-003 PASS — SATISFIED
 TYPE: NON-DESTRUCTIVE VALIDATION
 
 ## Objective
@@ -13,6 +13,7 @@ Using only execution routes VERIFIED by TASK-003, validate read-only routing int
 - Do not modify target repositories/runtimes.
 - Do not use Codex for discovery or routine inspection.
 - Preserve existing WORKSHOP policies and project protection boundaries.
+- TASK-003 verified repository read routes for TANGRA and VK; it did NOT verify Pi5, Windows-runtime, Horoscopes target, or Pi4 routes.
 
 ## Required outputs
 - `evidence/TASK-004/ROUTING_VALIDATION.md`
@@ -25,4 +26,4 @@ Using only execution routes VERIFIED by TASK-003, validate read-only routing int
 4. No target modification occurs.
 
 ## Unblock condition
-TASK-003 independent review is PASS and identifies at least one usable read-only project route.
+SATISFIED: TASK-003 independent review PASS identified usable repository read-only routes.
