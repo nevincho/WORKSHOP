@@ -1,5 +1,5 @@
 workshop_version: 0.1
-status: AUTONOMY_DISCOVERY_VALIDATED
+status: EXECUTION_ROUTES_PARTIALLY_VERIFIED
 updated: 2026-08-24
 project_priority:
   - TANGRA
@@ -11,6 +11,19 @@ completed_tests:
     verdict: PASS
     evidence: evidence/TEST-002/INVENTORY.md
     review: review/TEST-002.md
+completed_tasks:
+  TASK-003:
+    verdict: PASS
+    evidence: evidence/TASK-003/CAPABILITY_MATRIX.md
+    review: review/TASK-003.md
+  TASK-004:
+    verdict: PASS
+    evidence: evidence/TASK-004/ROUTING_VALIDATION.md
+    review: review/TASK-004.md
+blocked_tasks:
+  TASK-005:
+    reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
+    blocker: blockers/TASK-003-EXECUTION-ROUTES.md
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -31,15 +44,19 @@ protected:
   tangra_autonomous_implementation_default: false
 connections:
   tangra_repo: nevincho/TANGRA-DOCS
+  tangra_repo_read: VERIFIED
   tangra_runtime: NOT_VERIFIED
   vk_design_repo: nevincho/TANGRA-DOCS
   vk_design_ref: family-guardian-ai
   vk_plan: family_guardian_ai/ROADMAP.md
+  vk_design_repo_read: VERIFIED
   vk_ui_repo: nevincho/LIVE
   vk_ui_ref: Legacy
+  vk_ui_repo_read: VERIFIED
   vk_runtime: NOT_VERIFIED
   horoscopes_target: NOT_VERIFIED
 notes:
-  - Do not infer runtime access from this file.
-  - Read current task/review/checkpoint evidence before acting.
-  - TEST-002 validated autonomous scheduled Controller discovery without four-agent chat trigger.
+  - Do not infer runtime access from repository access.
+  - TASK-003 capability audit and TASK-004 read-only routing validation passed.
+  - Runtime implementation chains remain blocked until an authorized execution/test/checkpoint/rollback route is directly verified.
+  - Codex was not used for TASK-003 or TASK-004.
