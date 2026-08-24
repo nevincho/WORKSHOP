@@ -48,3 +48,13 @@ Rules:
 - evidence/review files created: review/TASK-013.md
 - exit_reason: no further eligible work can be safely advanced with currently verified execution/validation capability
 - next_expected_run: next hourly controller cycle
+
+## 2026-08-24 WORKSHOP Controller run 2 — STARTED
+- scheduled_time_uk: manual invocation
+- observed_start_time_uk: 2026-08-24 21:28
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 2 / STARTED
+- queue_snapshot: canonical backlog read; TASK-022 is the first active Mysticarium prerequisite; VK TASK-007 remains blocked pending a verified bounded repository execution/test/checkpoint route; downstream chains remain BLOCKED
+- selected_task_ids: TASK-022 first; TASK-007 only if its stated execution/test prerequisite can be directly evidenced in this run
+- actions_started: mandatory policies/backlog read; telemetry persisted; current task/evidence/review state inspection initiated
+- Codex_used: no
