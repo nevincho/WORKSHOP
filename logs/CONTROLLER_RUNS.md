@@ -82,3 +82,18 @@ Rules:
 - selected_task_ids: TASK-033 first, then TASK-034 if independent progress remains safe
 - actions_started: mandatory policy/backlog/state read; TASK-033 Scout handoff accepted as executable Worker routing authority
 - Codex_used: no
+
+## 2026-08-25 WORKSHOP Controller run 3 — COMPLETED / HUMAN GATES
+- observed_completion_time_uk: 2026-08-25 00:47 BST
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 3 / COMPLETED_WITH_HUMAN_GATES
+- queue_snapshot: TASK-033 PASS; TASK-022 PASS; TASK-034 PASS; TASK-014 READY_FOR_CODEX_REVIEW; TASK-007 READY_FOR_CODEX_REVIEW; downstream chains blocked on those human-gated implementation tasks
+- selected_task_ids: TASK-033; TASK-022; TASK-014; TASK-034; TASK-007
+- actions_completed: implemented and provenance-tested Mysticarium repository harness; independently reviewed TASK-033 PASS; reverified TASK-022 using exact Git blob identity plus isolated Node execution and reviewed PASS; prepared human-gated Codex package for TASK-014; implemented and provenance-tested VK repository mock/checkpoint foundation; independently reviewed TASK-034 PASS; prepared human-gated Codex package for TASK-007; reconciled canonical backlog and WORKSHOP state
+- actions_failed_or_blocked: no repository-side unblock failure remains in TASK-033/TASK-022/TASK-034; TASK-014 and TASK-007 implementation stop at explicit human Codex gates; no live Windows or Pi4 validation attempted
+- Codex_used: no
+- target_repository_commits_created: TANGRA-DOCS a971444ddbe188ae66b3a65d6ad8e99ee99bc9cb, 31a60a8da267bbda7d8a2ffd6cd63f40cd65b5e9; LIVE 986843fa4eb4c16bb3a353d0f621fc46f23540f5, 3ad02e4ddd298088d3bb51bf0b3cf7ecacf3217b
+- workshop_commits_created: d073c6c90fab9834999aae031bf5978bd13fba81; 234e3061ada8f15e251462f92dd98246d6c8fe8e; d655e85cca4cadbd3c29bd20f6732a04a38f67b9; 36b94d1b6aca7712ba14d95d590bac66d0fe58b6; 3bc99837e9623ce0457c67d9bdf6c36e8858f579; 97c4a2ef8937698f7385e461ecf53254daf4866f; c3e702c744e640f4cfb61c2dd12019ec14fdc33e; f538e05ac9ed701939085fe000a8b637c9350e8d; cb382d917b2b05149243f14a39bddfc5d0cdf0d0; 821470e7d0ccd4168083359df79009a80eacd311; 7c8815acc12d67029a01fb9f8f7b39b8fcd49469; ec0fb9a13027b295dda9a09c3df589aca39e70a7; f63c50462ba4c9de5614689672dc432d70419563; b75af37e7518f680dda71d8f4063798a1d9ae8f7; 030838c02279e40881103e07b49a8b72f558a42d; this ledger completion commit
+- evidence/review files created_or_updated: evidence/TASK-033/WORKER.md; evidence/TASK-033/CODEX_GATE.md; review/TASK-033.md; evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md; review/TASK-022.md; evidence/TASK-014/SCOUT.md; evidence/TASK-014/CODEX_GATE.md; evidence/TASK-034/WORKER.md; evidence/TASK-034/CODEX_GATE.md; review/TASK-034.md; evidence/TASK-007/SCOUT.md; evidence/TASK-007/CODEX_GATE.md
+- exit_reason: repository-side work exhausted safely; next eligible implementation steps require explicit Vlad approval for task-specific Codex execution
+- next_state: await human decision on TASK-014 and/or TASK-007 Codex approval; independent downstream tasks remain dependency-blocked
