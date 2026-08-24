@@ -72,3 +72,13 @@ Rules:
 - evidence/review files created: none; existing TASK-022 evidence/review remained current and was not duplicated
 - exit_reason: real prerequisite blockers remain and no independent canonical task is eligible without violating the no-new-task-ID, validation-route, or human Codex gate policies
 - next_expected_run: next scheduled controller cycle; re-evaluate only if repository state/policy supplies an authorized bounded test-route unblock or Vlad explicitly authorizes a specific Codex/runtime action
+
+## 2026-08-25 WORKSHOP Controller run 3 — STARTED
+- scheduled_time_uk: manual invocation
+- observed_start_time_uk: 2026-08-25 00:41 BST
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 3 / STARTED
+- queue_snapshot: READY=2 (TASK-033, TASK-034); canonical blocked chains remain downstream
+- selected_task_ids: TASK-033 first, then TASK-034 if independent progress remains safe
+- actions_started: mandatory policy/backlog/state read; TASK-033 Scout handoff accepted as executable Worker routing authority
+- Codex_used: no
