@@ -1,10 +1,15 @@
 workshop_version: 0.1
 status: EXECUTION_ROUTES_PARTIALLY_VERIFIED
 updated: 2026-08-24
-project_priority:
-  - TANGRA
+active_project_priority:
   - VK
   - HOROSCOPES
+hold_projects:
+  TANGRA:
+    state: OFFLINE_HOLD
+    reason: Physical rebuild in progress — new chassis and camera integration.
+    since: 2026-08-24
+    runtime_actions_allowed: false
 active_tests: []
 completed_tests:
   TEST-002:
@@ -41,11 +46,11 @@ protected:
   vk_core: true
   vk_canonical_personality: true
   vk_approved_memory_promotion: true
-  tangra_autonomous_implementation_default: false
+  tangra_hold: true
 connections:
   tangra_repo: nevincho/TANGRA-DOCS
   tangra_repo_read: VERIFIED
-  tangra_runtime: NOT_VERIFIED
+  tangra_runtime: OFFLINE_HOLD
   vk_design_repo: nevincho/TANGRA-DOCS
   vk_design_ref: family-guardian-ai
   vk_plan: family_guardian_ai/ROADMAP.md
@@ -57,6 +62,7 @@ connections:
   horoscopes_target: NOT_VERIFIED
 notes:
   - Do not infer runtime access from repository access.
+  - TANGRA/Pi5 is offline and excluded from autonomous work until explicit human reactivation.
   - TASK-003 capability audit and TASK-004 read-only routing validation passed.
   - Runtime implementation chains remain blocked until an authorized execution/test/checkpoint/rollback route is directly verified.
   - Codex was not used for TASK-003 or TASK-004.
