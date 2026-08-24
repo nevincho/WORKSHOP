@@ -25,6 +25,10 @@ completed_tasks:
     verdict: PASS
     evidence: evidence/TASK-004/ROUTING_VALIDATION.md
     review: review/TASK-004.md
+  TASK-013:
+    verdict: PASS
+    evidence: evidence/TASK-013/MYSTICARIUM_REPO_AUDIT.md
+    review: review/TASK-013.md
   TASK-021:
     verdict: PASS
     evidence: evidence/TASK-021/VK_REPOSITORY_AUDIT.md
@@ -33,6 +37,25 @@ blocked_tasks:
   TASK-005:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
     blocker: blockers/TASK-003-EXECUTION-ROUTES.md
+  TASK-014:
+    reason: DETERMINISTIC_TEST_ROUTE_NOT_VERIFIED
+    prerequisite: TASK-022
+  TASK-022:
+    project: HOROSCOPES / MYSTICARIUM
+    reason: NO_VERIFIED_PROVENANCE_PRESERVING_TEST_EXECUTION_ROUTE
+    evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md
+    blocker: blockers/TASK-022-MYSTICARIUM-TEST-ROUTE.md
+  TASK-032:
+    project: VK
+    reason: REPOSITORY_IMPLEMENTATION_NOT_YET_AUTHORIZED
+    depends_on: TASK-021 PASS
+coordination_blockers:
+  duplicate_task_ids:
+    state: OPEN
+    note: Duplicate numeric IDs remain in backlog for TASK-023 through TASK-027 across VK and Mysticarium. Do not route evidence/reviews by ambiguous numeric ID until canonical unique identities are assigned.
+  stale_state_index:
+    state: RECONCILED_2026-08-24
+    note: TASK-013 was missing from completed_tasks and has now been restored from task/evidence/review records.
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -63,11 +86,18 @@ connections:
   vk_ui_ref: Legacy
   vk_ui_repo_read: VERIFIED
   vk_runtime: NOT_VERIFIED
-  horoscopes_target: NOT_VERIFIED
+  horoscopes_repo: nevincho/TANGRA-DOCS
+  horoscopes_ref: agent/mysticarium
+  horoscopes_path: projects/mysticarium/
+  horoscopes_repo_read: VERIFIED
+  horoscopes_runtime: NOT_VERIFIED
 notes:
   - Do not infer runtime access from repository access.
   - TANGRA/Pi5 is offline and excluded from autonomous work until explicit human reactivation.
   - TASK-003 capability audit and TASK-004 read-only routing validation passed.
+  - TASK-013 Mysticarium repository canon audit passed; Pi4/runtime remains NOT VERIFIED.
   - TASK-021 VK repository implementation audit passed; local Windows runtime remains NOT VERIFIED.
+  - TASK-022 Mysticarium test-route verification is blocked on a provenance-preserving executable test route/harness.
+  - VK capability-discovery work formerly colliding at TASK-022 is now canonically TASK-032.
+  - Numeric task-ID collisions still exist for TASK-023 through TASK-027 and must be resolved before evidence/review routing for those entries.
   - Runtime implementation chains remain blocked until an authorized execution/test/checkpoint/rollback route is directly verified.
-  - Codex was not used for TASK-003 or TASK-004.
