@@ -3,36 +3,41 @@
 ROLE: REVIEWER
 TASK: TEST-001
 VERDICT: NOT VERIFIED
+REVIEW: RETRY AFTER ROLE EVIDENCE COMPLETION
 
 ## Objective reviewed
 Verify repository-only role workflow for TEST-001, with substantive outputs persisted to WORKSHOP, no target-project modifications, no Codex use, and independent review based on repository evidence.
 
 ## Evidence inspected
-- `README.md`
-- `policies/AUTONOMY_POLICY.md`
-- `policies/CODEX_BUDGET_POLICY.md`
-- `policies/VALIDATION_POLICY.md`
 - `tasks/TEST-001-PIPELINE.md`
+- applicable WORKSHOP policies and Reviewer role definition
+- `evidence/TEST-001/SCOUT.md`
 - `evidence/TEST-001/WORKER.md`
-- repository listings for `evidence/TEST-001/`, `agents/`, `review/`, and `status/`
+- `evidence/TEST-001/CODEX_GATE.md`
+- current WORKSHOP evidence/review/task state
 
-## Findings
-1. Worker evidence exists and records its bounded diagnostic execution.
-2. Required Scout evidence `evidence/TEST-001/SCOUT.md` is absent at review time.
-3. Required Codex Gate evidence `evidence/TEST-001/CODEX_GATE.md` is absent at review time. `agents/codex-gate/STATUS.md` is not the task-required evidence artifact and was not treated as substitute proof.
-4. Acceptance criterion that all substantive role outputs are persisted in WORKSHOP is therefore not demonstrated for all required roles.
-5. Absence of VK, Horoscopes, or TANGRA target-project modifications cannot be independently established from the currently available TEST-001 evidence package. Per VALIDATION_POLICY, absence of evidence must not be converted to PASS.
-6. Codex non-use by the complete pipeline is not independently demonstrated by the currently available task evidence; Worker only establishes non-use by Worker.
-7. Chat-output compliance cannot be independently established from repository evidence alone.
+## Retry findings
+1. The previously missing Scout evidence now exists and records a bounded repository-only Scout stage.
+2. The previously missing Codex Gate evidence now exists and explicitly denies Codex authorization for TEST-001.
+3. Worker evidence remains present and records no target-project or Codex operation by Worker.
+4. All task-required role artifacts are now persisted in WORKSHOP.
+5. Repository evidence demonstrates the intended role decisions and persistence behavior for the three producing roles.
+6. Pipeline-wide absence of target-project modifications is still NOT VERIFIED independently. The role artifacts are reports, and the validation policy states another agent's report is not proof. No baseline/compare evidence for VK, Horoscopes, or TANGRA is part of TEST-001.
+7. Pipeline-wide Codex non-use is also not independently provable from the current repository evidence alone. The Codex Gate denial is correct evidence of authorization state, but it does not independently establish that no external Codex invocation occurred.
+8. Acceptance criterion 1, no substantive agent output in agent chats, cannot be measured from repository evidence alone.
 
 ## Methodology assessment
-The dry-run objective requires evidence from multiple roles plus verification of prohibited side effects. The present evidence set is incomplete, so a PASS would test/report artifact presence only partially rather than the stated end-to-end objective.
+The retry repairs the missing-role-artifact defect, but the original TEST-001 acceptance criteria include negative claims outside the observable repository state. The available validation method does not independently measure those negative claims. This is a validation-methodology limitation, not evidence of target implementation failure.
 
-## Blocker
-Missing required Scout and Codex Gate task evidence, plus insufficient independent evidence for pipeline-wide prohibited side effects/non-use criteria.
+## Actual blocker
+Insufficient independent observability for acceptance criteria 1, 3 and 4: chat-output absence, absence of target-project changes, and pipeline-wide Codex non-use.
 
 ## Smallest justified repair
-Do not change target projects and do not invoke Codex. Allow missing required roles to process TEST-001 and persist their specified evidence. Then re-run independent review with evidence sufficient to assess prohibited side effects and Codex non-use. No refactor or redesign is justified.
+Do not modify target projects and do not invoke Codex. Either:
+- provide repository-backed baseline/compare/audit evidence that independently measures the prohibited side effects and Codex-use criterion; or
+- revise/supersede the diagnostic acceptance method through Control Room so PASS is limited to properties the repository-only test can actually observe.
+
+No implementation refactor or target-project repair is justified.
 
 ## Progression
-NOT AUTHORIZED. Re-review required after evidence package is complete.
+NOT AUTHORIZED from TEST-001. Verdict remains NOT VERIFIED because the stated end-to-end objective is not fully measurable with the current evidence package.
