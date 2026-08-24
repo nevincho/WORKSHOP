@@ -1,6 +1,6 @@
 workshop_version: 0.1
 status: EXECUTION_ROUTES_PARTIALLY_VERIFIED
-updated: 2026-08-24
+updated: 2026-08-25
 active_project_priority:
   - VK
   - HOROSCOPES
@@ -11,6 +11,17 @@ hold_projects:
     since: 2026-08-24
     runtime_actions_allowed: false
 active_tests: []
+ready_tasks:
+  TASK-033:
+    project: HOROSCOPES / MYSTICARIUM
+    state: READY_FOR_WORKER
+    scout_evidence: evidence/TASK-033/SCOUT.md
+    objective: bootstrap minimal repository-side deterministic test harness without implementing TASK-014 or deploying to Pi4
+  TASK-034:
+    project: VK
+    state: READY_FOR_WORKER
+    scout_evidence: evidence/TASK-034/SCOUT.md
+    objective: establish repository-side test/checkpoint/rollback foundation using mocks/fixtures without live Windows runtime integration
 completed_tests:
   TEST-002:
     verdict: PASS
@@ -42,20 +53,25 @@ blocked_tasks:
     prerequisite: TASK-022
   TASK-022:
     project: HOROSCOPES / MYSTICARIUM
-    reason: NO_VERIFIED_PROVENANCE_PRESERVING_TEST_EXECUTION_ROUTE
+    reason: WAITING_FOR_TASK_033_PASS
+    prerequisite: TASK-033
     evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md
     blocker: blockers/TASK-022-MYSTICARIUM-TEST-ROUTE.md
+  TASK-007:
+    project: VK
+    reason: WAITING_FOR_TASK_034_PASS
+    prerequisite: TASK-034
   TASK-032:
     project: VK
-    reason: REPOSITORY_IMPLEMENTATION_NOT_YET_AUTHORIZED
-    depends_on: TASK-021 PASS
+    reason: DOWNSTREAM_DEPENDENCIES_NOT_SATISFIED
+    depends_on: TASK-021 PASS plus canonical node/registry prerequisites
 coordination_blockers:
   duplicate_task_ids:
     state: OPEN
     note: Duplicate numeric IDs remain in backlog for TASK-023 through TASK-027 across VK and Mysticarium. Do not route evidence/reviews by ambiguous numeric ID until canonical unique identities are assigned.
   stale_state_index:
-    state: RECONCILED_2026-08-24
-    note: TASK-013 was missing from completed_tasks and has now been restored from task/evidence/review records.
+    state: RECONCILED_2026-08-25
+    note: TASK-033 and TASK-034 are explicitly registered as READY_FOR_WORKER. Newer canonical handoffs outrank this summary index if divergence occurs.
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -85,19 +101,15 @@ connections:
   vk_ui_repo: nevincho/LIVE
   vk_ui_ref: Legacy
   vk_ui_repo_read: VERIFIED
-  vk_runtime: NOT_VERIFIED
+  vk_runtime: HUMAN_CONFIRMED_WINDOWS_LOCAL; LIVE_VALIDATION_NOT_YET_RUN
   horoscopes_repo: nevincho/TANGRA-DOCS
   horoscopes_ref: agent/mysticarium
   horoscopes_path: projects/mysticarium/
   horoscopes_repo_read: VERIFIED
-  horoscopes_runtime: NOT_VERIFIED
+  horoscopes_runtime: HUMAN_CONFIRMED_PI4_SSH_VIA_CODEX; LIVE_VALIDATION_HUMAN_GATED
 notes:
-  - Do not infer runtime access from repository access.
+  - Do not infer live runtime validation from repository access or human-confirmed route metadata.
   - TANGRA/Pi5 is offline and excluded from autonomous work until explicit human reactivation.
-  - TASK-003 capability audit and TASK-004 read-only routing validation passed.
-  - TASK-013 Mysticarium repository canon audit passed; Pi4/runtime remains NOT VERIFIED.
-  - TASK-021 VK repository implementation audit passed; local Windows runtime remains NOT VERIFIED.
-  - TASK-022 Mysticarium test-route verification is blocked on a provenance-preserving executable test route/harness.
-  - VK capability-discovery work formerly colliding at TASK-022 is now canonically TASK-032.
-  - Numeric task-ID collisions still exist for TASK-023 through TASK-027 and must be resolved before evidence/review routing for those entries.
-  - Runtime implementation chains remain blocked until an authorized execution/test/checkpoint/rollback route is directly verified.
+  - TASK-033 and TASK-034 are the current Worker entry points.
+  - Worker must consume READY_FOR_WORKER handoffs directly and must not let stale summary state suppress newer canonical routing.
+  - Codex execution and real runtime integration remain human-gated.
