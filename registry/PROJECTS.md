@@ -12,13 +12,16 @@ This registry defines WORKSHOP coordination targets. Target repositories/runtime
 ## TANGRA
 - Coordination mode: MONITOR / AUDIT / REPORT by default.
 - Autonomous implementation: FORBIDDEN unless explicitly authorized in WORKSHOP.
-- Canonical target repository/runtime: NOT VERIFIED in this registry; discover from repository evidence before use.
+- Canonical repository: `nevincho/TANGRA-DOCS`.
+- Repository URL: `https://github.com/nevincho/TANGRA-DOCS`.
+- Default branch: `main` unless a task explicitly identifies and verifies another branch/ref.
+- Runtime/production path: NOT VERIFIED in this registry; discover from repository/runtime evidence before use.
 - Protected production/validated components: preserve by default.
 
 ## VK
 - Coordination mode: AUTONOMOUS RUNTIME / TOOLING / TESTING within policy.
 - Canonical Core / personality / approved memory mutation: HUMAN GATE REQUIRED.
-- Known canonical design repository evidence: nevincho/TANGRA-DOCS, branch family-guardian-ai, under family_guardian_ai/; implementation/runtime state must still be verified from current repository/runtime before modification.
+- Known canonical design repository evidence: `nevincho/TANGRA-DOCS`, branch `family-guardian-ai`, under `family_guardian_ai/`; implementation/runtime state must still be verified from current repository/runtime before modification.
 - Execution priority: AUTO -> CODEX -> HUMAN BRIDGE fallback.
 
 ## HOROSCOPES
