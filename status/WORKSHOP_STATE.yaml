@@ -1,0 +1,35 @@
+workshop_version: 0.1
+status: BOOTSTRAPPED_FOR_AUTONOMY_TEST
+updated: 2026-08-24
+project_priority:
+  - TANGRA
+  - VK
+  - HOROSCOPES
+active_tests:
+  - TEST-002
+authority:
+  coordination: nevincho/WORKSHOP
+  implementation: target repository or runtime evidence
+roles:
+  scout_planner: configured
+  worker: configured
+  reviewer: configured
+  codex_gate: configured
+controller:
+  hourly_schedule: external_automation
+  status: ACTIVE_OUTSIDE_REPOSITORY
+reporting:
+  cadence_hours: [8, 12, 24]
+protected:
+  vk_core: true
+  vk_canonical_personality: true
+  vk_approved_memory_promotion: true
+  tangra_autonomous_implementation_default: false
+connections:
+  tangra_repo: nevincho/TANGRA-DOCS
+  vk_design_repo: nevincho/TANGRA-DOCS
+  vk_ui_repo: nevincho/LIVE
+  horoscopes_target: NOT_VERIFIED
+notes:
+  - Do not infer runtime access from this file.
+  - Read current task/review/checkpoint evidence before acting.
