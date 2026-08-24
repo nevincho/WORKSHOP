@@ -1,5 +1,5 @@
 workshop_version: 0.1
-status: EXECUTION_ROUTES_PARTIALLY_VERIFIED
+status: REPOSITORY_UNBLOCKS_VALIDATED
 updated: 2026-08-25
 active_project_priority:
   - VK
@@ -12,16 +12,18 @@ hold_projects:
     runtime_actions_allowed: false
 active_tests: []
 ready_tasks:
-  TASK-033:
+  TASK-014:
     project: HOROSCOPES / MYSTICARIUM
-    state: READY_FOR_WORKER
-    scout_evidence: evidence/TASK-033/SCOUT.md
-    objective: bootstrap minimal repository-side deterministic test harness without implementing TASK-014 or deploying to Pi4
-  TASK-034:
+    state: READY_FOR_CODEX_REVIEW
+    scout_evidence: evidence/TASK-014/SCOUT.md
+    codex_gate: evidence/TASK-014/CODEX_GATE.md
+    objective: implement versioned normalization/seed deterministic core after human Codex approval
+  TASK-007:
     project: VK
-    state: READY_FOR_WORKER
-    scout_evidence: evidence/TASK-034/SCOUT.md
-    objective: establish repository-side test/checkpoint/rollback foundation using mocks/fixtures without live Windows runtime integration
+    state: READY_FOR_CODEX_REVIEW
+    scout_evidence: evidence/TASK-007/SCOUT.md
+    codex_gate: evidence/TASK-007/CODEX_GATE.md
+    objective: implement shared non-Core Home Node/device abstraction after human Codex approval
 completed_tests:
   TEST-002:
     verdict: PASS
@@ -44,34 +46,41 @@ completed_tasks:
     verdict: PASS
     evidence: evidence/TASK-021/VK_REPOSITORY_AUDIT.md
     review: review/TASK-021.md
+  TASK-033:
+    verdict: PASS
+    evidence: evidence/TASK-033/WORKER.md
+    review: review/TASK-033.md
+  TASK-022:
+    verdict: PASS
+    evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md
+    review: review/TASK-022.md
+  TASK-034:
+    verdict: PASS
+    evidence: evidence/TASK-034/WORKER.md
+    review: review/TASK-034.md
 blocked_tasks:
   TASK-005:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
     blocker: blockers/TASK-003-EXECUTION-ROUTES.md
-  TASK-014:
-    reason: DETERMINISTIC_TEST_ROUTE_NOT_VERIFIED
-    prerequisite: TASK-022
-  TASK-022:
+  TASK-015:
     project: HOROSCOPES / MYSTICARIUM
-    reason: WAITING_FOR_TASK_033_PASS
-    prerequisite: TASK-033
-    evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md
-    blocker: blockers/TASK-022-MYSTICARIUM-TEST-ROUTE.md
-  TASK-007:
+    reason: WAITING_FOR_TASK_014_PASS
+    prerequisite: TASK-014
+  TASK-028:
     project: VK
-    reason: WAITING_FOR_TASK_034_PASS
-    prerequisite: TASK-034
+    reason: WAITING_FOR_TASK_007_PASS
+    prerequisite: TASK-007
   TASK-032:
     project: VK
     reason: DOWNSTREAM_DEPENDENCIES_NOT_SATISFIED
-    depends_on: TASK-021 PASS plus canonical node/registry prerequisites
+    depends_on: TASK-007/TASK-028 canonical prerequisites
 coordination_blockers:
   duplicate_task_ids:
     state: OPEN
     note: Duplicate numeric IDs remain in backlog for TASK-023 through TASK-027 across VK and Mysticarium. Do not route evidence/reviews by ambiguous numeric ID until canonical unique identities are assigned.
   stale_state_index:
     state: RECONCILED_2026-08-25
-    note: TASK-033 and TASK-034 are explicitly registered as READY_FOR_WORKER. Newer canonical handoffs outrank this summary index if divergence occurs.
+    note: TASK-033/TASK-022/TASK-034 PASS are recorded; TASK-014 and TASK-007 are human-gated READY_FOR_CODEX_REVIEW.
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -108,8 +117,8 @@ connections:
   horoscopes_repo_read: VERIFIED
   horoscopes_runtime: HUMAN_CONFIRMED_PI4_SSH_VIA_CODEX; LIVE_VALIDATION_HUMAN_GATED
 notes:
-  - Do not infer live runtime validation from repository access or human-confirmed route metadata.
-  - TANGRA/Pi5 is offline and excluded from autonomous work until explicit human reactivation.
-  - TASK-033 and TASK-034 are the current Worker entry points.
-  - Worker must consume READY_FOR_WORKER handoffs directly and must not let stale summary state suppress newer canonical routing.
-  - Codex execution and real runtime integration remain human-gated.
+  - TANGRA/Pi5 remains excluded from autonomous work.
+  - TASK-033 and TASK-034 repository-side foundations passed with exact-blob provenance checks and isolated tests.
+  - TASK-022 test-route verification passed; this does not imply TASK-014 implementation.
+  - TASK-014 and TASK-007 now require explicit Vlad approval before any Codex execution.
+  - No live Windows/Pi4 validation was performed in this controller run.
