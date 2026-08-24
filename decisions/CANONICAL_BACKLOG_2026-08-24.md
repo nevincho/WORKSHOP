@@ -14,11 +14,14 @@ Existing task files are retained as historical/planning evidence unless explicit
 - TASK-004 — PASS / reviewed.
 - TASK-013 — PASS / reviewed.
 - TASK-021 — PASS / reviewed.
+- TASK-033 — PASS / reviewed; minimal Mysticarium repository-side harness established.
+- TASK-022 — PASS / reviewed; exact-blob repository-to-executor test route verified.
+- TASK-034 — PASS / reviewed; VK repository-side mock test/checkpoint foundation established.
 
 ## Mysticarium canonical chain
-1. TASK-033 — Mysticarium Test Harness Bootstrap — READY. Build the missing minimal repository-side deterministic test harness/execution route. No Codex auto-execution; no Pi4 deployment.
-2. TASK-022 — Mysticarium Test Route Verification — BLOCKED on TASK-033 PASS. Re-run verification against the newly established harness/route.
-3. TASK-014 — Deterministic Engine — BLOCKED on TASK-022 PASS.
+1. TASK-033 — Mysticarium Test Harness Bootstrap — PASS.
+2. TASK-022 — Mysticarium Test Route Verification — PASS.
+3. TASK-014 — Deterministic Engine — READY_FOR_CODEX_REVIEW. Scout and minimal human-gated Codex handoff are prepared. Do not invoke Codex without Vlad approval.
 4. TASK-015 — Djalma Pipeline — BLOCKED on TASK-014 PASS.
 5. TASK-016 — Morrigan Pipeline — BLOCKED on TASK-015 PASS.
 6. TASK-017 — Selene Pipeline — BLOCKED on TASK-016 PASS.
@@ -34,9 +37,9 @@ The later duplicate planning series TASK-023 through TASK-027 for reader/session
 ## VK canonical chain
 Verified foundation: TASK-021 PASS.
 
-1. TASK-034 — VK Repository Test / Checkpoint Foundation — READY. Establish the missing bounded repository-side test/checkpoint/rollback route using mocks/fixtures only; no live Windows deployment and no Codex auto-execution.
-2. TASK-007 — Home Node Layer — BLOCKED on TASK-034 PASS and review that the route is sufficient.
-3. TASK-028 — Device Registry — BLOCKED on node-layer/interface prerequisite.
+1. TASK-034 — VK Repository Test / Checkpoint Foundation — PASS.
+2. TASK-007 — Home Node Layer — READY_FOR_CODEX_REVIEW. Scout and minimal human-gated Codex handoff are prepared. Do not invoke Codex without Vlad approval.
+3. TASK-028 — Device Registry — BLOCKED on TASK-007 PASS.
 4. TASK-032 — Capability Discovery — BLOCKED on required node/registry prerequisite and verified test route.
 5. TASK-029 — Capability Health Model — BLOCKED on capability discovery/registry contract.
 6. TASK-010 — Home Network Discovery — BLOCKED on shared node/registry foundation.
@@ -56,4 +59,6 @@ Repository-side implementation may proceed when the selected task is explicitly 
 Codex execution is HUMAN-GATED. Agents and controller MUST NOT invoke Codex automatically. Codex Gate may only prepare a minimal handoff and mark a task READY_FOR_CODEX_REVIEW for Vlad when agent-only completion is technically insufficient.
 
 ## Controller behavior
-Process existing canonical READY tasks in priority order. TASK-033 and TASK-034 are explicitly authorized unblock tasks and MUST be preferred over repeating blocker audits. After a task receives independent PASS, immediately recompute dependencies and continue with the next eligible non-duplicate task in the SAME controller run when safe. Stop only on a real blocker, human gate, protected/destructive operation, unavailable simulation/repository validation route, or no eligible work. Do not create additional task IDs merely to restate a known blocker.
+Process existing canonical READY tasks in priority order. After a task receives independent PASS, immediately recompute dependencies and continue with the next eligible non-duplicate task in the SAME controller run when safe. Stop only on a real blocker, human gate, protected/destructive operation, unavailable simulation/repository validation route, or no eligible work. Do not create additional task IDs merely to restate a known blocker.
+
+Current human gates: TASK-014 and TASK-007 require explicit Vlad approval before Codex execution.
