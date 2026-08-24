@@ -1,6 +1,6 @@
-# TASK-022 — VK Capability Discovery Layer
+# TASK-023 — VK Capability Discovery Layer
 
-TASK_ID: TASK-022
+TASK_ID: TASK-023
 PROJECT: VK
 PRIORITY: HIGH
 STATUS: BLOCKED
@@ -15,3 +15,5 @@ BOUNDARY:
 - preserve existing interfaces and rollback.
 
 VALIDATION: deterministic capability schema/tests using mocks/fixtures where real host access is unavailable; independent review.
+
+COORDINATION NOTE: Renumbered from duplicate TASK-022 to TASK-023 on 2026-08-24 to eliminate cross-project task identity collision. The Mysticarium test-route task retains TASK-022.
