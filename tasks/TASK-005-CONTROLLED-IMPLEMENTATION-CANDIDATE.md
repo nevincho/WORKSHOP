@@ -2,36 +2,22 @@
 
 STATUS: BLOCKED
 PRIORITY: MEDIUM
-DEPENDS_ON: TASK-004 PASS
+DEPENDS_ON: TASK-004 PASS — SATISFIED
 TYPE: PREPARATION / NO IMPLEMENTATION UNTIL UNBLOCKED
 
 ## Objective
 Select the smallest justified real implementation task from a project whose execution and validation route has been VERIFIED by TASK-003 and exercised successfully by TASK-004.
 
-## Selection rules
-- Prefer lowest-risk project/component with complete prerequisites and measurable acceptance criteria.
-- Do not choose protected TANGRA production components or protected VK Core/canonical personality/approved-memory scope.
-- Prefer Horoscopes or non-protected VK runtime/tooling if their route is verified.
-- TANGRA remains monitor/audit/report unless explicitly authorized.
-- Codex use requires Codex Gate and minimal verified handoff package.
+## Current blocker
+TASK-004 PASS verified only repository read routes. It did not establish any route suitable for controlled implementation plus runtime validation:
+- TANGRA implementation is policy-forbidden by default and Pi5 runtime route is NOT VERIFIED.
+- VK Windows runtime execution/validation route is NOT VERIFIED.
+- Horoscopes target repository/Pi4 SSH route is NOT VERIFIED.
 
-## Required outputs before implementation
-- candidate task rationale;
-- verified current state;
-- affected/protected components;
-- exact change;
-- acceptance criteria;
-- validation method;
-- pre-change checkpoint;
-- rollback method;
-- Codex decision.
+Therefore the second unblock condition — at least one route suitable for controlled implementation — is NOT SATISFIED. Candidate selection now would be speculative and would violate the task objective.
 
-## Required outputs
-- `evidence/TASK-005/CANDIDATE.md`
-- `review/TASK-005.md`
-
-## Unblock condition
-TASK-004 independent review is PASS and at least one route is suitable for controlled implementation.
+## Smallest unblock
+Establish and independently validate one authorized non-destructive execution route suitable for implementation/checkpoint/test/rollback, preferably VK non-Core Windows runtime or Horoscopes Pi4/SSH.
 
 ## Completion meaning
-PASS means a first real implementation task has been safely selected and fully prepared. It does not authorize protected/destructive changes.
+No implementation candidate may be selected until that execution route exists.
