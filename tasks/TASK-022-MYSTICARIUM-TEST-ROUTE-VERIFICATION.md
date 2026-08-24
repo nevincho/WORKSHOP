@@ -3,7 +3,7 @@
 TASK_ID: TASK-022
 PROJECT: HOROSCOPES / MYSTICARIUM
 PRIORITY: HIGH
-STATUS: READY
+STATUS: BLOCKED
 DEPENDS_ON: TASK-013 PASS
 TYPE: REPOSITORY-ONLY / NON-DESTRUCTIVE PREREQUISITE
 OBJECTIVE: Resolve the specific validation blocker preventing TASK-014 by proving the smallest executable deterministic-test route for the existing Mysticarium repository prototype.
@@ -39,6 +39,12 @@ An executable repository-only validation route for TASK-014 is demonstrated with
 
 BLOCKED CONDITION:
 The exact missing execution capability/harness is identified and evidenced; do not mark TASK-014 READY until resolved.
+
+CURRENT BLOCKER:
+No verified provenance-preserving route exists from the authoritative `agent/mysticarium` repository revision into an isolated executor, and the inspected target path has no committed deterministic test harness/runner command. Evidence: `evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md`; blocker record: `blockers/TASK-022-MYSTICARIUM-TEST-ROUTE.md`.
+
+SMALLEST UNBLOCK:
+Establish a bounded repository CI or isolated checkout/materialization route tied to the exact branch/commit and a minimal committed deterministic test harness/command, then rerun TASK-022 and route the result to independent review.
 
 UNBLOCK ACTION ON PASS:
 Update TASK-014 from BLOCKED to READY, preserving all existing boundaries and Codex Gate policy.
