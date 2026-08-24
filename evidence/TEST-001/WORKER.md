@@ -2,28 +2,38 @@
 
 ROLE: WORKER
 TASK: TEST-001
-RESULT: EXECUTED — REPOSITORY-ONLY DIAGNOSTIC
+RESULT: COMPLETE — REPOSITORY-ONLY DIAGNOSTIC
+RETRY_DATE: 2026-08-24
 
 ## Inputs read
 - `README.md`
+- `agents/WORKER.md`
 - `policies/AUTONOMY_POLICY.md`
 - `policies/CODEX_BUDGET_POLICY.md`
 - `policies/VALIDATION_POLICY.md`
+- `schemas/QUEUE_PROTOCOL.md`
 - `tasks/TEST-001-PIPELINE.md`
+- `evidence/TEST-001/SCOUT.md`
+- `review/TEST-001.md`
 
-Scout evidence at `evidence/TEST-001/SCOUT.md`: NOT VERIFIED — path was not present/readable when Worker checked the evidence directory.
+## Retry resolution
+The earlier Worker artifact recorded Scout evidence as NOT VERIFIED because `evidence/TEST-001/SCOUT.md` was absent at that time. On retry, the Scout artifact is present and readable. The Worker prerequisite to read Scout evidence if present is therefore now satisfied.
 
 ## Worker verification
 - WORKSHOP repository root is readable.
-- `policies/` is readable and the three mandatory policy files required for this dry run were read.
-- `tasks/` is readable and `tasks/TEST-001-PIPELINE.md` was read.
-- `status/`, `review/`, and `agents/` paths were readable during queue inspection.
+- Mandatory Worker role definition is readable.
+- Required policies and queue protocol are readable.
+- `tasks/TEST-001-PIPELINE.md` is readable.
+- Scout evidence is present and readable.
 - The task explicitly forbids target-project modification and Codex use.
 - No target-project repository/runtime operation was performed by Worker.
 - No Codex operation was performed by Worker.
 
 ## Validation
-The Worker objective was limited to verifying readability of required WORKSHOP paths/policies and persisting Worker evidence. Required policy/task reads succeeded. Missing Scout evidence is recorded as NOT VERIFIED rather than inferred.
+The stated Worker objective is to verify required WORKSHOP paths/policies are readable and persist Worker findings. That objective is satisfied by direct repository reads and this persisted evidence artifact.
 
 ## Boundary
-Absence of target-project changes by other roles/processes is NOT VERIFIED by Worker; Reviewer must independently assess repository evidence required by the task acceptance criteria.
+The current independent review remains `NOT VERIFIED` because acceptance criteria 1, 3 and 4 require pipeline-wide negative evidence not fully observable from repository state alone. That is a validation-methodology limitation outside the Worker execution objective. Worker does not override Reviewer state and does not claim end-to-end TEST-001 PASS.
+
+WORKER ROLE OUTPUT: COMPLETE.
+BLOCKER: NONE for Worker stage.
