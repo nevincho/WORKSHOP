@@ -1,5 +1,5 @@
 workshop_version: 0.1
-status: DAYTIME_PACKAGE_READY
+status: HUMAN_CODEX_GATES
 updated: 2026-08-25
 active_project_priority:
   - VK
@@ -24,16 +24,6 @@ ready_tasks:
     scout_evidence: evidence/TASK-007/SCOUT.md
     codex_gate: evidence/TASK-007/CODEX_GATE.md
     objective: implement shared non-Core Home Node/device abstraction after human Codex approval
-  TASK-035: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: knowledge fragment schema and fixtures}
-  TASK-036: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: presentation metadata contract and tests}
-  TASK-037: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: ephemeral session TTL contract and cleanup simulation}
-  TASK-038: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: temporary media lifecycle contract and cleanup simulation}
-  TASK-039: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: four-reader fixture corpus}
-  TASK-040: {project: VK, state: READY_FOR_WORKER, objective: shared sensor/event envelope and provenance contract}
-  TASK-041: {project: VK, state: READY_FOR_WORKER, objective: device registry contract and fixtures}
-  TASK-042: {project: VK, state: READY_FOR_WORKER, objective: capability discovery fixture corpus}
-  TASK-043: {project: VK, state: READY_FOR_WORKER, objective: network discovery fixture corpus}
-  TASK-044: {project: VK, state: READY_FOR_WORKER, objective: backup integrity manifest and restore simulation}
 completed_tests:
   TEST-002:
     verdict: PASS
@@ -47,6 +37,16 @@ completed_tasks:
   TASK-033: {verdict: PASS, evidence: evidence/TASK-033/WORKER.md, review: review/TASK-033.md}
   TASK-022: {verdict: PASS, evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md, review: review/TASK-022.md}
   TASK-034: {verdict: PASS, evidence: evidence/TASK-034/WORKER.md, review: review/TASK-034.md}
+  TASK-035: {verdict: PASS, evidence: evidence/TASK-035/WORKER.md, review: review/TASK-035.md}
+  TASK-036: {verdict: PASS, evidence: evidence/TASK-036/RUN.md, review: review/TASK-036.md}
+  TASK-037: {verdict: PASS, evidence: evidence/TASK-037/RUN.md, review: review/TASK-037.md}
+  TASK-038: {verdict: PASS, evidence: evidence/TASK-038/RUN.md, review: review/TASK-038.md}
+  TASK-039: {verdict: PASS, evidence: evidence/TASK-039/RUN.md, review: review/TASK-039.md}
+  TASK-040: {verdict: PASS, evidence: evidence/TASK-040/RUN.md, review: review/TASK-040.md}
+  TASK-041: {verdict: PASS, evidence: evidence/TASK-041/RUN.md, review: review/TASK-041.md}
+  TASK-042: {verdict: PASS, evidence: evidence/TASK-042/RUN.md, review: review/TASK-042.md}
+  TASK-043: {verdict: PASS, evidence: evidence/TASK-043/RUN.md, review: review/TASK-043.md}
+  TASK-044: {verdict: PASS, evidence: evidence/TASK-044/RUN.md, review: review/TASK-044.md}
 blocked_tasks:
   TASK-005:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
@@ -60,7 +60,7 @@ coordination_blockers:
     note: Duplicate numeric IDs remain in historical backlog for TASK-023 through TASK-027; do not route new evidence by those ambiguous IDs.
   stale_state_index:
     state: RECONCILED_2026-08-25
-    note: Daytime package TASK-035 through TASK-044 explicitly queued as READY_FOR_WORKER.
+    note: Independent daytime package TASK-035 through TASK-044 completed and reviewed; only task-specific Human Codex Gates remain ready.
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -72,7 +72,7 @@ roles:
 controller:
   hourly_schedule: external_automation
   status: ACTIVE_OUTSIDE_REPOSITORY
-  rule: process independent READY_FOR_WORKER tasks even when other chains are at Human Codex Gates
+  rule: process independent READY_FOR_WORKER tasks before stopping at Human Codex Gates
 reporting:
   cadence_hours: [8, 12, 24]
 protected:
@@ -99,5 +99,5 @@ connections:
   horoscopes_runtime: HUMAN_CONFIRMED_PI4_SSH_VIA_CODEX; LIVE_VALIDATION_HUMAN_GATED
 notes:
   - TANGRA/Pi5 remains excluded from autonomous work.
-  - TASK-014 and TASK-007 remain Human Codex Gates and must not block TASK-035 through TASK-044.
-  - TASK-035 through TASK-044 are repository/simulation preparation only; no live Windows/Pi4 validation is authorized.
+  - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed.
+  - TASK-014 and TASK-007 are the remaining Human Codex Gates and require separate explicit Vlad approval before Codex execution.
