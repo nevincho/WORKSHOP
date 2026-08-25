@@ -1,6 +1,6 @@
 # TASK-046 — ESP32 Minimal Wi-Fi Toolchain Diagnostic
 
-STATUS: WAITING_FOR_TASK_045_PASS
+STATUS: READY_FOR_CODEX_REVIEW
 PROJECT: ESP32 MICROBLOG / AGENT 32
 TYPE: environment validation
 DEPENDS_ON: TASK-045 PASS
@@ -22,6 +22,9 @@ Re-run the minimal Wi-Fi compile diagnostic that previously reproduced the Ardui
 
 ## Acceptance
 PASS if compile completes successfully OR produces a concrete reproducible environment/toolchain error sufficient to classify the blocker. Hanging/ambiguous execution without bounded evidence is not PASS.
+
+## Current gate
+TASK-045 prerequisite is PASS / REVIEWED. Repository preparation is complete, but actual compile execution requires the authoritative Windows host. No autonomous Windows-local execution route is currently verified in WORKSHOP. A minimal Codex execution handoff is prepared under `evidence/TASK-046/CODEX_GATE.md`; execution remains HUMAN-GATED and Codex has not been invoked.
 
 ## Next
 TASK-047 only after TASK-046 demonstrates that testing the exact v0.7 source is technically meaningful.
