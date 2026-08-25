@@ -26,10 +26,12 @@ ready_tasks:
     scout_evidence: evidence/TASK-010/SCOUT.md
     codex_gate: evidence/TASK-010/CODEX_GATE.md
     objective: bounded authorized home-network discovery/status integration and controlled validation
-  TASK-045:
+  TASK-046:
     project: ESP32 MICROBLOG / AGENT 32
-    state: READY_FOR_WORKER
-    objective: repository/state preparation only; no local PC access, compile, flash or device action unless a verified Codex/local execution route is explicitly authorized
+    state: READY_FOR_CODEX_REVIEW
+    scout_evidence: evidence/TASK-046/SCOUT.md
+    codex_gate: evidence/TASK-046/CODEX_GATE.md
+    objective: compile-only minimal Wi-Fi toolchain diagnostic on the authoritative Windows host after task-specific human approval
 completed_tests:
   TEST-002:
     verdict: PASS
@@ -57,6 +59,7 @@ completed_tasks:
   TASK-042: {verdict: PASS, evidence: evidence/TASK-042/RUN.md, review: review/TASK-042.md}
   TASK-043: {verdict: PASS, evidence: evidence/TASK-043/RUN.md, review: review/TASK-043.md}
   TASK-044: {verdict: PASS, evidence: evidence/TASK-044/RUN.md, review: review/TASK-044.md}
+  TASK-045: {verdict: PASS, evidence: evidence/TASK-045/WORKER.md, review: review/TASK-045.md, runtime: NOT_VERIFIED}
 blocked_tasks:
   TASK-005:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
@@ -66,7 +69,6 @@ blocked_tasks:
   TASK-030: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-008}
   TASK-031: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-030}
   TASK-009: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-031}
-  TASK-046: {project: ESP32 MICROBLOG, reason: WAITING_FOR_TASK_045_PASS, prerequisite: TASK-045}
   TASK-047: {project: ESP32 MICROBLOG, reason: WAITING_FOR_TASK_046_PASS, prerequisite: TASK-046}
 coordination_blockers:
   duplicate_task_ids:
@@ -126,4 +128,6 @@ notes:
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed.
   - TASK-007, TASK-028, TASK-032 and TASK-029 are repository-side PASS; live Windows/device behavior remains NOT VERIFIED.
   - TASK-014 and TASK-010 are Human Codex/runtime gates and require separate explicit Vlad approval before Codex execution.
+  - TASK-045 is PASS/reviewed for repository reconciliation only; current ESP32 Windows toolchain/build/runtime remains NOT VERIFIED.
+  - TASK-046 is READY_FOR_CODEX_REVIEW for a compile-only Windows diagnostic; no source edits or flash are authorized and Codex execution remains task-specific HUMAN-GATED.
   - ESP32 MicroBlog is an independent commercial funding track. Repository-safe preparation is active; local Windows/toolchain/device execution remains Codex-or-human gated.
