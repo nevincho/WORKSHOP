@@ -3,7 +3,7 @@
 TASK_ID: TASK-014
 PROJECT: HOROSCOPES / MYSTICARIUM
 PRIORITY: HIGH
-STATUS: BLOCKED
+STATUS: PASS / REVIEWED
 DEPENDS_ON: TASK-013 PASS
 TYPE: REPOSITORY-ONLY IMPLEMENTATION
 OBJECTIVE: Implement or complete the smallest deterministic divination-engine layer justified by TASK-013 evidence, preserving the canonical rule that identical relevant input/context must not reroll fate.
@@ -23,3 +23,9 @@ REQUIRED:
 - rollback reference.
 
 CODEX: only if Codex Gate proves non-trivial precision coding is required.
+
+IMPLEMENTATION_COMMIT: `f4adb7c43ccf0aaa710bb1b03069ad5c5aff38cf`
+ROLLBACK: `beebf9884e450cc29f4d0bbae3d89a27a0fc41c0`
+EVIDENCE: `evidence/TASK-014/RUN.md`
+REVIEW: `review/TASK-014.md`
+RUNTIME_VALIDATION: NOT VERIFIED
