@@ -266,3 +266,13 @@ Rules:
 - evidence/review files created_or_updated: evidence/TASK-014/CODEX_GATE.md; evidence/TASK-007/CODEX_GATE.md; logs/CONTROLLER_RUNS.md
 - exit_reason: repository-side preparation is current; both remaining eligible implementation tasks are stopped at task-specific Human Codex Gates and controller is prohibited from automatic Codex execution
 - next_state: await explicit Vlad approval for TASK-014 and/or TASK-007; no automatic Codex execution
+
+## 2026-08-25 WORKSHOP Controller run 11 — STARTED
+- scheduled_time_uk: manual/automation invocation
+- observed_start_time_utc: 2026-08-25 08:32 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 11 / STARTED
+- queue_snapshot: READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); no independent READY_FOR_WORKER tasks; downstream canonical chains dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_started: mandatory policies/backlog/state read; current Codex Gate packages and authoritative target baselines inspected
+- Codex_used: no
