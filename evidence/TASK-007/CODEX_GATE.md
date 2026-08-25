@@ -15,12 +15,18 @@ Task: TASK-007 — VK Home Node and Device Layer.
 Authoritative target:
 - repo: `nevincho/LIVE`
 - branch: `Legacy`
-- baseline head: `3ad02e4ddd298088d3bb51bf0b3cf7ecacf3217b`
+- baseline head: `078a534b6f0241507349f182626d308f2c0ff284`
 - path: `family_guardian_ai/SOURCE_V09/`
+
+Baseline refresh note:
+- previous prepared baseline was `3ad02e4ddd298088d3bb51bf0b3cf7ecacf3217b`;
+- branch is now 13 commits ahead due to completed/reviewed independent preparation TASK-040 through TASK-044;
+- no TASK-007 implementation was detected in that advancement; the current head is the required Codex starting point.
 
 Verified prerequisites:
 - TASK-021 PASS;
 - TASK-034 PASS;
+- TASK-040 through TASK-044 independent preparation PASS/reviewed;
 - repository-side mock test/checkpoint route exists and is provenance-validated.
 
 Objective:
