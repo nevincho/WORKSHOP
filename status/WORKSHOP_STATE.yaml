@@ -1,9 +1,11 @@
 workshop_version: 0.1
-status: HUMAN_CODEX_GATES
+status: HUMAN_CODEX_GATES_WITH_SAFE_REPO_WORK
 updated: 2026-08-25
 active_project_priority:
   - VK
   - HOROSCOPES
+active_independent_tracks:
+  - ESP32_MICROBLOG
 hold_projects:
   TANGRA:
     state: OFFLINE_HOLD
@@ -24,6 +26,10 @@ ready_tasks:
     scout_evidence: evidence/TASK-010/SCOUT.md
     codex_gate: evidence/TASK-010/CODEX_GATE.md
     objective: bounded authorized home-network discovery/status integration and controlled validation
+  TASK-045:
+    project: ESP32 MICROBLOG / AGENT 32
+    state: READY_FOR_WORKER
+    objective: repository/state preparation only; no local PC access, compile, flash or device action unless a verified Codex/local execution route is explicitly authorized
 completed_tests:
   TEST-002:
     verdict: PASS
@@ -60,6 +66,8 @@ blocked_tasks:
   TASK-030: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-008}
   TASK-031: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-030}
   TASK-009: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-031}
+  TASK-046: {project: ESP32 MICROBLOG, reason: WAITING_FOR_TASK_045_PASS, prerequisite: TASK-045}
+  TASK-047: {project: ESP32 MICROBLOG, reason: WAITING_FOR_TASK_046_PASS, prerequisite: TASK-046}
 coordination_blockers:
   duplicate_task_ids:
     state: OPEN
@@ -78,7 +86,14 @@ roles:
 controller:
   hourly_schedule: external_automation
   status: ACTIVE_OUTSIDE_REPOSITORY
-  rule: process independent READY_FOR_WORKER tasks before stopping at Human Codex Gates
+  rule: process all independent repository-safe READY_FOR_WORKER tasks before stopping at Human/Codex gates
+  execution_boundary:
+    repository_read_write_review: autonomous_when_task_authorized
+    lan_scan: CODEX_OR_HUMAN_EXECUTION_ONLY
+    windows_local_runtime: CODEX_OR_HUMAN_EXECUTION_ONLY
+    pi4_runtime_ssh: CODEX_EXECUTION_ONLY
+    physical_device_compile_upload: CODEX_OR_HUMAN_EXECUTION_ONLY
+    note: WORKSHOP repository agents must not claim or attempt capabilities they do not possess; they prepare, audit, code in authorized repositories, test repository artifacts where supported, and hand off runtime work through Codex gates.
 reporting:
   cadence_hours: [8, 12, 24]
 protected:
@@ -103,8 +118,12 @@ connections:
   horoscopes_path: projects/mysticarium/
   horoscopes_repo_read: VERIFIED
   horoscopes_runtime: HUMAN_CONFIRMED_PI4_SSH_VIA_CODEX; LIVE_VALIDATION_HUMAN_GATED
+  esp32_docs_repo: nevincho/nova
+  esp32_docs_ref: esp32-microblog-agent32
+  esp32_runtime: HUMAN_LOCAL_WINDOWS; CODEX_OR_HUMAN_EXECUTION_REQUIRED_FOR_LOCAL_BUILD_OR_FLASH
 notes:
   - TANGRA/Pi5 remains excluded from autonomous work.
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed.
   - TASK-007, TASK-028, TASK-032 and TASK-029 are repository-side PASS; live Windows/device behavior remains NOT VERIFIED.
   - TASK-014 and TASK-010 are Human Codex/runtime gates and require separate explicit Vlad approval before Codex execution.
+  - ESP32 MicroBlog is an independent commercial funding track. Repository-safe preparation is active; local Windows/toolchain/device execution remains Codex-or-human gated.
