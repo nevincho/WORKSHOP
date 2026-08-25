@@ -6,49 +6,47 @@ PROJECT: VK
 
 ## Eligibility
 - TASK-021: PASS.
-- TASK-034: PASS with repository-side mock test route and commit-based checkpoint/rollback convention.
-- TASK-007 may therefore enter implementation review.
+- TASK-034: PASS with repository-side mock test route and checkpoint convention.
+- TASK-040 through TASK-044: PASS/reviewed.
+- TASK-041 now supplies the canonical device registry contract/fixtures.
 
 ## Authoritative target
 - repository: `nevincho/LIVE`
 - branch: `Legacy`
-- current verified head after TASK-034: `3ad02e4ddd298088d3bb51bf0b3cf7ecacf3217b`
+- current verified head: `078a534b6f0241507349f182626d308f2c0ff284`
 - implementation path: `family_guardian_ai/SOURCE_V09/`
 
-## Current repository findings
-The existing `app/` tree includes device-adjacent code such as `camera_adapter.py`, but no shared Home Node / device registry abstraction was verified in the inspected target state.
-
-`camera_adapter.py` is a concrete local camera adapter. It probes OpenCV devices and writes captures under the configured install root. It is not a shared node/device registry or capability/status contract and should not be duplicated or hard-coded into the new abstraction.
+## Reconciliation finding
+The earlier TASK-007 preparation incorrectly included in-memory registry operations. That overlaps TASK-028, while TASK-041 has already completed the registry schema/fixtures. The overlap is now removed.
 
 ## Smallest justified implementation objective
-Introduce the shared non-Core node/device abstraction only, designed so concrete adapters such as camera/IMOU/Echo can attach later without separate memory stacks or protected Core changes.
+TASK-007 is narrowed to the shared non-Core Home Node/device base abstraction and adapter-facing boundary only.
 
 Minimum responsibilities:
-- immutable/stable node/device identity fields;
-- explicit device kind/type and capability set;
-- explicit availability/health/status representation;
-- registry operations for add/update/remove/query using in-memory repository-safe behavior first;
-- adapter-facing contract that does not require live discovery;
-- tests using TASK-034 mock/fixture route.
+- stable identity representation by reusing TASK-041 contract semantics;
+- shared node/device base model/interface;
+- narrow capability/status exposure needed by concrete adapters;
+- adapter-facing boundary without device-specific behavior;
+- repository tests proving compatibility with TASK-041 fixtures and preserving existing camera adapter behavior.
+
+Explicitly excluded:
+- registry service/operations (TASK-028);
+- schema/fixtures already supplied by TASK-041;
+- capability discovery (TASK-032);
+- network discovery (TASK-010);
+- IMOU/Echo integration (TASK-008/TASK-009);
+- live `D:\Store\AI` deployment.
 
 ## Protected boundaries
-- do not modify protected VK Core/personality/canonical memory;
-- do not alter memory promotion/provenance semantics;
-- do not connect to real IMOU/Echo/camera devices in repository tests;
-- do not deploy into `D:\Store\AI`;
-- do not implement TASK-008/009/010/028/029/032 behavior inside TASK-007;
-- preserve existing `camera_adapter.py` behavior unless a minimal interface-only adaptation is later proven necessary.
+- VK Core/personality/canonical memory;
+- memory promotion/provenance semantics;
+- existing validated chat/memory behavior;
+- real device access and local runtime.
 
 ## Checkpoint / rollback
-Pre-change checkpoint for TASK-007 must be exact branch head immediately before implementation; currently `3ad02e4ddd298088d3bb51bf0b3cf7ecacf3217b` if no intervening target commit occurs.
+Pre-change checkpoint is exact LIVE Legacy head immediately before implementation; currently `078a534b6f0241507349f182626d308f2c0ff284`.
 
-Repository-side validation foundation:
-`python -m unittest family_guardian_ai.SOURCE_V09.tests.test_node_device_fixture`
-
-## Acceptance preparation
-Implementation must provide repository diff + unit tests for registry/node semantics. Live device validation is explicitly outside repository PASS and remains required later for device-specific operational claims.
-
-## Why Codex Gate is justified
-TASK-007 defines shared interfaces consumed by multiple downstream adapters and capability-discovery layers. The abstraction boundary must reconcile existing adapter code and future device registry/capability tasks without duplicate stacks. This is architecture-dependent precision implementation, not a mechanical fixture task.
+## Validation route
+Use repository-side tests and TASK-041 contract/fixtures. Do not claim live device/runtime validation.
 
 SCOUT RESULT: READY_FOR_CODEX_GATE
