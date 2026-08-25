@@ -23,10 +23,11 @@ Existing task files are retained as historical/planning evidence unless explicit
 - TASK-028 — PASS / reviewed; bounded in-memory registry implemented and repository-tested.
 - TASK-032 — PASS / reviewed; provider-neutral normalized capability discovery layer implemented and repository-tested; live host probing NOT VERIFIED.
 - TASK-029 — PASS / reviewed; non-Core device capability/health model implemented and repository-tested; live health state NOT VERIFIED.
+- TASK-010 — PASS / reviewed; bounded authorized LAN discovery implemented at LIVE commit `cf911176be543393f1a05e578b4ea30d70f010bb`, controlled `192.168.0.0/24` execution evidenced, known inventory compared; IMOU protocol capability/stream ingestion remains NOT VERIFIED.
 
 ## Current Human Codex / Runtime Gates
 - TASK-014 — Mysticarium Deterministic Engine — READY_FOR_CODEX_REVIEW; handoff baseline `beebf9884e450cc29f4d0bbae3d89a27a0fc41c0`; requires task-specific Vlad approval before Codex execution.
-- TASK-010 — VK Home Network Device Discovery — READY_FOR_CODEX_REVIEW; repository preparation complete, but final acceptance requires explicit authorized LAN scope, controlled runtime/network execution, checkpoint/rollback and inventory comparison. Automation must not scan LAN or invoke Codex automatically.
+- TASK-008 — VK IMOU Camera Integration — dependency TASK-010 is now PASS. Re-gating is required against current LIVE state and direct IMOU RTSP evidence. Any live camera integration/credentialed stream test remains HUMAN-GATED and must not be executed automatically.
 
 ## TASK-007 / TASK-028 / TASK-041 ownership lock
 This boundary is canonical and overrides older broader wording:
@@ -43,9 +44,9 @@ TASK-035 through TASK-044 are PASS/reviewed repository/simulation preparation. T
 TASK-014 -> TASK-015 -> TASK-016 -> TASK-017 -> TASK-018 -> TASK-019 -> TASK-020 -> TASK-012. TASK-011 remains runtime-dependent. Later duplicate planning series TASK-023 through TASK-027 is SUPERSEDED where it overlaps TASK-016 through TASK-020.
 
 ## VK implementation chain
-TASK-007 PASS -> TASK-028 PASS -> TASK-032 PASS -> TASK-029 PASS -> TASK-010 READY_FOR_CODEX_REVIEW -> TASK-008 -> TASK-030 -> TASK-031 -> TASK-009.
+TASK-007 PASS -> TASK-028 PASS -> TASK-032 PASS -> TASK-029 PASS -> TASK-010 PASS -> TASK-008 -> TASK-030 -> TASK-031 -> TASK-009.
 
-TASK-008 and its downstream chain remain blocked until TASK-010 receives actual controlled validation and Reviewer PASS.
+TASK-008 may now be re-gated. Its operational PASS still requires live camera connection/read evidence against the actual device; repository-only evidence is insufficient.
 
 ## Global implementation gate
 Repository-side preparation may proceed when a task is explicitly READY and has bounded repository/simulation validation plus independent review. Live runtime deployment remains human-gated.
