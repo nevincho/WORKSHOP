@@ -227,3 +227,18 @@ Rules:
 - selected_task_ids: TASK-035 through TASK-044 in canonical priority order
 - actions_started: mandatory policy/backlog read complete; independent daytime package discovered; task/state/evidence/review inspection initiated
 - Codex_used: no
+
+## 2026-08-25 WORKSHOP Controller run 9 — COMPLETED / HUMAN GATES
+- observed_completion_time_utc: 2026-08-25 06:48 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 9 / COMPLETED_WITH_HUMAN_GATES
+- queue_snapshot: TASK-035 through TASK-044 PASS/reviewed; READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); downstream implementation chains remain dependency-blocked
+- selected_task_ids: TASK-035; TASK-036; TASK-037; TASK-038; TASK-039; TASK-040; TASK-041; TASK-042; TASK-043; TASK-044; TASK-014; TASK-007
+- actions_completed: accepted existing PASS reviews for TASK-035 through TASK-038; independently reviewed TASK-039 PASS; implemented/repository-validated/reviewed TASK-040 shared event envelope PASS; TASK-041 device registry contract/fixtures PASS; TASK-042 capability fixture corpus PASS; TASK-043 sanitized network-discovery fixtures PASS; TASK-044 backup/integrity manifest plus restore simulation PASS; reconciled canonical backlog and WORKSHOP_STATE
+- actions_failed_or_blocked: TASK-014 and TASK-007 remain at explicit human Codex gates; TASK-015 and TASK-028+ remain dependency-blocked; no live Windows/Pi4/Core/LAN/runtime validation performed or claimed
+- Codex_used: no
+- target_repository_commits_created_or_used: TANGRA-DOCS TASK-039 ab9dfda34df30e1f044485dc5dd229b8c452a1ae, beebf9884e450cc29f4d0bbae3d89a27a0fc41c0; LIVE TASK-040 0a3409135e386b0f74ffeee00d65c8c4c873470f, 66cedbb65c015c18d2afe12b86379f4eff0c3b4b, 3d5c5522bbc5318fbc82e538b5e73c2df821dd00; TASK-041 379d455764289454d5f9a61e346f8af9a8b61a0f, 50688ef87db4605c0ddc4b19c18461122579562d, 719dae1420433aec5f648a07582abf65f5a2c639; TASK-042 0fa550c8d5dbc8ff1584b752e85f9066544ba891, 40c92c2877dd863d267db8f04b4777ddd7b27c92; TASK-043 d96e421be1d1dd31fc21966b13761e7f27a4d981, 701f2a73d73b20b4ab8e0de27ba96a1174cc789e; TASK-044 85565e109cb278af6cf3d36f2a34f040c698c79b, 9f721780c8bc45c265168120501a01f9fcbbd2a9, 078a534b6f0241507349f182626d308f2c0ff284
+- workshop_commits_created: a39bcf9d40b275c231a37722003a74a17cc0d87a; 7faf2d23cd28987f1c699f95bf9b6b7a54162e33; acf7f6ac7085eac6001c27ee981913a6c925706b; 88840c040970d2c0dd9d7867562138b1210b2759; 9408a4e6693a6fd3b94b101dab0666a3d858b438; 62eba3a0e122eca29914e3ab1c4ff7e10fffc8d8; 17fa6e9ac4e908f5cfa9d87a561a9c4620b232c5; e9e13730958f73032e510e0e3d8b0078aac1a4a2; 51ff1b12336cb61e668f46db339bd3b175126e99; f04c6393d77974c5d0f4a51d6ee2a7f99fef772c; 7a5b0254c5a470c8a4a69ddc5fab691f8d83c121; 66826c102fc246acdace0c23199ff2ec293ee5fb; 949a493ecf3b8a5040bf23d5f46f411a0ac17fab; this ledger completion commit
+- evidence/review files created_or_updated: review/TASK-039.md; evidence/TASK-040/RUN.md; review/TASK-040.md; evidence/TASK-041/RUN.md; review/TASK-041.md; evidence/TASK-042/RUN.md; review/TASK-042.md; evidence/TASK-043/RUN.md; review/TASK-043.md; evidence/TASK-044/RUN.md; review/TASK-044.md; decisions/CANONICAL_BACKLOG_2026-08-24.md; status/WORKSHOP_STATE.yaml
+- exit_reason: all independent canonical repository/simulation work exhausted with Reviewer PASS; remaining eligible implementation work is stopped at task-specific Human Codex Gates
+- next_state: await explicit Vlad approval for TASK-014 and/or TASK-007 Codex execution; each approval is separate; no automatic Codex execution
