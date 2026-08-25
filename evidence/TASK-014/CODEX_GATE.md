@@ -15,7 +15,12 @@ Task: TASK-014 — Mysticarium Deterministic Divination Engine.
 Authoritative target:
 - repo: `nevincho/TANGRA-DOCS`
 - branch: `agent/mysticarium`
-- baseline head: `31a60a8da267bbda7d8a2ffd6cd63f40cd65b5e9`
+- baseline head: `beebf9884e450cc29f4d0bbae3d89a27a0fc41c0`
+
+Baseline refresh note:
+- previous prepared baseline was `31a60a8da267bbda7d8a2ffd6cd63f40cd65b5e9`;
+- branch is now 12 commits ahead due to completed/reviewed independent preparation TASK-035 through TASK-039;
+- no TASK-014 implementation was detected in that advancement; the current head is the required Codex starting point.
 
 Objective:
 Implement the smallest pure deterministic core satisfying `projects/mysticarium/ARCHITECTURE.md`: explicit versioned normalization + deterministic seed + stable bounded selection helper. Preserve identical relevant input/context => identical result.
@@ -24,6 +29,7 @@ Required preparation already complete:
 - TASK-013 PASS;
 - TASK-033 harness PASS;
 - TASK-022 provenance-preserving test route PASS;
+- TASK-035 through TASK-039 independent preparation PASS/reviewed;
 - reproducible test command: `node --test projects/mysticarium/tests/deterministic-harness.test.mjs`.
 
 Affected components:
