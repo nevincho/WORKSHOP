@@ -107,3 +107,17 @@ Rules:
 - selected_task_ids: TASK-014; TASK-007
 - actions_started: mandatory autonomy/Codex/backlog/state read; current human-gated Codex packages inspected
 - Codex_used: no
+
+## 2026-08-25 WORKSHOP Controller run 4 — BLOCKED / HUMAN GATES
+- observed_completion_time_uk: 2026-08-25 01:36 BST
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 4 / BLOCKED_ON_HUMAN_GATES
+- queue_snapshot: READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); no other canonical repository-side READY task exists; downstream Mysticarium and VK chains remain dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_completed: read mandatory autonomy/Codex/backlog/state; verified TASK-014 and TASK-007 Codex Gate packages remain current and explicitly require task-specific Vlad approval; confirmed no independent canonical repository-side task is eligible without violating dependencies or duplicate-task rules
+- actions_failed_or_blocked: TASK-014 implementation blocked on explicit Vlad approval for Codex; TASK-007 implementation blocked on explicit Vlad approval for Codex; TASK-015 and TASK-028+ remain dependency-blocked; no live runtime validation attempted
+- Codex_used: no
+- repository_commits_created: 1a6f0dad3d8dbec3495cee3ebdb67726d5cf2eb4; this ledger completion commit
+- evidence/review files created_or_updated: none; existing TASK-014 and TASK-007 Scout/Codex Gate packages remain authoritative
+- exit_reason: explicit human Codex gates reached and no independent canonical work remains eligible
+- next_state: await Vlad approval for TASK-014 and/or TASK-007 Codex execution; otherwise remain blocked without generating duplicate work
