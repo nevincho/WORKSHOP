@@ -17,29 +17,39 @@ Existing task files are retained as historical/planning evidence unless explicit
 - TASK-033 — PASS / reviewed; Mysticarium repository-side harness established.
 - TASK-022 — PASS / reviewed; provenance-preserving repository-to-executor test route verified.
 - TASK-034 — PASS / reviewed; VK repository-side mock test/checkpoint foundation established.
+- TASK-035 — PASS / reviewed; Mysticarium knowledge-fragment schema/fixtures established.
+- TASK-036 — PASS / reviewed; Mysticarium presentation metadata contract established.
+- TASK-037 — PASS / reviewed; Mysticarium ephemeral-session TTL contract established.
+- TASK-038 — PASS / reviewed; Mysticarium temporary-media lifecycle contract established.
+- TASK-039 — PASS / reviewed; Mysticarium four-reader fixture corpus established.
+- TASK-040 — PASS / reviewed; VK shared sensor/event envelope + provenance contract established.
+- TASK-041 — PASS / reviewed; VK device-registry contract/fixtures established for later TASK-028.
+- TASK-042 — PASS / reviewed; VK capability-discovery fixture corpus established for later TASK-032.
+- TASK-043 — PASS / reviewed; VK sanitized network-discovery fixture corpus established for later TASK-010.
+- TASK-044 — PASS / reviewed; VK backup/integrity manifest + restore simulation established; live Core backup NOT VERIFIED.
 
 ## Current Human Codex Gates
 - TASK-014 — Mysticarium Deterministic Engine — READY_FOR_CODEX_REVIEW; do not invoke Codex without Vlad approval.
 - TASK-007 — VK Home Node Layer — READY_FOR_CODEX_REVIEW; do not invoke Codex without Vlad approval.
 
-Downstream implementation chains remain blocked on these gates, but independent daytime preparation below MUST continue.
+Downstream implementation chains remain blocked on these gates.
 
-## Independent Daytime Package — READY_FOR_WORKER
-These tasks are intentionally independent of TASK-014/TASK-007 implementation and are safe repository/simulation preparation. Controller should process them instead of repeatedly rechecking the Human Codex Gates.
+## Independent Daytime Package — COMPLETE / REVIEWED
+These tasks were intentionally independent of TASK-014/TASK-007 implementation and were completed with bounded repository/simulation validation. Their PASS does not establish live runtime behavior.
 
 ### Mysticarium
-1. TASK-035 — Knowledge Fragment Schema — READY_FOR_WORKER.
-2. TASK-036 — Presentation Metadata Contract — READY_FOR_WORKER.
-3. TASK-037 — Ephemeral Session TTL Contract — READY_FOR_WORKER.
-4. TASK-038 — Temporary Media Lifecycle Contract — READY_FOR_WORKER.
-5. TASK-039 — Reader Fixture Corpus — READY_FOR_WORKER.
+1. TASK-035 — Knowledge Fragment Schema — PASS / reviewed.
+2. TASK-036 — Presentation Metadata Contract — PASS / reviewed.
+3. TASK-037 — Ephemeral Session TTL Contract — PASS / reviewed.
+4. TASK-038 — Temporary Media Lifecycle Contract — PASS / reviewed.
+5. TASK-039 — Reader Fixture Corpus — PASS / reviewed.
 
 ### VK
-6. TASK-040 — Sensor/Event Envelope + Provenance Contract — READY_FOR_WORKER.
-7. TASK-041 — Device Registry Contract + Fixtures — READY_FOR_WORKER; supports later TASK-028, does not implement it.
-8. TASK-042 — Capability Discovery Fixture Corpus — READY_FOR_WORKER; supports later TASK-032, does not implement host probing.
-9. TASK-043 — Network Discovery Fixture Corpus — READY_FOR_WORKER; supports later TASK-010, no live LAN scanning.
-10. TASK-044 — Backup / Integrity Manifest + Restore Simulation — READY_FOR_WORKER; no live Core backup.
+6. TASK-040 — Sensor/Event Envelope + Provenance Contract — PASS / reviewed.
+7. TASK-041 — Device Registry Contract + Fixtures — PASS / reviewed; supports later TASK-028, does not implement it.
+8. TASK-042 — Capability Discovery Fixture Corpus — PASS / reviewed; supports later TASK-032, does not implement host probing.
+9. TASK-043 — Network Discovery Fixture Corpus — PASS / reviewed; supports later TASK-010, no live LAN scanning.
+10. TASK-044 — Backup / Integrity Manifest + Restore Simulation — PASS / reviewed; no live Core backup was performed.
 
 ## Mysticarium implementation chain
 TASK-014 -> TASK-015 -> TASK-016 -> TASK-017 -> TASK-018 -> TASK-019 -> TASK-020 -> TASK-012. TASK-011 remains runtime-dependent. Later duplicate planning series TASK-023 through TASK-027 is SUPERSEDED where it overlaps TASK-016 through TASK-020.
