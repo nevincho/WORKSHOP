@@ -1,5 +1,5 @@
 workshop_version: 0.1
-status: REPOSITORY_UNBLOCKS_VALIDATED
+status: DAYTIME_PACKAGE_READY
 updated: 2026-08-25
 active_project_priority:
   - VK
@@ -24,63 +24,43 @@ ready_tasks:
     scout_evidence: evidence/TASK-007/SCOUT.md
     codex_gate: evidence/TASK-007/CODEX_GATE.md
     objective: implement shared non-Core Home Node/device abstraction after human Codex approval
+  TASK-035: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: knowledge fragment schema and fixtures}
+  TASK-036: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: presentation metadata contract and tests}
+  TASK-037: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: ephemeral session TTL contract and cleanup simulation}
+  TASK-038: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: temporary media lifecycle contract and cleanup simulation}
+  TASK-039: {project: MYSTICARIUM, state: READY_FOR_WORKER, objective: four-reader fixture corpus}
+  TASK-040: {project: VK, state: READY_FOR_WORKER, objective: shared sensor/event envelope and provenance contract}
+  TASK-041: {project: VK, state: READY_FOR_WORKER, objective: device registry contract and fixtures}
+  TASK-042: {project: VK, state: READY_FOR_WORKER, objective: capability discovery fixture corpus}
+  TASK-043: {project: VK, state: READY_FOR_WORKER, objective: network discovery fixture corpus}
+  TASK-044: {project: VK, state: READY_FOR_WORKER, objective: backup integrity manifest and restore simulation}
 completed_tests:
   TEST-002:
     verdict: PASS
     evidence: evidence/TEST-002/INVENTORY.md
     review: review/TEST-002.md
 completed_tasks:
-  TASK-003:
-    verdict: PASS
-    evidence: evidence/TASK-003/CAPABILITY_MATRIX.md
-    review: review/TASK-003.md
-  TASK-004:
-    verdict: PASS
-    evidence: evidence/TASK-004/ROUTING_VALIDATION.md
-    review: review/TASK-004.md
-  TASK-013:
-    verdict: PASS
-    evidence: evidence/TASK-013/MYSTICARIUM_REPO_AUDIT.md
-    review: review/TASK-013.md
-  TASK-021:
-    verdict: PASS
-    evidence: evidence/TASK-021/VK_REPOSITORY_AUDIT.md
-    review: review/TASK-021.md
-  TASK-033:
-    verdict: PASS
-    evidence: evidence/TASK-033/WORKER.md
-    review: review/TASK-033.md
-  TASK-022:
-    verdict: PASS
-    evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md
-    review: review/TASK-022.md
-  TASK-034:
-    verdict: PASS
-    evidence: evidence/TASK-034/WORKER.md
-    review: review/TASK-034.md
+  TASK-003: {verdict: PASS, evidence: evidence/TASK-003/CAPABILITY_MATRIX.md, review: review/TASK-003.md}
+  TASK-004: {verdict: PASS, evidence: evidence/TASK-004/ROUTING_VALIDATION.md, review: review/TASK-004.md}
+  TASK-013: {verdict: PASS, evidence: evidence/TASK-013/MYSTICARIUM_REPO_AUDIT.md, review: review/TASK-013.md}
+  TASK-021: {verdict: PASS, evidence: evidence/TASK-021/VK_REPOSITORY_AUDIT.md, review: review/TASK-021.md}
+  TASK-033: {verdict: PASS, evidence: evidence/TASK-033/WORKER.md, review: review/TASK-033.md}
+  TASK-022: {verdict: PASS, evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md, review: review/TASK-022.md}
+  TASK-034: {verdict: PASS, evidence: evidence/TASK-034/WORKER.md, review: review/TASK-034.md}
 blocked_tasks:
   TASK-005:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
     blocker: blockers/TASK-003-EXECUTION-ROUTES.md
-  TASK-015:
-    project: HOROSCOPES / MYSTICARIUM
-    reason: WAITING_FOR_TASK_014_PASS
-    prerequisite: TASK-014
-  TASK-028:
-    project: VK
-    reason: WAITING_FOR_TASK_007_PASS
-    prerequisite: TASK-007
-  TASK-032:
-    project: VK
-    reason: DOWNSTREAM_DEPENDENCIES_NOT_SATISFIED
-    depends_on: TASK-007/TASK-028 canonical prerequisites
+  TASK-015: {project: MYSTICARIUM, reason: WAITING_FOR_TASK_014_PASS, prerequisite: TASK-014}
+  TASK-028: {project: VK, reason: WAITING_FOR_TASK_007_PASS, prerequisite: TASK-007}
+  TASK-032: {project: VK, reason: DOWNSTREAM_DEPENDENCIES_NOT_SATISFIED, depends_on: TASK-007/TASK-028}
 coordination_blockers:
   duplicate_task_ids:
     state: OPEN
-    note: Duplicate numeric IDs remain in backlog for TASK-023 through TASK-027 across VK and Mysticarium. Do not route evidence/reviews by ambiguous numeric ID until canonical unique identities are assigned.
+    note: Duplicate numeric IDs remain in historical backlog for TASK-023 through TASK-027; do not route new evidence by those ambiguous IDs.
   stale_state_index:
     state: RECONCILED_2026-08-25
-    note: TASK-033/TASK-022/TASK-034 PASS are recorded; TASK-014 and TASK-007 are human-gated READY_FOR_CODEX_REVIEW.
+    note: Daytime package TASK-035 through TASK-044 explicitly queued as READY_FOR_WORKER.
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -92,6 +72,7 @@ roles:
 controller:
   hourly_schedule: external_automation
   status: ACTIVE_OUTSIDE_REPOSITORY
+  rule: process independent READY_FOR_WORKER tasks even when other chains are at Human Codex Gates
 reporting:
   cadence_hours: [8, 12, 24]
 protected:
@@ -118,7 +99,5 @@ connections:
   horoscopes_runtime: HUMAN_CONFIRMED_PI4_SSH_VIA_CODEX; LIVE_VALIDATION_HUMAN_GATED
 notes:
   - TANGRA/Pi5 remains excluded from autonomous work.
-  - TASK-033 and TASK-034 repository-side foundations passed with exact-blob provenance checks and isolated tests.
-  - TASK-022 test-route verification passed; this does not imply TASK-014 implementation.
-  - TASK-014 and TASK-007 now require explicit Vlad approval before any Codex execution.
-  - No live Windows/Pi4 validation was performed in this controller run.
+  - TASK-014 and TASK-007 remain Human Codex Gates and must not block TASK-035 through TASK-044.
+  - TASK-035 through TASK-044 are repository/simulation preparation only; no live Windows/Pi4 validation is authorized.
