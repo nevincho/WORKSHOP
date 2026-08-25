@@ -242,3 +242,13 @@ Rules:
 - evidence/review files created_or_updated: review/TASK-039.md; evidence/TASK-040/RUN.md; review/TASK-040.md; evidence/TASK-041/RUN.md; review/TASK-041.md; evidence/TASK-042/RUN.md; review/TASK-042.md; evidence/TASK-043/RUN.md; review/TASK-043.md; evidence/TASK-044/RUN.md; review/TASK-044.md; decisions/CANONICAL_BACKLOG_2026-08-24.md; status/WORKSHOP_STATE.yaml
 - exit_reason: all independent canonical repository/simulation work exhausted with Reviewer PASS; remaining eligible implementation work is stopped at task-specific Human Codex Gates
 - next_state: await explicit Vlad approval for TASK-014 and/or TASK-007 Codex execution; each approval is separate; no automatic Codex execution
+
+## 2026-08-25 WORKSHOP Controller run 10 — STARTED
+- scheduled_time_uk: automation/manual invocation
+- observed_start_time_utc: 2026-08-25 07:28 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 10 / STARTED
+- queue_snapshot: READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); no independent READY_FOR_WORKER tasks; downstream canonical chains dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_started: mandatory policies/backlog/state read; authoritative target heads checked; stale Codex handoff baselines detected and repository-side refresh initiated
+- Codex_used: no
