@@ -2,6 +2,11 @@
 
 STATUS: REGISTERED / NOT ACTIVE
 
+## Project role
+This is an independent commercial software product line. It is not an architectural dependency of TANGRA, VK, Horoscopes/Mysticarium, or any other project.
+
+Primary business purpose: reach a sale-ready software product that can generate external revenue and help fund the user's other project lines. Any financial linkage is business-level only; there is no technical coupling.
+
 ## Authority
 - Project documentation repository: `nevincho/nova`
 - Documentation branch: `esp32-microblog-agent32`
@@ -23,6 +28,9 @@ Keep the product small and local-first. Do not introduce SaaS, fleet management,
 ## Release target
 Primary release target should be Offline RC first. Connected Mode and Web Search are optional and must not block an otherwise stable offline release.
 
+## Commercial objective
+Engineering decisions should optimize for shortest safe path to a supportable, sale-ready software package rather than feature expansion. Release quality, installer reliability, reproducibility, support burden, and customer acceptance are higher priority than optional capability growth.
+
 ## Protected / preserve
 - Preserve known working v0.6.1 baseline.
 - Do not modify v0.7 merely because of the previously isolated toolchain stall.
@@ -35,5 +43,5 @@ Primary release target should be Offline RC first. Connected Mode and Web Search
 - Codex may be used only through Codex Gate for justified implementation/debugging work; do not spend Codex capacity on inventory or documentation-only work.
 - Physical hardware validation is a human/live gate unless an explicitly verified automated hardware route exists.
 
-## Current priority
-NOT SET. Registration in WORKSHOP does not change the existing active project priority order.
+## Scheduling / priority semantics
+This project is managed as a separate commercial/funding track. It must not inherit dependencies from VK/Horoscopes/TANGRA and must not block their technical pipelines. Registration in WORKSHOP does not change the existing technical project priority order unless an explicit commercial-priority decision is recorded.
