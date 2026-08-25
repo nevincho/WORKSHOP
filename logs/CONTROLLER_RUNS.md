@@ -169,3 +169,13 @@ Rules:
 - evidence/review files created_or_updated: none
 - exit_reason: explicit human Codex gates remain and controller is prohibited from invoking Codex automatically
 - next_state: await explicit Vlad approval for TASK-014 and/or TASK-007; otherwise remain blocked without duplicate work
+
+## 2026-08-25 WORKSHOP Controller run 7 — STARTED
+- scheduled_time_uk: automation/manual invocation
+- observed_start_time_utc: 2026-08-25 04:28 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 7 / STARTED
+- queue_snapshot: canonical backlog shows READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); downstream canonical chains dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_started: mandatory AUTONOMY_POLICY, CODEX_BUDGET_POLICY and canonical backlog read complete; current task/state/evidence/review inspection initiated
+- Codex_used: no
