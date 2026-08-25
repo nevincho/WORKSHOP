@@ -1,5 +1,5 @@
 workshop_version: 0.1
-status: HUMAN_CODEX_GATES_WITH_SAFE_REPO_WORK
+status: HUMAN_GATES_ONLY
 updated: 2026-08-25
 active_project_priority:
   - VK
@@ -14,12 +14,6 @@ hold_projects:
     runtime_actions_allowed: false
 active_tests: []
 ready_tasks:
-  TASK-014:
-    project: HOROSCOPES / MYSTICARIUM
-    state: READY_FOR_CODEX_REVIEW
-    scout_evidence: evidence/TASK-014/SCOUT.md
-    codex_gate: evidence/TASK-014/CODEX_GATE.md
-    objective: implement versioned normalization/seed deterministic core after human Codex approval
   TASK-008:
     project: VK
     state: READY_FOR_CODEX_REVIEW
@@ -43,6 +37,13 @@ completed_tasks:
   TASK-007: {verdict: PASS, evidence: evidence/TASK-007/RUN.md, review: review/TASK-007.md, target_commit: c4f524cac0054e400a1fb2cb6049697f8971fba3, runtime: NOT_VERIFIED}
   TASK-010: {verdict: PASS, evidence: evidence/TASK-010/CODEX_RUN.md, review: review/TASK-010.md, target_commit: cf911176be543393f1a05e578b4ea30d70f010bb, runtime: CONTROLLED_LAN_EVIDENCED, imou_protocol_capability: NOT_VERIFIED}
   TASK-013: {verdict: PASS, evidence: evidence/TASK-013/MYSTICARIUM_REPO_AUDIT.md, review: review/TASK-013.md}
+  TASK-014: {verdict: PASS, evidence: evidence/TASK-014/RUN.md, review: review/TASK-014.md, target_commit: f4adb7c43ccf0aaa710bb1b03069ad5c5aff38cf, runtime: NOT_VERIFIED}
+  TASK-015: {verdict: PASS, evidence: evidence/TASK-015/RUN.md, review: review/TASK-015.md, target_commit: 4792b406d5ba1e440a8709c3aeca60aefa00a403, runtime: NOT_VERIFIED}
+  TASK-016: {verdict: PASS, evidence: evidence/TASK-016/RUN.md, review: review/TASK-016.md, target_commit: 16acfbc9788981067c12bb1c0ec1e41ce27e982b, runtime: NOT_VERIFIED}
+  TASK-017: {verdict: PASS, evidence: evidence/TASK-017/RUN.md, review: review/TASK-017.md, target_commit: c5a62fbbde73d085b56a2338f08883b907a98018, runtime: NOT_VERIFIED}
+  TASK-018: {verdict: PASS, evidence: evidence/TASK-018/RUN.md, review: review/TASK-018.md, target_commit: 39f84019d161231e30efc3f3c92bb1a59104013e, runtime: NOT_VERIFIED}
+  TASK-019: {verdict: PASS, evidence: evidence/TASK-019/RUN.md, review: review/TASK-019.md, target_commit: 4f5a63dc6680783d010bd92d730220470d0b0d2a, runtime: NOT_VERIFIED}
+  TASK-020: {verdict: PASS, evidence: evidence/TASK-020/RUN.md, review: review/TASK-020.md, target_commit: c088aa064f468e4b6c2ce074bba3a91647330b4f, runtime: NOT_VERIFIED}
   TASK-021: {verdict: PASS, evidence: evidence/TASK-021/VK_REPOSITORY_AUDIT.md, review: review/TASK-021.md}
   TASK-022: {verdict: PASS, evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md, review: review/TASK-022.md}
   TASK-028: {verdict: PASS, evidence: evidence/TASK-028/WORKER.md, review: review/TASK-028.md, runtime: NOT_VERIFIED}
@@ -65,11 +66,22 @@ blocked_tasks:
   TASK-005:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
     blocker: blockers/TASK-003-EXECUTION-ROUTES.md
-  TASK-015: {project: MYSTICARIUM, reason: WAITING_FOR_TASK_014_PASS, prerequisite: TASK-014}
+  TASK-011:
+    project: HOROSCOPES / MYSTICARIUM
+    reason: PI4_READONLY_RUNTIME_ROUTE_REQUIRED
+    runtime: NOT_VERIFIED
+  TASK-012:
+    project: HOROSCOPES / MYSTICARIUM
+    reason: WAITING_FOR_TASK_011_PASS_AND_PI4_RUNTIME_ROUTE
+    prerequisite: TASK-011
   TASK-030: {project: VK, reason: WAITING_FOR_TASK_008_PASS, prerequisite: TASK-008}
   TASK-031: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-030}
   TASK-009: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-031}
   TASK-047: {project: ESP32 MICROBLOG, reason: WAITING_FOR_TASK_046_PASS, prerequisite: TASK-046}
+  TASK-058:
+    project: AI_COMPANY / WORKSHOP
+    reason: HUMAN_LOCAL_ACTION_REQUIRED
+    runtime: NOT_VERIFIED
 coordination_blockers:
   duplicate_task_ids:
     state: OPEN
@@ -126,9 +138,12 @@ connections:
 notes:
   - TANGRA/Pi5 remains excluded from autonomous work.
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed.
+  - TASK-014 through TASK-020 are repository-side PASS/reviewed on `agent/mysticarium`; Pi4/runtime behavior remains NOT VERIFIED.
+  - TASK-011 remains blocked on direct Pi4 read-only/runtime evidence; therefore TASK-012 cannot claim end-to-end runtime completion.
   - TASK-007, TASK-028, TASK-032 and TASK-029 are repository-side PASS; live Windows/device behavior remains NOT VERIFIED except the bounded TASK-010 LAN execution evidence.
   - TASK-010 is PASS/reviewed for bounded authorized LAN discovery; IMOU protocol capabilities and stream ingestion remain NOT VERIFIED.
-  - TASK-014, TASK-008 and TASK-046 are Human Codex/runtime gates and require separate explicit Vlad approval before Codex execution.
+  - TASK-008 and TASK-046 are Human Codex/runtime gates and require separate explicit Vlad approval before Codex execution.
   - TASK-045 is PASS/reviewed for repository reconciliation only; current ESP32 Windows toolchain/build/runtime remains NOT VERIFIED.
   - TASK-046 is READY_FOR_CODEX_REVIEW for a compile-only Windows diagnostic; no source edits or flash are authorized and Codex execution remains task-specific HUMAN-GATED.
+  - TASK-058 requires direct human-local AI_COMPANY repository inspection and is not autonomously executable from repository evidence alone.
   - ESP32 MicroBlog is an independent commercial funding track. Repository-safe preparation is active; local Windows/toolchain/device execution remains Codex-or-human gated.
