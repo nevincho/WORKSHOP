@@ -2,32 +2,60 @@
 
 ROLE: WORKSHOP CODEX GATE
 TASK_ID: TASK-008
-DECISION: HOLD / CODEX NOT AUTHORIZED
-DATE: 2026-08-24
+DECISION: READY_FOR_CODEX_REVIEW
+DATE: 2026-08-25
+CODEX_USED: no
 
 ## Gate basis
-- `policies/CODEX_BUDGET_POLICY.md` is mandatory.
-- TASK-008 is marked `BLOCKED`, `CODEX_CANDIDATE`, and `GATE_REQUIRED`.
-- TASK-008 explicitly depends on TASK-007 PASS.
-- TASK-007 is currently `BLOCKED`; no TASK-007 PASS evidence is present in the inspected WORKSHOP state.
-- `status/WORKSHOP_STATE.yaml` records the VK runtime as `NOT_VERIFIED` and TASK-005 blocked by `NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE`.
-- `blockers/TASK-003-EXECUTION-ROUTES.md` records the active Windows runtime execution bridge as NOT VERIFIED.
-- Direct IMOU LAN evidence exists for IPC-K7C: host reachability and TCP listeners on 554/80 are verified, but RTSP path/auth/frame retrieval, ONVIF, PTZ/control API, and runtime integration remain NOT VERIFIED.
+TASK-007 and TASK-010 are PASS/reviewed. Direct human evidence verifies authenticated RTSP substream 1 from IMOU Cruiser SE+ `IPC-K7CP-3H1WE`, while credentials remain intentionally outside Git.
 
-## Codex-budget decision
-Codex would be premature. Required prerequisites and inexpensive preparation are incomplete, and implementation/runtime validation cannot currently be executed through a verified route. Sending Codex now would consume scarce capacity on dependency discovery and environment uncertainty that policy explicitly forbids.
+Current `nevincho/LIVE@Legacy` head at preparation: `cf911176be543393f1a05e578b4ea30d70f010bb`.
 
-## Required before re-gating
-1. TASK-007 must PASS or an equivalent shared node/device abstraction must be directly verified.
-2. A controlled non-Core VK Windows execution/test/checkpoint/rollback route must be directly verified.
-3. Current target implementation state must be inspected to confirm no equivalent IMOU/camera adapter already exists.
-4. Exact shared interfaces, affected files/components, validation commands, checkpoint, rollback, protected scope, and explicit non-goals must be assembled into the minimal implementation package.
-5. Camera connection method must be narrowed beyond open TCP ports using direct evidence sufficient for the requested adapter path.
+Current reusable implementation:
+- `family_guardian_ai/SOURCE_V09/app/camera_adapter.py` exists but currently accepts integer local camera indices only.
+- `family_guardian_ai/SOURCE_V09/app/perception_ingress.py` is the common candidate-only perception ingress.
+- shared event-envelope and HomeNode/DeviceRegistry foundations already exist.
 
-## Protected scope
-Do not modify VK Core, canonical personality/memory, approved-memory promotion, or provenance semantics. Do not create a parallel vision/memory architecture.
+## Minimal handoff
+Objective:
+Implement the smallest backward-compatible extension of the existing camera path that can open an explicit RTSP/network stream source, capture/read a real frame from the verified IMOU substream when the camera is available, and emit bounded observation/event metadata through existing ingress/contracts without creating a parallel vision or memory architecture.
+
+Required pre-execution human inputs/gates:
+1. explicit approval for TASK-008 Codex execution;
+2. current authorized camera target remains `192.168.0.154` on the user's LAN;
+3. runtime credential/RTSP URL supplied outside Git and logs with secrets redacted;
+4. Windows execution host and pre-change checkpoint confirmed;
+5. permission for a bounded credentialed RTSP connection/read to that camera only.
+
+Affected components:
+- existing `camera_adapter.py` and its tests;
+- existing perception/event integration only where required for a bounded observation path.
+
+Protected components:
+VK Core, canonical personality/memory, memory promotion/provenance semantics, credentials/secrets, unrelated services/adapters.
+
+Acceptance:
+- existing local integer camera behavior remains compatible;
+- network stream source is supported without hard-coded or committed credentials;
+- no parallel registry/vision/memory subsystem is created;
+- one controlled read from the actual RTSP substream returns a real frame when the camera is available;
+- event/observation metadata uses existing ingress/contracts and does not auto-promote memory;
+- failures are explicit and bounded;
+- repository tests and relevant regression tests PASS;
+- exact target commit, validation commands/results, checkpoint and rollback are recorded;
+- independent Reviewer PASS.
+
+Validation method:
+Repository tests plus controlled Windows-local credentialed RTSP frame/read and ingress/event evidence against the actual device. Repository-only evidence cannot establish operational PASS.
+
+Rollback:
+Restore the pre-change LIVE `Legacy` commit/checkpoint or revert only TASK-008 changes; remove/disable network-stream use without changing existing local-camera behavior.
+
+Non-goals:
+No ONVIF, PTZ, cloud API, continuous background polling, facial recognition, new memory subsystem, Core/personality changes, credential storage, or broad LAN scanning.
 
 ## Outcome
-CODEX HANDOFF: NOT CREATED.
+CODEX HANDOFF: PREPARED.
+STATUS: READY_FOR_CODEX_REVIEW.
 CODEX USAGE: NONE.
-RE-GATE: REQUIRED after prerequisites are evidence-backed.
+Execution requires fresh explicit Vlad approval for TASK-008.
