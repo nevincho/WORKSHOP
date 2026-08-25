@@ -217,3 +217,13 @@ Rules:
 - evidence/review files created_or_updated: none; existing task, Scout and Codex Gate records remain current
 - exit_reason: both eligible canonical tasks are at explicit human Codex gates and no independent canonical work remains eligible
 - next_state: await explicit Vlad approval for TASK-014 and/or TASK-007; otherwise remain blocked without duplicate work
+
+## 2026-08-25 WORKSHOP Controller run 9 — STARTED
+- scheduled_time_uk: manual/automation invocation
+- observed_start_time_utc: 2026-08-25 06:29 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 9 / STARTED
+- queue_snapshot: READY_FOR_WORKER=10 (TASK-035 through TASK-044); READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007)
+- selected_task_ids: TASK-035 through TASK-044 in canonical priority order
+- actions_started: mandatory policy/backlog read complete; independent daytime package discovered; task/state/evidence/review inspection initiated
+- Codex_used: no
