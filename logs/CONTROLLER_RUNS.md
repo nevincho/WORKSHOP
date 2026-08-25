@@ -252,3 +252,17 @@ Rules:
 - selected_task_ids: TASK-014; TASK-007
 - actions_started: mandatory policies/backlog/state read; authoritative target heads checked; stale Codex handoff baselines detected and repository-side refresh initiated
 - Codex_used: no
+
+## 2026-08-25 WORKSHOP Controller run 10 — BLOCKED / HUMAN GATES
+- observed_completion_time_utc: 2026-08-25 07:30 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 10 / BLOCKED_ON_HUMAN_GATES
+- queue_snapshot: READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); no independent canonical READY_FOR_WORKER task exists; downstream Mysticarium and VK implementation chains remain dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_completed: read mandatory autonomy/Codex/backlog policy and current state; inspected both Codex Gate records; checked authoritative target branch heads; detected that independent preparation advanced Mysticarium by 12 commits and LIVE Legacy by 13 commits since the previously prepared handoff baselines; refreshed TASK-014 Codex baseline to beebf9884e450cc29f4d0bbae3d89a27a0fc41c0 and TASK-007 baseline to 078a534b6f0241507349f182626d308f2c0ff284; preserved human-gated status and existing acceptance/protection boundaries
+- actions_failed_or_blocked: TASK-014 implementation requires explicit Vlad approval before Codex execution; TASK-007 implementation requires explicit Vlad approval before Codex execution; downstream TASK-015 and TASK-028+ remain dependency-blocked; no live runtime validation attempted or claimed
+- Codex_used: no
+- repository_commits_created: aea671c31844c4e148fce8889d10d1c124154c5c; 364acb1a2e18d6e27365f1f957d2c4ef97730d22; 2555e7ce3e2ca4520e7a7609bedafa093152f50c; this ledger completion commit
+- evidence/review files created_or_updated: evidence/TASK-014/CODEX_GATE.md; evidence/TASK-007/CODEX_GATE.md; logs/CONTROLLER_RUNS.md
+- exit_reason: repository-side preparation is current; both remaining eligible implementation tasks are stopped at task-specific Human Codex Gates and controller is prohibited from automatic Codex execution
+- next_state: await explicit Vlad approval for TASK-014 and/or TASK-007; no automatic Codex execution
