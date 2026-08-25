@@ -18,13 +18,12 @@ ready_tasks:
     scout_evidence: evidence/TASK-014/SCOUT.md
     codex_gate: evidence/TASK-014/CODEX_GATE.md
     objective: implement versioned normalization/seed deterministic core after human Codex approval
-  TASK-007:
+  TASK-010:
     project: VK
     state: READY_FOR_CODEX_REVIEW
-    scout_evidence: evidence/TASK-007/SCOUT.md
-    codex_gate: evidence/TASK-007/CODEX_GATE.md
-    baseline: 078a534b6f0241507349f182626d308f2c0ff284
-    objective: implement only shared non-Core Home Node/device base abstraction and adapter-facing interface; reuse TASK-041 contract; exclude TASK-028 runtime registry operations
+    scout_evidence: evidence/TASK-010/SCOUT.md
+    codex_gate: evidence/TASK-010/CODEX_GATE.md
+    objective: bounded authorized home-network discovery/status integration and controlled validation
 completed_tests:
   TEST-002:
     verdict: PASS
@@ -33,10 +32,14 @@ completed_tests:
 completed_tasks:
   TASK-003: {verdict: PASS, evidence: evidence/TASK-003/CAPABILITY_MATRIX.md, review: review/TASK-003.md}
   TASK-004: {verdict: PASS, evidence: evidence/TASK-004/ROUTING_VALIDATION.md, review: review/TASK-004.md}
+  TASK-007: {verdict: PASS, evidence: evidence/TASK-007/RUN.md, review: review/TASK-007.md, target_commit: c4f524cac0054e400a1fb2cb6049697f8971fba3, runtime: NOT_VERIFIED}
   TASK-013: {verdict: PASS, evidence: evidence/TASK-013/MYSTICARIUM_REPO_AUDIT.md, review: review/TASK-013.md}
   TASK-021: {verdict: PASS, evidence: evidence/TASK-021/VK_REPOSITORY_AUDIT.md, review: review/TASK-021.md}
-  TASK-033: {verdict: PASS, evidence: evidence/TASK-033/WORKER.md, review: review/TASK-033.md}
   TASK-022: {verdict: PASS, evidence: evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md, review: review/TASK-022.md}
+  TASK-028: {verdict: PASS, evidence: evidence/TASK-028/WORKER.md, review: review/TASK-028.md, runtime: NOT_VERIFIED}
+  TASK-029: {verdict: PASS, evidence: evidence/TASK-029/WORKER.md, review: review/TASK-029.md, runtime: NOT_VERIFIED}
+  TASK-032: {verdict: PASS, evidence: evidence/TASK-032/WORKER.md, review: review/TASK-032.md, runtime: NOT_VERIFIED}
+  TASK-033: {verdict: PASS, evidence: evidence/TASK-033/WORKER.md, review: review/TASK-033.md}
   TASK-034: {verdict: PASS, evidence: evidence/TASK-034/WORKER.md, review: review/TASK-034.md}
   TASK-035: {verdict: PASS, evidence: evidence/TASK-035/WORKER.md, review: review/TASK-035.md}
   TASK-036: {verdict: PASS, evidence: evidence/TASK-036/RUN.md, review: review/TASK-036.md}
@@ -53,12 +56,10 @@ blocked_tasks:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
     blocker: blockers/TASK-003-EXECUTION-ROUTES.md
   TASK-015: {project: MYSTICARIUM, reason: WAITING_FOR_TASK_014_PASS, prerequisite: TASK-014}
-  TASK-028:
-    project: VK
-    reason: WAITING_FOR_TASK_007_PASS
-    depends_on: TASK-007 PASS + TASK-041 PASS
-    ownership: runtime/in-memory registry service operations only; reuse TASK-041 contract and TASK-007 abstraction
-  TASK-032: {project: VK, reason: DOWNSTREAM_DEPENDENCIES_NOT_SATISFIED, depends_on: TASK-007/TASK-028}
+  TASK-008: {project: VK, reason: WAITING_FOR_TASK_010_PASS, prerequisite: TASK-010}
+  TASK-030: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-008}
+  TASK-031: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-030}
+  TASK-009: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-031}
 coordination_blockers:
   duplicate_task_ids:
     state: OPEN
@@ -105,4 +106,5 @@ connections:
 notes:
   - TANGRA/Pi5 remains excluded from autonomous work.
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed.
-  - TASK-014 and reconciled TASK-007 are Human Codex Gates and require separate explicit Vlad approval before Codex execution.
+  - TASK-007, TASK-028, TASK-032 and TASK-029 are repository-side PASS; live Windows/device behavior remains NOT VERIFIED.
+  - TASK-014 and TASK-010 are Human Codex/runtime gates and require separate explicit Vlad approval before Codex execution.
