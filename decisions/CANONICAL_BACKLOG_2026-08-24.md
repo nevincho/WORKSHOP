@@ -4,61 +4,54 @@ STATUS: ACTIVE
 AUTHORITY: VLAD / CONTROL ROOM
 
 ## Purpose
-Prevent duplicate implementation, task-ID collisions, wasted Codex capacity, and deadlock on missing prerequisites while preserving all useful planning/evidence produced on 2026-08-24.
+Prevent duplicate implementation, task-ID collisions, wasted Codex capacity, and deadlock on missing prerequisites while preserving useful planning/evidence.
 
 ## Rule
-Existing task files are retained as historical/planning evidence unless explicitly superseded below. Agents MUST use this decision when selecting work. A task listed as SUPERSEDED must not be implemented or sent to Codex.
+Existing task files are retained as historical/planning evidence unless explicitly superseded. Tasks marked SUPERSEDED must not be implemented or sent to Codex.
 
 ## Verified completed prerequisites
 - TASK-003 — PASS / reviewed.
 - TASK-004 — PASS / reviewed.
 - TASK-013 — PASS / reviewed.
 - TASK-021 — PASS / reviewed.
-- TASK-033 — PASS / reviewed; minimal Mysticarium repository-side harness established.
-- TASK-022 — PASS / reviewed; exact-blob repository-to-executor test route verified.
+- TASK-033 — PASS / reviewed; Mysticarium repository-side harness established.
+- TASK-022 — PASS / reviewed; provenance-preserving repository-to-executor test route verified.
 - TASK-034 — PASS / reviewed; VK repository-side mock test/checkpoint foundation established.
 
-## Mysticarium canonical chain
-1. TASK-033 — Mysticarium Test Harness Bootstrap — PASS.
-2. TASK-022 — Mysticarium Test Route Verification — PASS.
-3. TASK-014 — Deterministic Engine — READY_FOR_CODEX_REVIEW. Scout and minimal human-gated Codex handoff are prepared. Do not invoke Codex without Vlad approval.
-4. TASK-015 — Djalma Pipeline — BLOCKED on TASK-014 PASS.
-5. TASK-016 — Morrigan Pipeline — BLOCKED on TASK-015 PASS.
-6. TASK-017 — Selene Pipeline — BLOCKED on TASK-016 PASS.
-7. TASK-018 — Al-Hakim Pipeline — BLOCKED on TASK-017 PASS.
-8. TASK-019 — Session / Privacy Layer — BLOCKED on TASK-018 PASS.
-9. TASK-020 — Oracle Gateway Scaffold — BLOCKED on TASK-019 PASS.
-10. TASK-012 — End-to-End Chain — FINAL integration/validation candidate after the canonical component chain is complete and runtime prerequisites are satisfied.
-11. TASK-011 — Pi4 Implementation Reconciliation — remains a separate runtime-dependent prerequisite; do not infer Pi4 state from repository-only work.
+## Current Human Codex Gates
+- TASK-014 — Mysticarium Deterministic Engine — READY_FOR_CODEX_REVIEW; do not invoke Codex without Vlad approval.
+- TASK-007 — VK Home Node Layer — READY_FOR_CODEX_REVIEW; do not invoke Codex without Vlad approval.
 
-### Mysticarium superseded duplicates
-The later duplicate planning series TASK-023 through TASK-027 for reader/session work is SUPERSEDED by canonical TASK-016 through TASK-020 where objectives overlap. Preserve files/evidence for provenance; do not execute duplicate implementation.
+Downstream implementation chains remain blocked on these gates, but independent daytime preparation below MUST continue.
 
-## VK canonical chain
-Verified foundation: TASK-021 PASS.
+## Independent Daytime Package — READY_FOR_WORKER
+These tasks are intentionally independent of TASK-014/TASK-007 implementation and are safe repository/simulation preparation. Controller should process them instead of repeatedly rechecking the Human Codex Gates.
 
-1. TASK-034 — VK Repository Test / Checkpoint Foundation — PASS.
-2. TASK-007 — Home Node Layer — READY_FOR_CODEX_REVIEW. Scout and minimal human-gated Codex handoff are prepared. Do not invoke Codex without Vlad approval.
-3. TASK-028 — Device Registry — BLOCKED on TASK-007 PASS.
-4. TASK-032 — Capability Discovery — BLOCKED on required node/registry prerequisite and verified test route.
-5. TASK-029 — Capability Health Model — BLOCKED on capability discovery/registry contract.
-6. TASK-010 — Home Network Discovery — BLOCKED on shared node/registry foundation.
-7. TASK-008 — IMOU Integration — BLOCKED on shared node/device layer; direct LAN evidence already exists under evidence/TASK-008/ but stream/auth/frame remain NOT VERIFIED.
-8. TASK-030 — IMOU Adapter Tests — BLOCKED on TASK-008 implementation and executable repository validation route.
-9. TASK-031 — Echo Voice Contract — BLOCKED on shared node/device/audio capability foundation.
-10. TASK-009 — Echo 5 Voice/Audio Integration — BLOCKED on TASK-031 and verified device/runtime capability.
-11. VK backup/integrity/rollback work remains required before live deployment; any duplicate-ID legacy task for this objective must be renumbered before activation.
+### Mysticarium
+1. TASK-035 — Knowledge Fragment Schema — READY_FOR_WORKER.
+2. TASK-036 — Presentation Metadata Contract — READY_FOR_WORKER.
+3. TASK-037 — Ephemeral Session TTL Contract — READY_FOR_WORKER.
+4. TASK-038 — Temporary Media Lifecycle Contract — READY_FOR_WORKER.
+5. TASK-039 — Reader Fixture Corpus — READY_FOR_WORKER.
 
-### VK duplicate preparation tasks
-Later repo-prep tasks that duplicate TASK-007 through TASK-010 objectives are planning/support artifacts, not parallel implementation authority. Agents must reconcile useful acceptance criteria into the canonical task before execution rather than implement both.
+### VK
+6. TASK-040 — Sensor/Event Envelope + Provenance Contract — READY_FOR_WORKER.
+7. TASK-041 — Device Registry Contract + Fixtures — READY_FOR_WORKER; supports later TASK-028, does not implement it.
+8. TASK-042 — Capability Discovery Fixture Corpus — READY_FOR_WORKER; supports later TASK-032, does not implement host probing.
+9. TASK-043 — Network Discovery Fixture Corpus — READY_FOR_WORKER; supports later TASK-010, no live LAN scanning.
+10. TASK-044 — Backup / Integrity Manifest + Restore Simulation — READY_FOR_WORKER; no live Core backup.
+
+## Mysticarium implementation chain
+TASK-014 -> TASK-015 -> TASK-016 -> TASK-017 -> TASK-018 -> TASK-019 -> TASK-020 -> TASK-012. TASK-011 remains runtime-dependent. Later duplicate planning series TASK-023 through TASK-027 is SUPERSEDED where it overlaps TASK-016 through TASK-020.
+
+## VK implementation chain
+TASK-007 -> TASK-028 -> TASK-032 -> TASK-029 -> TASK-010 -> TASK-008 -> TASK-030 -> TASK-031 -> TASK-009. Later repo-prep duplicates are support artifacts only; do not implement duplicate objectives.
 
 ## Global implementation gate
-Repository-side implementation may proceed when the selected task is explicitly READY and has a bounded simulated/repository validation method plus independent review. Live runtime deployment remains human-gated and is not required for daytime repository preparation.
+Repository-side preparation may proceed when a task is explicitly READY and has bounded repository/simulation validation plus independent review. Live runtime deployment remains human-gated.
 
 ## Codex rule
-Codex execution is HUMAN-GATED. Agents and controller MUST NOT invoke Codex automatically. Codex Gate may only prepare a minimal handoff and mark a task READY_FOR_CODEX_REVIEW for Vlad when agent-only completion is technically insufficient.
+Codex execution is HUMAN-GATED. Agents/controller MUST NOT invoke Codex automatically. Codex Gate may prepare a minimal handoff and mark READY_FOR_CODEX_REVIEW only when agent-only completion is technically insufficient.
 
 ## Controller behavior
-Process existing canonical READY tasks in priority order. After a task receives independent PASS, immediately recompute dependencies and continue with the next eligible non-duplicate task in the SAME controller run when safe. Stop only on a real blocker, human gate, protected/destructive operation, unavailable simulation/repository validation route, or no eligible work. Do not create additional task IDs merely to restate a known blocker.
-
-Current human gates: TASK-014 and TASK-007 require explicit Vlad approval before Codex execution.
+Process all independent READY tasks before declaring HUMAN_GATE_BLOCKED. After independent PASS, recompute dependencies and continue in the same run when safe. A Human Codex Gate on one chain MUST NOT block independent READY tasks on another chain or preparation layer. Do not create new task IDs merely to restate blockers.
