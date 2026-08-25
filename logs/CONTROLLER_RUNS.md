@@ -276,3 +276,17 @@ Rules:
 - selected_task_ids: TASK-014; TASK-007
 - actions_started: mandatory policies/backlog/state read; current Codex Gate packages and authoritative target baselines inspected
 - Codex_used: no
+
+## 2026-08-25 WORKSHOP Controller run 11 — BLOCKED / HUMAN GATES
+- observed_completion_time_utc: 2026-08-25 08:33 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 11 / BLOCKED_ON_HUMAN_GATES
+- queue_snapshot: READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); no independent canonical READY_FOR_WORKER task exists; downstream Mysticarium and VK implementation chains remain dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_completed: read mandatory autonomy/Codex/backlog policy and current state; inspected current Codex Gate packages; independently confirmed authoritative target heads still match prepared baselines: Mysticarium beebf9884e450cc29f4d0bbae3d89a27a0fc41c0 and LIVE Legacy 078a534b6f0241507349f182626d308f2c0ff284; no intervening target implementation detected; no duplicate/new tasks created
+- actions_failed_or_blocked: TASK-014 requires explicit Vlad approval before Codex execution; TASK-007 requires explicit Vlad approval before Codex execution; downstream TASK-015 and TASK-028+ remain dependency-blocked; no live runtime validation attempted or claimed
+- Codex_used: no
+- repository_commits_created: 3d4a88cae39f1fe277729ed2b508a737fc66db90; this ledger completion commit
+- evidence/review files created_or_updated: logs/CONTROLLER_RUNS.md only
+- exit_reason: both eligible canonical tasks are stopped at task-specific Human Codex Gates and controller is prohibited from automatic Codex execution
+- next_state: await explicit Vlad approval for TASK-014 and/or TASK-007; no automatic Codex execution
