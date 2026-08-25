@@ -97,3 +97,13 @@ Rules:
 - evidence/review files created_or_updated: evidence/TASK-033/WORKER.md; evidence/TASK-033/CODEX_GATE.md; review/TASK-033.md; evidence/TASK-022/MYSTICARIUM_TEST_ROUTE.md; review/TASK-022.md; evidence/TASK-014/SCOUT.md; evidence/TASK-014/CODEX_GATE.md; evidence/TASK-034/WORKER.md; evidence/TASK-034/CODEX_GATE.md; review/TASK-034.md; evidence/TASK-007/SCOUT.md; evidence/TASK-007/CODEX_GATE.md
 - exit_reason: repository-side work exhausted safely; next eligible implementation steps require explicit Vlad approval for task-specific Codex execution
 - next_state: await human decision on TASK-014 and/or TASK-007 Codex approval; independent downstream tasks remain dependency-blocked
+
+## 2026-08-25 WORKSHOP Controller run 4 — STARTED
+- scheduled_time_uk: manual invocation
+- observed_start_time_uk: 2026-08-25 01:35 BST
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 4 / STARTED
+- queue_snapshot: READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); downstream canonical tasks remain dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_started: mandatory autonomy/Codex/backlog/state read; current human-gated Codex packages inspected
+- Codex_used: no
