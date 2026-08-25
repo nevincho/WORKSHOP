@@ -19,16 +19,20 @@ Existing task files are retained as historical/planning evidence unless explicit
 - TASK-034 — PASS / reviewed; VK repository-side mock test/checkpoint foundation established.
 - TASK-035 through TASK-039 — PASS / reviewed; Mysticarium independent preparation complete.
 - TASK-040 through TASK-044 — PASS / reviewed; VK independent preparation complete.
+- TASK-007 — PASS / reviewed; shared Home Node/device abstraction verified at LIVE commit `c4f524cac0054e400a1fb2cb6049697f8971fba3`; live Windows behavior NOT VERIFIED.
+- TASK-028 — PASS / reviewed; bounded in-memory registry implemented and repository-tested.
+- TASK-032 — PASS / reviewed; provider-neutral normalized capability discovery layer implemented and repository-tested; live host probing NOT VERIFIED.
+- TASK-029 — PASS / reviewed; non-Core device capability/health model implemented and repository-tested; live health state NOT VERIFIED.
 
-## Current Human Codex Gates
-- TASK-014 — Mysticarium Deterministic Engine — READY_FOR_CODEX_REVIEW; handoff baseline refreshed and scope remains narrow.
-- TASK-007 — VK Home Node Abstraction — READY_FOR_CODEX_REVIEW after scope reconciliation; verified LIVE Legacy baseline `078a534b6f0241507349f182626d308f2c0ff284`.
+## Current Human Codex / Runtime Gates
+- TASK-014 — Mysticarium Deterministic Engine — READY_FOR_CODEX_REVIEW; handoff baseline `beebf9884e450cc29f4d0bbae3d89a27a0fc41c0`; requires task-specific Vlad approval before Codex execution.
+- TASK-010 — VK Home Network Device Discovery — READY_FOR_CODEX_REVIEW; repository preparation complete, but final acceptance requires explicit authorized LAN scope, controlled runtime/network execution, checkpoint/rollback and inventory comparison. Automation must not scan LAN or invoke Codex automatically.
 
 ## TASK-007 / TASK-028 / TASK-041 ownership lock
 This boundary is canonical and overrides older broader wording:
 - TASK-041 — PASS — owns registry schema/contract/fixtures only.
-- TASK-007 — READY_FOR_CODEX_REVIEW — owns only the shared Home Node/device base abstraction and device-agnostic adapter-facing interface; it must reuse TASK-041 semantics.
-- TASK-028 — BLOCKED on TASK-007 PASS + TASK-041 PASS — sole owner of runtime/in-memory registry service behavior and add/update/remove/query/list operations.
+- TASK-007 — PASS — owns only the shared Home Node/device base abstraction and device-agnostic adapter-facing interface; it reuses TASK-041 semantics.
+- TASK-028 — PASS — owns runtime/in-memory registry service behavior and add/update/remove/get/list operations.
 
 TASK-007 MUST NOT implement registry service operations. TASK-028 MUST NOT redefine TASK-041 schema or create a second device abstraction.
 
@@ -39,7 +43,9 @@ TASK-035 through TASK-044 are PASS/reviewed repository/simulation preparation. T
 TASK-014 -> TASK-015 -> TASK-016 -> TASK-017 -> TASK-018 -> TASK-019 -> TASK-020 -> TASK-012. TASK-011 remains runtime-dependent. Later duplicate planning series TASK-023 through TASK-027 is SUPERSEDED where it overlaps TASK-016 through TASK-020.
 
 ## VK implementation chain
-TASK-007 -> TASK-028 -> TASK-032 -> TASK-029 -> TASK-010 -> TASK-008 -> TASK-030 -> TASK-031 -> TASK-009.
+TASK-007 PASS -> TASK-028 PASS -> TASK-032 PASS -> TASK-029 PASS -> TASK-010 READY_FOR_CODEX_REVIEW -> TASK-008 -> TASK-030 -> TASK-031 -> TASK-009.
+
+TASK-008 and its downstream chain remain blocked until TASK-010 receives actual controlled validation and Reviewer PASS.
 
 ## Global implementation gate
 Repository-side preparation may proceed when a task is explicitly READY and has bounded repository/simulation validation plus independent review. Live runtime deployment remains human-gated.
