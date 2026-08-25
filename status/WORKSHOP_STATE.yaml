@@ -22,9 +22,10 @@ ready_tasks:
     objective: implement versioned normalization/seed deterministic core after human Codex approval
   TASK-010:
     project: VK
-    state: READY_FOR_CODEX_REVIEW
+    state: READY_FOR_REVIEW
     scout_evidence: evidence/TASK-010/SCOUT.md
     codex_gate: evidence/TASK-010/CODEX_GATE.md
+    codex_evidence: evidence/TASK-010/CODEX_RUN.md
     objective: bounded authorized home-network discovery/status integration and controlled validation
   TASK-046:
     project: ESP32 MICROBLOG / AGENT 32
