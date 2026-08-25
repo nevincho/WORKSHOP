@@ -179,3 +179,17 @@ Rules:
 - selected_task_ids: TASK-014; TASK-007
 - actions_started: mandatory AUTONOMY_POLICY, CODEX_BUDGET_POLICY and canonical backlog read complete; current task/state/evidence/review inspection initiated
 - Codex_used: no
+
+## 2026-08-25 WORKSHOP Controller run 7 — BLOCKED / HUMAN GATES
+- observed_completion_time_utc: 2026-08-25 04:29 UTC
+- controller_name: WORKSHOP Controller
+- run_sequence/status: 7 / BLOCKED_ON_HUMAN_GATES
+- queue_snapshot: READY_FOR_CODEX_REVIEW=2 (TASK-014, TASK-007); no other canonical repository-side READY task exists; downstream Mysticarium and VK chains remain dependency-blocked
+- selected_task_ids: TASK-014; TASK-007
+- actions_completed: read mandatory policies/backlog and current WORKSHOP state; inspected TASK-014 and TASK-007 task/Scout/Codex Gate records; independently rechecked authoritative target branch heads and confirmed Mysticarium remains at 31a60a8da267bbda7d8a2ffd6cd63f40cd65b5e9 and LIVE Legacy remains at 3ad02e4ddd298088d3bb51bf0b3cf7ecacf3217b, matching both prepared handoff baselines; no intervening target implementation was detected
+- actions_failed_or_blocked: TASK-014 requires explicit Vlad approval before Codex execution; TASK-007 requires explicit Vlad approval before Codex execution; TASK-015 and TASK-028+ remain dependency-blocked; no live runtime validation attempted
+- Codex_used: no
+- repository_commits_created: df2e3670e512a983d5197c5b1a7ef9d376e9650; this ledger completion commit
+- evidence/review files created_or_updated: none; existing Scout/Codex Gate packages remain current
+- exit_reason: both eligible canonical tasks are stopped at explicit human Codex gates and no independent canonical work remains eligible
+- next_state: await explicit Vlad approval for TASK-014 and/or TASK-007; otherwise remain blocked without duplicate work
