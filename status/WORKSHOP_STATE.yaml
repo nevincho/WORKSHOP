@@ -23,7 +23,8 @@ ready_tasks:
     state: READY_FOR_CODEX_REVIEW
     scout_evidence: evidence/TASK-007/SCOUT.md
     codex_gate: evidence/TASK-007/CODEX_GATE.md
-    objective: implement shared non-Core Home Node/device abstraction after human Codex approval
+    baseline: 078a534b6f0241507349f182626d308f2c0ff284
+    objective: implement only shared non-Core Home Node/device base abstraction and adapter-facing interface; reuse TASK-041 contract; exclude TASK-028 runtime registry operations
 completed_tests:
   TEST-002:
     verdict: PASS
@@ -52,15 +53,19 @@ blocked_tasks:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
     blocker: blockers/TASK-003-EXECUTION-ROUTES.md
   TASK-015: {project: MYSTICARIUM, reason: WAITING_FOR_TASK_014_PASS, prerequisite: TASK-014}
-  TASK-028: {project: VK, reason: WAITING_FOR_TASK_007_PASS, prerequisite: TASK-007}
+  TASK-028:
+    project: VK
+    reason: WAITING_FOR_TASK_007_PASS
+    depends_on: TASK-007 PASS + TASK-041 PASS
+    ownership: runtime/in-memory registry service operations only; reuse TASK-041 contract and TASK-007 abstraction
   TASK-032: {project: VK, reason: DOWNSTREAM_DEPENDENCIES_NOT_SATISFIED, depends_on: TASK-007/TASK-028}
 coordination_blockers:
   duplicate_task_ids:
     state: OPEN
     note: Duplicate numeric IDs remain in historical backlog for TASK-023 through TASK-027; do not route new evidence by those ambiguous IDs.
-  stale_state_index:
-    state: RECONCILED_2026-08-25
-    note: Independent daytime package TASK-035 through TASK-044 completed and reviewed; only task-specific Human Codex Gates remain ready.
+  task_007_scope_conflict:
+    state: RESOLVED_2026-08-25
+    note: TASK-007 narrowed to shared node abstraction/interface; TASK-041 owns contract/fixtures; TASK-028 owns runtime registry operations.
 authority:
   coordination: nevincho/WORKSHOP
   implementation: target repository or runtime evidence
@@ -100,4 +105,4 @@ connections:
 notes:
   - TANGRA/Pi5 remains excluded from autonomous work.
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed.
-  - TASK-014 and TASK-007 are the remaining Human Codex Gates and require separate explicit Vlad approval before Codex execution.
+  - TASK-014 and reconciled TASK-007 are Human Codex Gates and require separate explicit Vlad approval before Codex execution.
