@@ -72,9 +72,26 @@ blocked_tasks:
     runtime: REVIEWED_COMPONENTS_PI4_VALIDATED; WEBSITE_CHAIN_NOT_INTEGRATED
   TASK-009:
     project: VK
-    reason: ACTUAL_ECHO_CAPABILITIES_AND_PERMITTED_INTEGRATION_ROUTE_NOT_VERIFIED
+    reason: VK_INTEGRATION_ROUTE_NOT_VERIFIED
     prerequisite: TASK-031_SATISFIED
-    runtime: NOT_VERIFIED
+    device_capabilities:
+      source: OWNER_SUPPLIED_AMAZON_ECHO_SHOW_5_PRODUCT_INFORMATION_2026-08-26
+      verification: PRODUCT_CAPABILITIES_RECORDED; VK_PROGRAMMATIC_ACCESS_NOT_VERIFIED
+      display: 5.5-inch touch display
+      voice_assistant: Alexa built-in voice control
+      camera: video calls; Drop In; remote pet/home viewing; physical camera cover
+      audio: music streaming; audiobooks; podcasts; alarms/timers
+      smart_home: lights; thermostat; video doorbell viewing
+      privacy: microphone_and_camera_disable_button
+      media: Prime Video; weather/news; rotating photo display
+    integration_unknowns:
+      - raw_microphone_access
+      - raw_speaker_or_audio_stream_access
+      - camera_frame_access_for_VK
+      - local_or_cloud_API_transport_available_to_VK
+      - Alexa_Skill_or_other_permitted_bridge_requirements
+      - authentication_and_account_constraints
+    runtime: DEVICE_CONSUMER_CAPABILITIES_RECORDED; VK_INTEGRATION_NOT_VERIFIED
   TASK-047: {project: ESP32 MICROBLOG, reason: WAITING_FOR_TASK_046_PASS, prerequisite: TASK-046}
   TASK-058:
     project: AI_COMPANY / WORKSHOP
@@ -97,7 +114,7 @@ roles:
   codex_gate: configured
 controller:
   hourly_schedule: external_automation
-  status: ACTIVE_OUTSIDE_REPOSITORY
+  status: SCHEDULER_UNSTABLE_EXTERNAL_AUTOMATION
   rule: process all independent repository-safe READY_FOR_WORKER and REVIEW tasks before stopping at Human/Codex/runtime gates
   execution_boundary:
     repository_read_write_review: autonomous_when_task_authorized
@@ -142,7 +159,7 @@ notes:
   - TASK-010 is PASS/reviewed for bounded authorized LAN discovery.
   - TASK-008 is PASS/reviewed with actual authenticated IMOU RTSP subtype=1 frame decode and candidate-only PerceptionIngress validation; ONVIF/PTZ and broader camera behavior remain outside that acceptance.
   - TASK-030 is PASS by reconciliation: the required mock/contract adapter tests already existed at the reviewed TASK-008 checkpoint, so duplicate tests were not created.
-  - TASK-031 is PASS/reviewed for a conservative repository voice-endpoint contract; Echo Show 5 transport/raw microphone/raw speaker/runtime capability remains NOT VERIFIED and TASK-009 stays blocked on direct device/protocol evidence.
+  - TASK-031 is PASS/reviewed for a conservative repository voice-endpoint contract; Echo Show 5 consumer capabilities are now owner-supplied and recorded, but raw microphone/speaker/camera access and the permitted VK integration transport remain NOT VERIFIED; TASK-009 remains blocked specifically on integration-route evidence rather than generic device capabilities.
   - TASK-045 is PASS/reviewed for repository reconciliation only; current ESP32 Windows toolchain/build/runtime remains NOT VERIFIED.
   - TASK-046 is READY_FOR_CODEX_REVIEW for a compile-only Windows diagnostic; no source edits or flash are authorized and Codex execution remains task-specific HUMAN-GATED.
   - TASK-058 requires direct human-local AI_COMPANY repository inspection and is not autonomously executable from repository evidence alone.
