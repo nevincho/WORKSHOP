@@ -1,7 +1,7 @@
 # TASK-008 — Codex implementation and runtime integration
 
 Date: 2026-08-26
-Status: IMPLEMENTED / LIVE VALIDATION NOT COMPLETED
+Status: IMPLEMENTED / REAL LIVE VALIDATION COMPLETED / REVIEW PENDING
 Reviewer verdict: NOT ASSIGNED; this record does not mark TASK-008 PASS.
 
 ## Authority and checkpoint
@@ -39,14 +39,18 @@ Results:
 - Full SOURCE_V09 tests: 67/67 PASS.
 - Actual VK venv: OpenCV 5.0.0; FFmpeg backend and open/read timeout properties available.
 - Local integer source compatibility, credential redaction and candidate-only ingress: PASS.
-- Real IMOU RTSP authentication: NOT VALIDLY TESTED.
-- Real subtype=1 stream open: NOT VALIDLY TESTED.
-- Real frame decode and dimensions/type: NOT VALIDLY TESTED.
-- Real-frame perception event: NOT VALIDLY TESTED.
-- Automatic canonical-memory promotion: no implementation path added; contract/regression PASS. Real-frame proof remains pending.
+- Real validator command: `VK_RTSP_URL=rtsp://admin:<REDACTED>@192.168.0.154:554/cam/realmonitor?channel=1&subtype=1 D:\Store\AI\.venv\Scripts\python.exe D:\Store\AI\tools\validate_rtsp_perception.py`.
+- Real IMOU RTSP authentication: SUCCESS, established by decoded frame.
+- Real subtype=1 stream open: PASS.
+- Real frame: 640x480, 3 channels, `uint8`.
+- Existing `PerceptionIngress`: PASS; produced `PERCEPTION_OBSERVATION` candidate from saved real frame.
+- Event contract: `status=candidate`, `canonical_memory=false`, `memory_status=not_admitted`.
+- Automatic canonical-memory promotion: `false`.
+- Canonical-memory count: 1 before, 1 after; unchanged.
+- Runtime credential environment was unset immediately after execution; retained evidence contains no credential.
 
-## Live blocker
+## Live result
 
-A local credential prompt was launched so secrets would not enter chat, Git, commands or logs. Runtime credential entry was not completed successfully; no valid credentialed frame-read result was produced. No credential was stored. Live acceptance therefore remains pending human-supplied runtime credentials and must not be inferred from repository tests.
+On 2026-08-26, the actual `D:\Store\AI` validator decoded one real frame from the authorized IMOU camera and passed it through the existing VK `CameraAdapter` and `PerceptionIngress` path. No implementation change was required. No live blocker remains in this Codex run.
 
 Independent WORKSHOP Reviewer retains final PASS authority.
