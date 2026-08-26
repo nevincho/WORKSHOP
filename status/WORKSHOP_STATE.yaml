@@ -36,6 +36,7 @@ completed_tasks:
   TASK-004: {verdict: PASS, evidence: evidence/TASK-004/ROUTING_VALIDATION.md, review: review/TASK-004.md}
   TASK-007: {verdict: PASS, evidence: evidence/TASK-007/RUN.md, review: review/TASK-007.md, target_commit: c4f524cac0054e400a1fb2cb6049697f8971fba3, runtime: NOT_VERIFIED}
   TASK-010: {verdict: PASS, evidence: evidence/TASK-010/CODEX_RUN.md, review: review/TASK-010.md, target_commit: cf911176be543393f1a05e578b4ea30d70f010bb, runtime: CONTROLLED_LAN_EVIDENCED, imou_protocol_capability: NOT_VERIFIED}
+  TASK-011: {verdict: PASS, evidence: evidence/TASK-011-012/PI4_RECONCILIATION_INTEGRATION.md, runtime: PI4_ROUTE_AND_CURRENT_STATE_VERIFIED}
   TASK-013: {verdict: PASS, evidence: evidence/TASK-013/MYSTICARIUM_REPO_AUDIT.md, review: review/TASK-013.md}
   TASK-014: {verdict: PASS, evidence: evidence/TASK-014/RUN.md, review: review/TASK-014.md, target_commit: f4adb7c43ccf0aaa710bb1b03069ad5c5aff38cf, runtime: NOT_VERIFIED}
   TASK-015: {verdict: PASS, evidence: evidence/TASK-015/RUN.md, review: review/TASK-015.md, target_commit: 4792b406d5ba1e440a8709c3aeca60aefa00a403, runtime: NOT_VERIFIED}
@@ -66,14 +67,11 @@ blocked_tasks:
   TASK-005:
     reason: NO_VERIFIED_IMPLEMENTATION_RUNTIME_ROUTE
     blocker: blockers/TASK-003-EXECUTION-ROUTES.md
-  TASK-011:
-    project: HOROSCOPES / MYSTICARIUM
-    reason: PI4_READONLY_RUNTIME_ROUTE_REQUIRED
-    runtime: NOT_VERIFIED
   TASK-012:
     project: HOROSCOPES / MYSTICARIUM
-    reason: WAITING_FOR_TASK_011_PASS_AND_PI4_RUNTIME_ROUTE
-    prerequisite: TASK-011
+    reason: PRODUCTION_FIVE_READER_ORCHESTRATOR_AND_KNOWLEDGE_INPUTS_NOT_REVIEWED
+    prerequisite: TASK-011_SATISFIED
+    runtime: REVIEWED_COMPONENTS_PI4_VALIDATED; WEBSITE_CHAIN_NOT_INTEGRATED
   TASK-030: {project: VK, reason: WAITING_FOR_TASK_008_PASS, prerequisite: TASK-008}
   TASK-031: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-030}
   TASK-009: {project: VK, reason: DOWNSTREAM_DEPENDENCY_NOT_SATISFIED, depends_on: TASK-031}
@@ -131,15 +129,15 @@ connections:
   horoscopes_ref: agent/mysticarium
   horoscopes_path: projects/mysticarium/
   horoscopes_repo_read: VERIFIED
-  horoscopes_runtime: HUMAN_CONFIRMED_PI4_SSH_VIA_CODEX; LIVE_VALIDATION_HUMAN_GATED
+  horoscopes_runtime: CODEX_VERIFIED_PI4_SSH_AND_LAN_2026-08-26; SITE_8187; EXISTING_DJALMA_API_8188; REVIEWED_COMPONENTS_DEPLOYED_AND_TESTED; PRODUCTION_FIVE_READER_CHAIN_NOT_INTEGRATED
   esp32_docs_repo: nevincho/nova
   esp32_docs_ref: esp32-microblog-agent32
   esp32_runtime: HUMAN_LOCAL_WINDOWS; CODEX_OR_HUMAN_EXECUTION_REQUIRED_FOR_LOCAL_BUILD_OR_FLASH
 notes:
   - TANGRA/Pi5 remains excluded from autonomous work.
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed.
-  - TASK-014 through TASK-020 are repository-side PASS/reviewed on `agent/mysticarium`; Pi4/runtime behavior remains NOT VERIFIED.
-  - TASK-011 remains blocked on direct Pi4 read-only/runtime evidence; therefore TASK-012 cannot claim end-to-end runtime completion.
+  - TASK-014 through TASK-020 remain repository-side PASS/reviewed on `agent/mysticarium`; exact artifacts at `c088aa064f468e4b6c2ce074bba3a91647330b4f` are deployed and 43/43 tested on Pi4.
+  - TASK-011 Pi4 route/reconciliation is PASS. TASK-012 remains blocked because reviewed source has no production five-reader orchestrator/API/output route or production Selene/Al-Hakim/bones knowledge inputs.
   - TASK-007, TASK-028, TASK-032 and TASK-029 are repository-side PASS; live Windows/device behavior remains NOT VERIFIED except the bounded TASK-010 LAN execution evidence.
   - TASK-010 is PASS/reviewed for bounded authorized LAN discovery; IMOU protocol capabilities and stream ingestion remain NOT VERIFIED.
   - TASK-008 and TASK-046 are Human Codex/runtime gates and require separate explicit Vlad approval before Codex execution.
