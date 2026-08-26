@@ -49,8 +49,26 @@ Results:
 - Canonical-memory count: 1 before, 1 after; unchanged.
 - Runtime credential environment was unset immediately after execution; retained evidence contains no credential.
 
+## USB source recovery validation — 2026-08-26
+
+A later normal-chat attempt temporarily failed with `CAPTURE ERROR: Camera 0 could not be opened`. Focused investigation found no VK integration regression and required no production code change.
+
+- Result: PASS — USB restored without code change.
+- Classification: DEVICE / ENVIRONMENT TRANSIENT; no integration regression.
+- Root cause: camera was previously not enumerated; brief DirectShow release contention affected the first retry.
+- Direct USB test: PASS — fresh `640x480x3`, `uint8` frame.
+- Available device indices: `0` only.
+- CameraAdapter test: PASS — device `0`, fresh `640x480` frame.
+- Normal VK chat explicit USB request: PASS — fresh frame captured.
+- Source provenance: `LOCAL_USB_CAMERA_0`.
+- No fallback to IMOU: PASS.
+- Memory boundary: `candidate`, `not_admitted`, `canonical=false`; canonical-memory count remained 1 before/after.
+- Files changed for recovery: NONE.
+- LIVE commit for recovery: NONE; no implementation change was justified.
+- Blockers: NONE.
+
 ## Live result
 
-On 2026-08-26, the actual `D:\Store\AI` validator decoded one real frame from the authorized IMOU camera and passed it through the existing VK `CameraAdapter` and `PerceptionIngress` path. No implementation change was required. No live blocker remains in this Codex run.
+On 2026-08-26, the actual `D:\Store\AI` validator decoded one real frame from the authorized IMOU camera and passed it through the existing VK `CameraAdapter` and `PerceptionIngress` path. Later focused USB recovery validation also passed through direct OpenCV, CameraAdapter, and normal VK chat with deterministic `LOCAL_USB_CAMERA_0` provenance and no IMOU fallback. No USB implementation change was required.
 
 Independent WORKSHOP Reviewer retains final PASS authority.
