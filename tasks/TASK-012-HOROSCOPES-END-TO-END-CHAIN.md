@@ -1,20 +1,42 @@
 # TASK-012 — Horoscopes End-to-End Five-Reader Chain
 
 TASK_ID: TASK-012
-PROJECT: HOROSCOPES
+PROJECT: HOROSCOPES / MYSTICARIUM
 PRIORITY: HIGH
-STATUS: BLOCKED
-OBJECTIVE: Build and validate the complete Horoscopes processing chain across the five verified reader components according to the canonical plan established by TASK-011, using the smallest justified changes and preserving working behavior.
-SOURCE_PLAN_OR_REQUEST: canonical Horoscopes plan/TODO discovered by TASK-011 + Vlad request 2026-08-24.
-CURRENT_STATE: NOT VERIFIED until TASK-011 completes.
-PREREQUISITES: TASK-011 PASS; verified Pi4 write/execute/test route; exact five-reader interfaces and missing implementation identified; pre-change checkpoint.
-DEPENDENCIES: TASK-011 PASS.
-AFFECTED_COMPONENTS: only components proven necessary by TASK-011 for the end-to-end horoscope chain.
-PROTECTED_COMPONENTS: existing validated outputs, user data, working services and unrelated Pi4 applications.
-EXECUTION_CLASS: CODEX_CANDIDATE
-CODEX_ALLOWED: GATE_REQUIRED
-ACCEPTANCE_CRITERIA: all five verified readers participate according to canonical design; shared inputs/normalization/orchestration/output path is coherent; tests prove each stage and the end-to-end objective; failures are attributed to implementation/integration/environment/methodology correctly; no unrelated refactor.
-VALIDATION_METHOD: unit/component tests + deterministic integration fixtures where possible + Pi4 end-to-end runtime test + independent review; evening human/live review where output quality requires subjective/product validation.
-PRE_CHANGE_CHECKPOINT: REQUIRED.
-ROLLBACK_METHOD: restore checkpoint and previous service/config/code state.
-EVIDENCE_PATHS: `evidence/TASK-012/`, `review/TASK-012.md`, checkpoint under `checkpoints/`.
+STATUS: READY_FOR_WORKER
+OBJECTIVE: Build the complete production five-reader orchestration/API/output chain in the authoritative repository first, validate and review it there, then prepare ONE consolidated Codex Pi4 deployment/live-validation handoff.
+SOURCE_PLAN_OR_REQUEST: canonical Mysticarium plan + verified TASK-011 Pi4 reconciliation + Vlad instruction that repository-ready work must be implemented directly into the real project, with Codex reserved for integration/deployment/live validation.
+CURRENT_STATE: TASK-011 PASS. Reviewed components from TASK-014 through TASK-020 are deployed and tested on Pi4, but the live website still exposes only the existing Djalma production API. Missing production glue is now verified: no production five-reader orchestrator/service/API/output route and no reviewed production Selene/Al-Hakim/bones knowledge inputs.
+PREREQUISITES: TASK-011 PASS is satisfied; exact Pi4 runtime route is verified. Repository-side production implementation must be completed before another Codex run.
+DEPENDENCIES: TASK-011 PASS satisfied; reuse TASK-014 through TASK-020 reviewed components without rewriting them.
+AFFECTED_COMPONENTS: authoritative Mysticarium repository only until final deployment gate; production orchestration/service/API/output routing; production knowledge inputs proven necessary for Selene, Al-Hakim and bones/Morrigan paths; integration tests.
+PROTECTED_COMPONENTS: existing validated Djalma behavior, existing Pi4 web/backend/data/services, user data, visual/UI canon, unrelated Pi4 applications, reviewed TASK-014 through TASK-020 behavior.
+EXECUTION_CLASS: WORKER_THEN_REVIEW_THEN_CODEX_DEPLOYMENT
+CODEX_ALLOWED: DEPLOYMENT_GATE_ONLY by default. Repository coding by Codex requires explicit evidence that authorized WORKSHOP workers cannot complete a required implementation step.
+
+REPOSITORY-SIDE REQUIRED WORK BEFORE CODEX:
+1. Define and implement the smallest production five-reader orchestration contract using existing reviewed reader components.
+2. Define and implement the production API/output route needed by the current website/backend without creating a parallel architecture.
+3. Add only the production knowledge/input artifacts actually required for Selene, Al-Hakim and bones/Morrigan operation; provenance and format must be explicit.
+4. Preserve existing Djalma behavior and interfaces unless a verified integration requirement demands a minimal compatible change.
+5. Add deterministic component and end-to-end repository tests proving the five-reader chain, failure handling and output routing.
+6. Independent Reviewer must verify code, interfaces, methodology, protected components and acceptance criteria.
+7. Only after repository PASS, Codex Gate prepares ONE consolidated Pi4 handoff that deploys the reviewed package into `/home/pi/mysticarium`, wires it to the actual website/backend, performs live browser/API validation, and preserves rollback.
+
+ACCEPTANCE_CRITERIA:
+- all five canonical reader roles participate according to reviewed canonical design;
+- shared input/normalization/orchestration/output path is production-capable, not mock-only;
+- production API/output route exists and is covered by tests;
+- required production knowledge inputs for Selene, Al-Hakim and bones/Morrigan exist and are traceable;
+- existing Djalma behavior is preserved;
+- repository tests prove component and end-to-end behavior before deployment;
+- final Codex deployment proves the live Pi4 website/API uses the reviewed chain;
+- subjective reading quality remains a separate human validation item and must not be inferred from technical tests;
+- no unrelated refactor or duplicate Mysticarium implementation.
+
+VALIDATION_METHOD: repository unit/component/integration tests + Independent Reviewer first; then ONE Codex Pi4 integration/deployment/live HTTP/API/browser validation; evening human product-quality review as needed.
+PRE_CHANGE_CHECKPOINT: repository rollback commit required before repository implementation; Pi4 checkpoint required before final deployment.
+ROLLBACK_METHOD: revert repository implementation commit(s) and/or restore verified Pi4 checkpoint while preserving pre-existing service/config/data state.
+EVIDENCE_PATHS: `evidence/TASK-012/`, `review/TASK-012.md`, final consolidated deployment evidence only after repository PASS.
+
+CODEX BUDGET RULE: Do not spend another Codex run merely to inspect, copy tests, or deploy mock/scaffold-only artifacts. Next Codex use for TASK-012 should normally occur only after the production repository package is independently reviewed and ready to change the real user-visible Pi4 system.
