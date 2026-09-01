@@ -1,24 +1,33 @@
 # DEDICATED CONTROL ROOM — HOROS / LOCAL 3D / MISSION REPLAY
 
-STATUS: ACTIVE
-START: 2026-09-01
+STATUS: READY_FOR_CODEX_REVIEW
 
-## Active campaign
-TANGRA HOROS / Local 3D / Persistent Mapping / Mission Reconstruction / 3D Tactical Replay.
+## Campaign state
+Repository-side implementation is complete as far as curated evidence permits.
 
-## Current phase
-Phase A common contracts implementation and deterministic validation.
+## Target repository
+`nevincho/TANGRA-DOCS`
+Branch: `workshop-horos-3d`
+Validated campaign head: `ff778dfa3ac052fdb9c48d4eb7a55da371bee622`
 
-## Hard boundaries
-- Curated TANGRA access only: `nevincho/TANGRA-DOCS`, branch `workshop-horos-3d`, `Workshop/HOROS_3D/**`.
-- No wider TANGRA discovery.
-- No production source/runtime mutation.
-- Protected detector/Hailo, NanoTracker, CA Kalman, CURRENT_TARGET and command/actuation paths.
-- No Codex execution.
-- No Pi/runtime access.
+## Validation
+- 31 deterministic tests PASS.
+- compileall PASS.
+- Independent consolidated Reviewer verdict: PASS.
+- Exact executed/repository blob identities recorded in `Workshop/HOROS_3D/IMPLEMENTATION_MANIFEST.md`.
 
-## Current evidence
-Write capability VERIFIED. Dependency graph and Phase A task/Scout handoff created. Phase A repository implementation and tests are being validated.
+## Final WORKSHOP artifacts
+- `tasks/HOROS_3D_CAMPAIGN.md`
+- `evidence/HOROS_3D_FINAL.md`
+- `review/HOROS_3D_FINAL.md`
+- `checkpoints/HOROS_3D_VALIDATED_2026-09-01.md`
+- `handoffs/HOROS_3D_READY_FOR_CODEX_REVIEW.md`
 
-## Known NOT VERIFIED
-Physical camera calibration, timing/pose prerequisites, physical metric accuracy, authoritative-source reconciliation, runtime integration, shadow runtime behavior.
+## Human gate
+Codex execution remains human-gated and has NOT been invoked.
+
+## NOT VERIFIED
+Physical metric calibration/accuracy, authoritative active-source adapter compatibility, actual runtime timing/pose semantics, recorder sizing under live load, Dashboard integration, shadow runtime behavior and real `HOROS OFF` baseline equivalence.
+
+## Protection
+No Pi/runtime access and no production/protected-component modification occurred.
