@@ -1,0 +1,64 @@
+# HISTORICAL PERFORMANCE TIMELINE
+
+TASK_ID: `TASK-059`
+
+## Evidence rule
+
+FPS records are comparable only where `FPS_METRIC_TYPE`, measurement location and runtime configuration are equivalent. Unknown metric type is explicitly marked and must not be numerically merged with true end-to-end throughput.
+
+| Date / state | FPS_VALUE | FPS_METRIC_TYPE | Measurement location / duration | Camera / detector / tracking | HEF state | Dashboard | CPU | RAM/RSS | Temp / throttle | Classification | Source / interpretation |
+|---|---:|---|---|---|---|---|---|---|---|---|---|
+| 2026-07-04 12h44m historical endurance | 20.2 | UNKNOWN; displayed runtime FPS | Development Dashboard observation, 12h44m | Camera connected; AI running; tracking LIVE; one FPV target shown | Hailo live; secondary HEF predates later activation | Development Dashboard active; preview live | 24–28% total Pi observed; 28% captured | 6.6–6.7% RAM | 55.6–57 C; throttle not reported | `NOT COMPARABLE` | Long-duration stability evidence only. FPS semantics unspecified. |
+| 2026-07-10 official clean benchmark | 40.706863 | UNKNOWN in promotion report; likely processing/replay metric, equivalence not proven | Clean replay benchmark, 3 videos / 360 frames | 356 detections, 0 track drops | Primary authoritative; later Secondary not yet operational | Not sufficiently specified | 84.626389% average (scope/core semantics not stated) | 4.835% | 56.5 C | `VERIFIED` result, `NOT COMPARABLE` metric | Official stable-baseline promotion anchor. Do not treat 40.7 as end-to-end without runner semantics. |
+| 2026-07-11 native thread-limit correction | 30.08 → 31.13 | UNKNOWN displayed/benchmark FPS | Stable real detection before/after combined native-worker limits | Detection active; tracking path preserved | Primary | Not fully specified | total CPU 87.51%→16.58%; process 351.9%→62.2% | not reported | not reported | `VERIFIED` bounded A/B, FPS metric `NOT COMPARABLE` | Combined OpenCV/OMP/BLAS/MKL thread limits materially reduced CPU. Individual library attribution unknown. |
+| Operator last-known-good referenced 2026-07-15 | ~29–35 | Historical displayed/processing FPS; exact counter not independently frozen | Immediately after restart; duration not specified | Active DroneGuard | state not fully specified | historical operator state | ~10–14% reported | not specified | not specified | `DOCUMENTED_OPERATOR_REPORT` | No immutable verified-good source revision. Use as historical region, not exact acceptance baseline. |
+| 2026-07-15 degradation audit start→15 min | 24.77 → 19.95 | Runtime telemetry/display FPS; later evidence shows historical field was pre-sleep instantaneous, but exact build equivalence must be verified | Pi monitor, 31 samples / 15 min | active runtime; one active track/detection constant; camera preview Settings OFF | not fully specified | global Tactical JPEG poller could remain when browser open | 58.6→69.9% | RSS 392→434 MB | 58.4→59.0 C; no thermal evidence | `VERIFIED` degradation, root cause `PARTIAL` | RSS accumulated, CPU climbed, FPS declined. world_map/deep-copy and JPEG polling were candidates only. |
+| 2026-07-15 combined A/B, world_map + Tactical JPEG polling disabled | 31.40 → 28.63 | same monitor field as preceding audit | 31 samples / 15 min | DroneGuard active; world_map absent | not fully specified | JPEG poller code-disabled; no active browser control | 52.0→53.1% | 284.9→316.6 MB | 51.8–55.1 C; no throttle evidence | `VERIFIED / PARTIAL` | CPU ramp largely disappeared, but RSS +31.7 MB and FPS decline remained; candidates not sole cause. API payload still grew 6.9→22.8 KB. |
+| 2026-07-16 Object Resolver regression pre-fix | ~14.59–17.52 | runtime reported FPS; exact metric label not stated | live runtime observation | detector/tracker/CA unchanged; Resolver generated new object every frame | Primary | not material to isolated root cause | process 78.6–99.9% one core; Pi 24–28.6% | 445–451 MB | not reported | `VERIFIED` historical root cause | Object count 29,138 and rising; per-frame scan/sort load traced to passive Resolver telemetry path. |
+| 2026-07-16 Object Resolver post-fix | 30.06–40.96; final 31.66 | runtime reported FPS; exact metric label not stated | >3 min live trend | object count 1–2; stable association; detection/tracking/CA unchanged | Primary | not changed | telemetry CPU 6.0–11.1%; final 10.1% | not reported | not reported | `VERIFIED` recovery | Demonstrates a historical performance regression class caused by passive state growth. Not evidence of current defect. |
+| 2026-07-22 one-hour dual-camera shadow run | FPS not directly reported | N/A | 3602.603 s; 24,210 samples; live dual cameras | live camera/shadow evidence; detection quality not scored | primary + Secondary 1:3; PVF | production service inactive; harness run | mean 54.309%, P95 73.0% of one logical core | 400.578→410.188 MB (+2.399%, +4.893 MB/h) | not reported | `VERIFIED` resource/stability evidence; FPS `NOT VERIFIED` | Primary mean processing 24.542 ms; amortized secondary contribution reported 8.365 ms. Do not infer FPS from sample count without runner contract. |
+| 2026-07-22 86.79-min dual-camera official-module shadow run | FPS not directly reported | N/A | 5207.192 s; 36,624 samples | live dual cameras | primary + Secondary 1:3; PVF | production service inactive | mean 53.977%, P95 70.1% one logical core | 402.703→413.156 MB active (+2.596%) | not reported | `VERIFIED`; harness aggregate false-fail correctly classified | Runtime/PVF/HEF passed; shutdown memory release was wrongly treated by raw harness as absolute RSS delta failure. Methodology lesson: post-cleanup memory drop is not growth. |
+| 2026-07-26 operational PVF+Secondary smoke | median 16.173→16.227 | report calls FPS but metric contract not explicit; frame count implies roughly 16 frames/s, so treat equivalence as not proven | 300.082 s, 4,813 primary frames | official runtime operational smoke | Primary + Secondary exact 1:3; PVF ON | telemetry healthy; client state not fully specified | 33.455→33.377% | 383.438→383.469 MiB | not reported | `VERIFIED`; FPS type `PARTIAL` | Stable over five minutes, no primary/secondary/PVF errors. |
+| 2026-07-26 Resolver/Fusion/CURRENT_TARGET integration replay | 27.301 | runner FPS; exact end-to-end/pre-sleep semantics not declared in report | 240-frame integration replay | one NanoTracker + CA track; Resolver/Fusion/Target Update exercised | Primary + Secondary 1:3; PVF ON | not central | not reported | not reported | not reported | `VERIFIED`, `NOT COMPARABLE` until runner semantics mapped | Authoritative outputs identical ON/ON vs OFF/OFF; no regression attributed to shadows. |
+| 2026-07-27 read-only runtime reconstruction | 15.879 true throughput; instantaneous display ~8–41 | `END_TO_END_PROCESSED_FPS` for 15.879; display is `PROCESSING_LOOP_FPS_PRE_SLEEP` instantaneous | 3,167 frames / 199.379 s | live official runtime | Secondary exact 1:3 | API requests existed; no frame requests | systemd aggregate 28.55% of one core equivalent; no time series | no retained history | post-run throttle 0x0; 39.5–42.2 C | `VERIFIED` metric-semantics breakthrough | Dashboard `fps=1/elapsed` before 30 ms sleep. Secondary adds mean 24.029 ms every third loop. Rare stalls occurred but stage cause was initially unknown. |
+| 2026-07-27 controlled live idle | 15.973 end-to-end; ~40.51 primary-only processing, ~20.61 primary+secondary, ~30.65 amortized processing | explicit true end-to-end plus reconstructed processing-only | 120 s | live camera; no accepted target | Primary + Secondary 1:3; PVF ON | 0 API/Dashboard requests | mean 33.82%, P95 39.8% | mean 394.85, max397.17 MB | mean45.85, max48.5 C | `VERIFIED` | Period mean 62.687 ms. 30.060 ms sleep=47.95%; primary total~23.039 ms; amortized Secondary~7.936 ms. Same config cannot reach 25 true E2E due pacing. |
+| 2026-07-27 controlled FPV replay | 14.927 end-to-end; rolling min 8.435 | explicit true end-to-end | 120 s | detections 142 frames; active trackers 996 frames; max3 | Primary + Secondary 1:3; PVF ON | 0 requests | mean58.75%, P95 131.5% | mean314.11, max317.39 MB | mean48.29,max51.8 C | `VERIFIED` | Deep stalls reproduced and attributed to synchronous Hailo inference in both primary and Secondary HEFs. Decode added ~5.245 ms mean vs live capture. |
+| 2026-08-14 dg_test replay/software acceptance | 32.129 average | runner FPS, exact metric semantics not specified | 4 videos / 3,098 frames | raw2918; accepted2799; REJECT_SIZE119; CURRENT_TARGET continuity PASS | state not fully specified | not specified | avg338.39 (likely process percent across cores; semantics not given) | avg290.98 MB | not reported | `VERIFIED` replay result; FPS `NOT COMPARABLE` | Live controlled-target scene absent; live validation deferred. |
+| 2026-08-14 production bounded replay check | 31.725 | runner FPS, exact metric semantics not specified | 4 videos / 3,098 frames | accepted2799; size gate + CURRENT_TARGET; no detector/CA regression reported | not fully specified | compatibility PASS | not reported | not reported | not reported | `VERIFIED` replay result; FPS `NOT COMPARABLE` | Production promotion protected by verified backup; live controlled-target validation deferred. |
+| 2026-09-02 current supplied WIDE/HOROS diagnostic | FPS not supplied | N/A | bounded diagnostic | standard 4 raw→3 accepted→3 tracks; WIDE identical raw→0 accepted due size/class-area gate | current state `NOT VERIFIED` in repository | unknown | unknown | unknown | unknown | `CURRENT SUPPLIED EVIDENCE` | Functional divergence localized before HOROS at acceptance filtering. No performance result supplied. |
+
+## Reconstructed chronology
+
+### LAST KNOWN GOOD — historical, metric-qualified
+
+The strongest historical protected baseline is the July-10 official replay benchmark plus the July-11 CPU-thread correction and later post-fix runtime observations. The exact “last-known-good production commit” cannot be reconstructed because historical Pi and operational Dashboard source directories were not Git repositories. The July-15 forensic audit identified an `observer_shadow_20260710_091942` source snapshot for `main.py/config.py`, but not a complete immutable system revision.
+
+For performance, the owner/operator reported an immediate-post-restart region of roughly 29–35 displayed FPS and 10–14% CPU. This is useful historical evidence but not an immutable benchmark. The July-27 work later proved that the historically displayed FPS counter excluded the configured sleep and therefore cannot be treated as true end-to-end throughput.
+
+### FIRST DOCUMENTED DEGRADATION EPISODES
+
+The July-15 15-minute run objectively reproduced CPU/RSS growth and declining reported FPS. Its exact root cause remained unresolved. Static forensic work ranked per-telemetry `synthetic_view` allocation/deep-copy amplification as a high-probability non-excluded candidate; runtime A/B work showed that world-map publication plus JPEG polling affected CPU but were not sufficient sole causes.
+
+On July 16 a distinct regression was conclusively traced to Object Resolver state growth. That episode is closed historically and should be checked for regression only; it should not be reopened as the assumed current cause without current evidence.
+
+### SUBSEQUENT PERFORMANCE STATES
+
+PVF/Secondary work introduced a synchronous 1:3 secondary inference cost. Long dual-camera shadow runs showed bounded memory drift and clean shutdown, but they did not establish a full authoritative dual-camera detection/tracking performance baseline. July-27 stage instrumentation clarified the performance accounting and Hailo stall source.
+
+August replay acceptance showed ~31–32 runner FPS with current-target/size-gate logic, but the exact counter semantics were not documented in those reports. It therefore supports regression continuity but not numeric equivalence with the explicit July-27 end-to-end metric.
+
+### CURRENT EVIDENCE
+
+No current repository-backed runtime performance measurement is available to Workshop for the September development copy. Current dual-camera performance is `NOT VERIFIED`. Codex must create a matched present-day HQ-only baseline before judging WIDE/dual overhead.
+
+## Campaign performance rule
+
+Owner requirement: normal tracking `<25 FPS = PERFORMANCE FAIL`.
+
+Mandatory methodology:
+
+1. Identify the current source/counter and label its FPS metric.
+2. Measure true end-to-end completed-frame throughput independently with monotonic timestamps.
+3. Report both metrics; never substitute one for the other.
+4. Establish HQ-only control under identical camera mode, HEF/PVF state, pacing, Dashboard state and test fixture.
+5. A dual-camera mode fails promotion if the owner-designated normal-tracking FPS is <25, or if it causes unacceptable functional/resource regression even when FPS passes.
