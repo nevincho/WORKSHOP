@@ -1,0 +1,9 @@
+{
+  "environment": "container x86_64; Python/NumPy coordinate-only microbenchmark; NOT Pi5/end-to-end",
+  "sample_count": 20000,
+  "mean_ms": 0.31540318395,
+  "median_ms": 0.292583,
+  "p95_ms": 0.38313099999999994,
+  "max_ms": 21.285867,
+  "scope_note": "Coordinate-only adapter benchmark. No image reconstruction and no Pi5/end-to-end FPS claim."
+}
