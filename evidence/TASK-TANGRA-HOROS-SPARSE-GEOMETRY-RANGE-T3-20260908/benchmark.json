@@ -1,0 +1,10 @@
+{
+  "benchmark": "SPARSE_GEOMETRY_RANGE_SOURCE_COORDINATE_ONLY",
+  "evidence": "SYNTHETIC_HOST_ONLY",
+  "sample_count": 50000,
+  "mean_ms": 0.05930015368,
+  "median_ms": 0.051208,
+  "p95_ms": 0.086491,
+  "max_ms": 2.180426,
+  "platform_claim": "HOST_ONLY; Pi5/end-to-end NOT_VERIFIED"
+}
