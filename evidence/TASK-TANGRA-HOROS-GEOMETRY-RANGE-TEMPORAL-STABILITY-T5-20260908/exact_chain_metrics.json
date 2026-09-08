@@ -1,0 +1,40 @@
+{
+  "task_id": "TASK-TANGRA-HOROS-GEOMETRY-RANGE-TEMPORAL-STABILITY-T5-UNBLOCK-20260908",
+  "execution": "EXACT_FROZEN_T1_T2_T3_T4",
+  "host_synthetic_only": true,
+  "frames": 600,
+  "sequences": 10,
+  "decision": {
+    "EVERY_FRAME_RECOMPUTE_ACCEPTABLE": "YES",
+    "TEMPORAL_PROPAGATION_REQUIRED": "NO"
+  },
+  "tests": {"passed": 13, "total": 13},
+  "static": {
+    "center_rms_jitter_px": 0.7946953749,
+    "left_rms_jitter_px": 0.8025383459,
+    "right_rms_jitter_px": 0.8025383459,
+    "lr_span_cv": 0.0,
+    "nt_span_cv": 0.0027107334,
+    "candidate_range_cv": 0.0022697885,
+    "sparse_range_cv": 0.0015598860,
+    "fused_range_cv": 0.0017600868,
+    "bias_m": 0.0203582734,
+    "error_jitter_m": 0.0352375684,
+    "max_transient_error_m": 0.0998287574
+  },
+  "weak_contrast": {"invalid_frames": 5, "degraded_frames": 55, "recovery_frames": 1},
+  "corrupt": {"right_rms_jitter_px": 8.4221258237, "candidate_range_cv": 0.0293248712, "sparse_range_cv": 0.0352276071, "fused_range_cv": 0.0016042101},
+  "performance_ms": {
+    "T1": {"mean": 0.9588556967, "median": 0.9345815, "p95": 1.08223455, "max": 12.794984, "n": 600},
+    "T2": {"mean": 0.4205731150, "median": 0.4034445, "p95": 0.5487821, "max": 1.593486, "n": 600},
+    "T3": {"mean": 0.1010175367, "median": 0.0883785, "p95": 0.13215315, "max": 3.858247, "n": 600},
+    "T4": {"mean": 0.0478023017, "median": 0.037096, "p95": 0.0638681, "max": 3.225111, "n": 600},
+    "CHAIN": {"mean": 2.713561495, "median": 2.633503, "p95": 3.20014185, "max": 31.039559, "n": 600}
+  },
+  "production_gates": {
+    "AI_TO_CAL_TRANSFORM": "NOT_VERIFIED",
+    "PHYSICAL_POINT_SPAN_CORRESPONDENCE": "NOT_VERIFIED",
+    "PHYSICAL_METRIC_ACCURACY": "NOT_VERIFIED",
+    "PI5_E2E": "NOT_VERIFIED"
+  }
+}
