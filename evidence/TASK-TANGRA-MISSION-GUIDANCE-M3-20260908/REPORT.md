@@ -7,29 +7,30 @@ BASE_M2_REVIEWED: 75417cb4356a79e61d1196f3f859fa7cd7ba08e8
 BASE_M2_METADATA: 66df7d43b5df2b9cca39143677b9c89acd0fe4bb
 M2_IMPLEMENTATION_BLOB: 5616d5930c8ffca0cef7876d6c192bc7627efb2c
 REVIEW_CYCLE_1: PASS_WITH_CONDITIONS — source M2 reason was not preserved as a distinct field.
-CORRECTION: added source_guidance_reason and regression coverage; no M1/M2 change.
+REVIEW_CYCLE_2: PASS_WITH_CONDITIONS — semantic REACQUIRE/MAINTAIN did not preserve explicit upstream movement geometry; unnecessary ARM/DISARM/TAKEOFF/LAND vocabulary violated smallest-contract rule.
+CORRECTIONS: source_guidance_reason added; semantic intents now preserve exactly one explicit AVAILABLE+VERIFIED movement parameter with unchanged frame; ambiguous multiple parameters fail closed; reserved operational commands removed from M3 vocabulary.
 
 ## Contract
-M3 consumes the frozen M2 PassiveGuidanceDecision only. It does not consume target XYZ, carrier state, trajectory state, or hardware state. Output PassiveHighLevelCommand preserves M2 source state/intent/reason, target reference, source timestamp, frame_ref, metric status and provenance; production_authority is always False.
+M3 consumes frozen M2 PassiveGuidanceDecision only. It does not consume target XYZ, carrier state, trajectory state, or hardware state. Output PassiveHighLevelCommand preserves M2 source state/intent/reason, target reference, source timestamp, frame_ref, metric status and provenance; production_authority is always False.
 
-Command vocabulary: NO_COMMAND, HOLD, MOVE_RELATIVE, SET_ALTITUDE, SET_HEADING. ARM, DISARM, TAKEOFF and LAND are reserved compatibility enum values only and are never generated.
+Command vocabulary: NO_COMMAND, HOLD, MOVE_RELATIVE, SET_ALTITUDE, SET_HEADING only.
 
 ## Deterministic mapping
 NO_GUIDANCE -> NO_COMMAND.
 HOLD -> HOLD.
 ABORT_HOLD -> HOLD with abort_semantic=True; no DISARM/LAND/actuation.
-MAINTAIN_OBSERVATION -> NO_COMMAND; M3 never derives movement.
-REACQUIRE_TARGET -> NO_COMMAND; M3 never derives search geometry.
-MOVE_RELATIVE / SET_ALTITUDE / SET_HEADING -> preserve-only when M2 state=AVAILABLE, metric=VERIFIED, reference frame is explicit, and the corresponding numeric parameter already exists and is finite.
+MAINTAIN_OBSERVATION / REACQUIRE_TARGET with no movement parameter -> NO_COMMAND.
+MAINTAIN_OBSERVATION / REACQUIRE_TARGET with exactly one explicit movement parameter -> preserve as MOVE_RELATIVE/SET_ALTITUDE/SET_HEADING only when state=AVAILABLE, metric=VERIFIED and frame_ref is explicit. Multiple simultaneous parameters are ambiguous and fail closed.
+Direct MOVE_RELATIVE / SET_ALTITUDE / SET_HEADING -> preserve-only under the same AVAILABLE+VERIFIED+explicit-frame gates.
 
 ## Authority gates
 M2 contract_version must be M2_SHADOW_V1 and production_authority must be False. SUPPRESSED input cannot produce a command. DEGRADED movement cannot produce movement. NOT_VERIFIED/UNUSABLE/CONFLICT/INVALID metric evidence cannot produce movement. Timestamp regression, stale guidance, target discontinuity, frame discontinuity, missing reference frame, missing parameter and non-finite values fail closed. No coordinate conversion is performed.
 
 ## Tests
-29/29 deterministic HOST tests PASS, including exact reviewed M2 module import in repository test, required task matrix, source-reason preservation, wrong contract version, authoritative-M2 rejection, reserved-command non-generation and frame continuity.
+32/32 deterministic HOST tests PASS. Repository test loads the exact frozen M2 implementation path. Coverage includes the full requested matrix, source-reason preservation, semantic explicit-geometry translation, ambiguous-geometry rejection, exact frame preservation, wrong contract version, authoritative-M2 rejection and absence of ARM/DISARM/TAKEOFF/LAND from M3 vocabulary.
 
 ## Performance
-HOST-only n=100000 mean=0.00544667126 ms median=0.003906 ms p95=0.004116 ms max=37.810173 ms. Max is a host/runtime scheduling outlier. No Pi5 inference.
+HOST-only n=100000 mean=0.00430201813 ms median=0.003866 ms p95=0.004076 ms max=2.924127 ms. No Pi5 inference.
 
 ## Side-effect audit
 No UART, serial, LoRa, ESP-NOW, socket/network, PWM, DShot, PID, mixer, ESC, motor, payload, release or weapon behavior. No hardware access or production integration.

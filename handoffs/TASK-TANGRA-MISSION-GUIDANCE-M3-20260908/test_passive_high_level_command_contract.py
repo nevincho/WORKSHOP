@@ -21,6 +21,12 @@ class T(unittest.TestCase):
         d=tr(gd(m2.GuidanceIntent.ABORT_HOLD)); self.assertEqual(d.command_type,CommandType.HOLD); self.assertTrue(d.abort_semantic)
     def test_04_observe_without_movement(self): self.assertEqual(tr(gd(m2.GuidanceIntent.MAINTAIN_OBSERVATION)).command_type,CommandType.NO_COMMAND)
     def test_05_reacquire_without_search(self): self.assertEqual(tr(gd(m2.GuidanceIntent.REACQUIRE_TARGET,state=m2.GuidanceState.DEGRADED)).command_type,CommandType.NO_COMMAND)
+    def test_05b_reacquire_with_explicit_authoritative_geometry(self):
+        d=tr(gd(m2.GuidanceIntent.REACQUIRE_TARGET,state=m2.GuidanceState.AVAILABLE,rel=(2.,0.,0.))); self.assertEqual((d.command_type,d.relative_vector_m),(CommandType.MOVE_RELATIVE,(2.,0.,0.)))
+    def test_05c_maintain_observation_with_explicit_authoritative_geometry(self):
+        d=tr(gd(m2.GuidanceIntent.MAINTAIN_OBSERVATION,state=m2.GuidanceState.AVAILABLE,rel=(0.5,0.,0.))); self.assertEqual((d.command_type,d.relative_vector_m),(CommandType.MOVE_RELATIVE,(0.5,0.,0.)))
+    def test_05d_semantic_multiple_movement_parameters_rejected(self):
+        d=tr(gd(m2.GuidanceIntent.REACQUIRE_TARGET,state=m2.GuidanceState.AVAILABLE,rel=(1.,0.,0.),head=90.)); self.assertEqual(d.command_type,CommandType.NO_COMMAND); self.assertEqual(d.reason,'ambiguous_semantic_movement_geometry')
     def test_06_move_relative_preserved(self):
         d=tr(gd(m2.GuidanceIntent.MOVE_RELATIVE,rel=(1.,-2.,3.))); self.assertEqual(d.relative_vector_m,(1.,-2.,3.)); self.assertEqual(d.command_type,CommandType.MOVE_RELATIVE)
     def test_07_altitude_preserved(self):
@@ -70,9 +76,7 @@ class T(unittest.TestCase):
         x=gd(); x=m2.PassiveGuidanceDecision(x.state,x.intent,x.target_ref,x.source_timestamp,x.frame_ref,x.metric_status,x.source_mission_state,x.source_mission_action,x.source_mission_reason,x.relative_vector_m,x.altitude_m,x.heading_deg,x.reason,x.provenance,False,'OTHER'); self.assertEqual(tr(x).state,CommandState.SUPPRESSED)
     def test_26_authoritative_m2_rejected(self):
         x=gd(); x=m2.PassiveGuidanceDecision(x.state,x.intent,x.target_ref,x.source_timestamp,x.frame_ref,x.metric_status,x.source_mission_state,x.source_mission_action,x.source_mission_reason,x.relative_vector_m,x.altitude_m,x.heading_deg,x.reason,x.provenance,True,'M2_SHADOW_V1'); self.assertEqual(tr(x).state,CommandState.SUPPRESSED)
-    def test_27_reserved_commands_never_generated(self):
-        generated=set()
-        for intent in m2.GuidanceIntent: generated.add(tr(gd(intent,rel=(1.,2.,3.),alt=5.,head=90.)).command_type)
-        self.assertTrue({CommandType.ARM,CommandType.DISARM,CommandType.TAKEOFF,CommandType.LAND}.isdisjoint(generated))
+    def test_27_reserved_operational_commands_not_in_m3_vocabulary(self):
+        for name in ('ARM','DISARM','TAKEOFF','LAND'): self.assertNotIn(name,CommandType.__members__)
 
 if __name__=='__main__': unittest.main()

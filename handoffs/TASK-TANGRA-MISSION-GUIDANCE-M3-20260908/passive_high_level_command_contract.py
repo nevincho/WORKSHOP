@@ -14,10 +14,6 @@ class CommandType(str, Enum):
     MOVE_RELATIVE='MOVE_RELATIVE'
     SET_ALTITUDE='SET_ALTITUDE'
     SET_HEADING='SET_HEADING'
-    ARM='ARM'
-    DISARM='DISARM'
-    TAKEOFF='TAKEOFF'
-    LAND='LAND'
 
 class MetricStatus(str, Enum):
     VERIFIED='VERIFIED'; NOT_VERIFIED='NOT_VERIFIED'; UNUSABLE='UNUSABLE'; CONFLICT='CONFLICT'; INVALID='INVALID'
@@ -111,21 +107,34 @@ class PassiveHighLevelCommandTranslator:
 
         if state=='SUPPRESSED':
             return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'m2_suppressed')
-
         if intent=='NO_GUIDANCE':
             return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'m2_no_guidance')
-
         if intent=='HOLD':
             return out(CommandState.VALID if state=='AVAILABLE' else CommandState.DEGRADED,
                        CommandType.HOLD,'m2_hold')
-
         if intent=='ABORT_HOLD':
             return out(CommandState.VALID if state=='AVAILABLE' else CommandState.DEGRADED,
                        CommandType.HOLD,'m2_abort_hold_semantic',abort=True)
 
         if intent in ('MAINTAIN_OBSERVATION','REACQUIRE_TARGET'):
-            return out(CommandState.DEGRADED if state=='DEGRADED' else CommandState.SUPPRESSED,
-                       CommandType.NO_COMMAND,'semantic_guidance_without_explicit_movement')
+            explicit_count=sum(x is not None for x in (rel,alt,head))
+            if explicit_count==0:
+                return out(CommandState.DEGRADED if state=='DEGRADED' else CommandState.SUPPRESSED,
+                           CommandType.NO_COMMAND,'semantic_guidance_without_explicit_movement')
+            if explicit_count!=1:
+                return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'ambiguous_semantic_movement_geometry')
+            if state!='AVAILABLE':
+                return out(CommandState.DEGRADED,CommandType.NO_COMMAND,'semantic_movement_requires_available_guidance')
+            if metric!=MetricStatus.VERIFIED:
+                return out(CommandState.DEGRADED,CommandType.NO_COMMAND,'semantic_movement_requires_verified_metric')
+            if not frame or not isinstance(frame,str) or not frame.strip():
+                return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'semantic_movement_reference_frame_missing')
+            if rel is not None:
+                return out(CommandState.VALID,CommandType.MOVE_RELATIVE,'explicit_semantic_move_relative',
+                           r=tuple(float(x) for x in rel))
+            if alt is not None:
+                return out(CommandState.VALID,CommandType.SET_ALTITUDE,'explicit_semantic_set_altitude',a=float(alt))
+            return out(CommandState.VALID,CommandType.SET_HEADING,'explicit_semantic_set_heading',h=float(head))
 
         if intent in ('MOVE_RELATIVE','SET_ALTITUDE','SET_HEADING'):
             if state!='AVAILABLE':
@@ -140,15 +149,13 @@ class PassiveHighLevelCommandTranslator:
                 return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'move_relative_parameter_missing')
             return out(CommandState.VALID,CommandType.MOVE_RELATIVE,'explicit_verified_move_relative',
                        r=tuple(float(x) for x in rel))
-
         if intent=='SET_ALTITUDE':
             if alt is None:
                 return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'set_altitude_parameter_missing')
             return out(CommandState.VALID,CommandType.SET_ALTITUDE,'explicit_verified_set_altitude',a=float(alt))
-
         if intent=='SET_HEADING':
             if head is None:
                 return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'set_heading_parameter_missing')
             return out(CommandState.VALID,CommandType.SET_HEADING,'explicit_verified_set_heading',h=float(head))
 
-        return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'unsupported_or_reserved_guidance_intent')
+        return out(CommandState.SUPPRESSED,CommandType.NO_COMMAND,'unsupported_guidance_intent')
