@@ -18,14 +18,18 @@ class T(unittest.TestCase):
     def test_identity(self):
         e=mk(affine_axis_aligned(1,1,0,0)); self.assertP(e.ai_to_cal((10,20)),(10,20))
     def test_anisotropic_full_frame_resize(self):
-        sx,sy=640/2028,640/1520; e=mk(affine_axis_aligned(sx,sy,0,0))
-        self.assertP(e.cal_to_ai((2027,1519)),(2027*sx,1519*sy)); self.assertP(e.ai_to_cal(e.cal_to_ai((1014,760))),(1014,760))
+        sx,sy=640/2028,640/1520; e=mk(center_aligned_crop_resize((0,0),(sx,sy)))
+        self.assertP(e.cal_to_ai((0,0)),((sx-1)/2,(sy-1)/2))
+        self.assertP(e.cal_to_ai((2027,1519)),((2027.5)*sx-.5,(1519.5)*sy-.5))
+        self.assertP(e.ai_to_cal(e.cal_to_ai((1014,760))),(1014,760))
     def test_crop_resize(self):
-        sx,sy=640/1600,640/1200; e=mk(affine_axis_aligned(sx,sy,-200*sx,-100*sy))
-        self.assertP(e.cal_to_ai((200,100)),(0,0)); self.assertP(e.ai_to_cal((640,640)),(1800,1300))
+        sx,sy=640/1600,640/1200; e=mk(center_aligned_crop_resize((200,100),(sx,sy)))
+        self.assertP(e.cal_to_ai((200,100)),((sx-1)/2,(sy-1)/2))
+        self.assertP(e.ai_to_cal(((sx-1)/2,(sy-1)/2)),(200,100))
     def test_padding_letterbox_inverse(self):
-        s=640/2028; pad_y=(640-1520*s)/2; e=mk(affine_axis_aligned(s,s,0,pad_y))
-        self.assertP(e.cal_to_ai((0,0)),(0,pad_y)); self.assertP(e.ai_to_cal((0,pad_y)),(0,0))
+        s=640/2028; pad_y=(640-1520*s)/2; e=mk(center_aligned_crop_resize((0,0),(s,s),(0,pad_y)))
+        expected=((s-1)/2,(s-1)/2+pad_y)
+        self.assertP(e.cal_to_ai((0,0)),expected); self.assertP(e.ai_to_cal(expected),(0,0))
     def test_round_trip_both_directions(self):
         e=mk(affine_axis_aligned(.31,.42,7.5,13.0))
         for p in [(0,0),(1014,760),(2027,1519)]: self.assertP(e.ai_to_cal(e.cal_to_ai(p)),p,1e-8)
@@ -40,8 +44,9 @@ class T(unittest.TestCase):
         e=mk(affine_axis_aligned(.5,.5,0,0)); o=e.adapt(geo())
         p=o.points[1]; self.assertFalse(p.valid); self.assertIsNone(p.x); self.assertIsNone(p.y)
     def test_boundary_corner_coordinates(self):
-        e=mk(affine_axis_aligned(640/2028,640/1520,0,0))
-        self.assertP(e.cal_to_ai((0,0)),(0,0)); self.assertP(e.cal_to_ai((2027,1519)),(2027*640/2028,1519*640/1520))
+        sx,sy=640/2028,640/1520; e=mk(center_aligned_crop_resize((0,0),(sx,sy)))
+        self.assertP(e.cal_to_ai((0,0)),((sx-1)/2,(sy-1)/2))
+        self.assertP(e.cal_to_ai((2027,1519)),((2027.5)*sx-.5,(1519.5)*sy-.5))
     def test_noninvertible_fail_closed(self):
         e=mk(((1,0,0),(0,0,0),(0,0,1))); o=e.adapt(geo())
         self.assertFalse(o.transform_valid); self.assertIsNone(o.bbox_xyxy); self.assertIsNone(o.center)

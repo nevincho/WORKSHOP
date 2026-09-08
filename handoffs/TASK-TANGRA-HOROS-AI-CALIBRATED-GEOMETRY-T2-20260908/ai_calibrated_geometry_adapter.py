@@ -153,6 +153,19 @@ class AICalibratedGeometryAdapter:
                 metadata=self.transform.metadata,
                 error=str(e))
 
+def center_aligned_crop_resize(
+    crop_origin_xy: Point2,
+    scale_xy: Point2,
+    pad_xy: Point2 = (0.0, 0.0),
+) -> Tuple[Tuple[float,float,float],...]:
+    """CAL->AI affine for crop then resize under the declared pixel-center convention."""
+    cx, cy = map(float, crop_origin_xy)
+    sx, sy = map(float, scale_xy)
+    px, py = map(float, pad_xy)
+    tx = -sx * cx + 0.5 * sx - 0.5 + px
+    ty = -sy * cy + 0.5 * sy - 0.5 + py
+    return affine_axis_aligned(sx, sy, tx, ty)
+
 def affine_axis_aligned(sx: float, sy: float, tx: float, ty: float) -> Tuple[Tuple[float,float,float],...]:
     vals=(sx,sy,tx,ty)
     if not all(math.isfinite(v) for v in vals):
