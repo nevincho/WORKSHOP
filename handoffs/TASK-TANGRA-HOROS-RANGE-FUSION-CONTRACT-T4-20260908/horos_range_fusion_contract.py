@@ -78,17 +78,24 @@ class HorosRangeObservation:
 class FusionConfig:
     max_relative_pair_disagreement: float = 0.30
     max_normalized_residual: float = 3.0
+    degrade_relative_disagreement: float = 0.10
+    degrade_normalized_residual: float = 1.5
     uncertainty_floor_relative: float = 0.01
     min_confidence: float = 0.05
 
     def validate(self) -> None:
         vals = (self.max_relative_pair_disagreement, self.max_normalized_residual,
+                self.degrade_relative_disagreement, self.degrade_normalized_residual,
                 self.uncertainty_floor_relative, self.min_confidence)
         if not all(isfinite(float(v)) for v in vals):
             raise ValueError("malformed_config")
         if not (0.0 < self.max_relative_pair_disagreement < 2.0):
             raise ValueError("malformed_config")
         if not (0.0 < self.max_normalized_residual):
+            raise ValueError("malformed_config")
+        if not (0.0 < self.degrade_relative_disagreement < self.max_relative_pair_disagreement):
+            raise ValueError("malformed_config")
+        if not (0.0 < self.degrade_normalized_residual < self.max_normalized_residual):
             raise ValueError("malformed_config")
         if self.uncertainty_floor_relative < 0.0:
             raise ValueError("malformed_config")
@@ -222,6 +229,10 @@ class HorosRangeFusionContract:
 
         if not normalized:
             return self._invalid(t0, tuple(rejected), "no_usable_range_evidence")
+        if self._has_context_conflict([e.target_ref for e in normalized]):
+            return self._invalid(t0, tuple(rejected), "target_reference_conflict")
+        if self._has_context_conflict([e.frame_id for e in normalized]):
+            return self._invalid(t0, tuple(rejected), "frame_reference_conflict")
 
         groups: dict[str, list[RangeEvidence]] = {}
         for e in normalized:
@@ -265,9 +276,11 @@ class HorosRangeFusionContract:
         disagreement_sigma=sqrt(sum(w*(r-z)**2 for w,r in zip(weights,ranges))/wsum)
         sigma=max(formal_sigma, disagreement_sigma, abs(z)*self.config.uncertainty_floor_relative)
         metric=self._aggregate_metric(independent)
+        soft_disagreement=self._soft_disagreement(independent)
         all_verified=metric==MetricUsability.VERIFIED and all(e.validity==EvidenceValidity.VALID for e in independent)
-        state=FusionState.VALID if all_verified else FusionState.DEGRADED
-        validity=EvidenceValidity.VALID if all_verified else EvidenceValidity.DEGRADED
+        fully_valid=all_verified and not soft_disagreement
+        state=FusionState.VALID if fully_valid else FusionState.DEGRADED
+        validity=EvidenceValidity.VALID if fully_valid else EvidenceValidity.DEGRADED
         confidence=min(1.0,sum(float(e.confidence) for e in independent)/len(independent))
         return HorosRangeObservation(self.CONTRACT_ID,self.CONTRACT_VERSION,frame_id,timestamp,target_ref,z,sigma,confidence,validity,metric,state,tuple(self._source_label(e) for e in independent),tuple(rejected),False,self._collect_provenance(independent)+(("fusion","compatible_independent_uncertainty_weighted"),),(perf_counter_ns()-t0)/1e6)
 
@@ -293,6 +306,21 @@ class HorosRangeFusionContract:
                 nr=abs(za-zb)/max(combined,1e-12)
                 if rel>self.config.max_relative_pair_disagreement and nr>self.config.max_normalized_residual: return True
         return False
+
+    def _soft_disagreement(self,es):
+        for i in range(len(es)):
+            for j in range(i+1,len(es)):
+                a,b=es[i],es[j]; za,zb=float(a.range_m),float(b.range_m)
+                rel=abs(za-zb)/max((za+zb)*.5,1e-12)
+                combined=sqrt(self._effective_sigma(a)**2+self._effective_sigma(b)**2)
+                nr=abs(za-zb)/max(combined,1e-12)
+                if rel>self.config.degrade_relative_disagreement or nr>self.config.degrade_normalized_residual: return True
+        return False
+
+    @staticmethod
+    def _has_context_conflict(values):
+        vals=[v for v in values if v is not None]
+        return len(set(vals))>1
 
     @staticmethod
     def _aggregate_metric(es):

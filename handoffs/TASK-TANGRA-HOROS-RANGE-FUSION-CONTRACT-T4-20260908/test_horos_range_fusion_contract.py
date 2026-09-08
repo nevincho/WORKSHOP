@@ -41,6 +41,15 @@ class T(unittest.TestCase):
         e=replace(mono(),sigma_m=None); self.assertEqual(self.f.fuse((e,)).state,FusionState.INVALID)
     def test_missing_confidence(self):
         e=replace(mono(),confidence=None); self.assertEqual(self.f.fuse((e,)).state,FusionState.INVALID)
+    def test_target_reference_conflict_fails_closed(self):
+        a=mono(); b=replace(sparse(20,1,verified=True), target_ref="other")
+        o=self.f.fuse((a,b)); self.assertEqual(o.state,FusionState.INVALID); self.assertEqual(o.reason,"target_reference_conflict")
+    def test_frame_reference_conflict_fails_closed(self):
+        a=mono(); b=replace(sparse(20,1,verified=True), frame_id="other-frame")
+        o=self.f.fuse((a,b)); self.assertEqual(o.state,FusionState.INVALID); self.assertEqual(o.reason,"frame_reference_conflict")
+    def test_soft_disagreement_degrades(self):
+        o=self.f.fuse((mono(20,.7,1),sparse(23,.7,1,verified=True)))
+        self.assertEqual(o.state,FusionState.DEGRADED); self.assertIsNotNone(o.range_m); self.assertFalse(o.conflict)
     def test_repeatability(self):
         es=(mono(20,1,.8),sparse(20.3,.8,.9,verified=True)); a=self.f.fuse(es); b=self.f.fuse(es)
         self.assertEqual((a.range_m,a.sigma_m,a.state,a.provenance),(b.range_m,b.sigma_m,b.state,b.provenance))

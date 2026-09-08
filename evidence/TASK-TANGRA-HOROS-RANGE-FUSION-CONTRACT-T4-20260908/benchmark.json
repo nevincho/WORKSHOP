@@ -1,10 +1,10 @@
 {
-  "scope": "SYNTHETIC host contract normalization + two-source fusion only",
+  "scope": "SYNTHETIC host contract normalization + two-source fusion only; correction cycle 1",
   "sample_count": 100000,
-  "mean_ms": 0.0109283797,
-  "median_ms": 0.009404,
-  "p95_ms": 0.010766,
-  "max_ms": 26.966725,
+  "mean_ms": 0.01194369248,
+  "median_ms": 0.011006,
+  "p95_ms": 0.011808,
+  "max_ms": 11.092934,
   "pi5_verified": false,
   "end_to_end_verified": false
 }
