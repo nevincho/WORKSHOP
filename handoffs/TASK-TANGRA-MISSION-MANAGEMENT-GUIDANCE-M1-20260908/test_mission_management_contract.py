@@ -13,6 +13,17 @@ class T(unittest.TestCase):
  def test_lost(self): self.assertEqual(MissionManager().decide(base(lifecycle=Lifecycle.LOST)).state,MissionState.TARGET_LOST)
  def test_identity(self):
   m=MissionManager(); m.decide(base()); self.assertEqual(m.decide(base(target_ref='T2',timestamp=1.1)).reason,'target_identity_changed')
+ def test_identity_change_lost_priority(self):
+  m=MissionManager(); m.decide(base()); d=m.decide(base(target_ref='T2',timestamp=1.1,lifecycle=Lifecycle.LOST)); self.assertEqual((d.state,d.action,d.reason),(MissionState.TARGET_LOST,MissionAction.REACQUIRE,'authoritative_target_lost'))
+ def test_repeated_lost_deterministic(self):
+  def run():
+   m=MissionManager(); m.decide(base()); a=m.decide(base(target_ref='T2',timestamp=1.1,lifecycle=Lifecycle.LOST)); b=m.decide(base(target_ref='T2',timestamp=1.1,lifecycle=Lifecycle.LOST)); return a,b
+  a,b=run(); self.assertEqual(a,b)
+ def test_identity_change_valid_unchanged(self):
+  m=MissionManager(); m.decide(base()); d=m.decide(base(target_ref='T2',timestamp=1.1,lifecycle=Lifecycle.OBSERVED)); self.assertEqual((d.state,d.action,d.reason),(MissionState.OBSERVE,MissionAction.OBSERVE_TARGET,'target_identity_changed'))
+ def test_lost_hold_abort_priority(self):
+  self.assertEqual(MissionManager().decide(base(lifecycle=Lifecycle.LOST,operator_intent=OperatorIntent.HOLD)).state,MissionState.HOLD)
+  self.assertEqual(MissionManager().decide(base(lifecycle=Lifecycle.LOST,operator_intent=OperatorIntent.ABORT)).state,MissionState.ABORT)
  def test_bad_xyz(self): self.assertEqual(MissionManager().decide(base(xyz=(math.nan,2,3))).state,MissionState.HOLD)
  def test_bad_cov(self): self.assertEqual(MissionManager().decide(base(covariance=(1,math.inf,1))).state,MissionState.HOLD)
  def test_missing_pose(self): self.assertFalse(MissionManager().decide(base()).world_guidance_context_available)
