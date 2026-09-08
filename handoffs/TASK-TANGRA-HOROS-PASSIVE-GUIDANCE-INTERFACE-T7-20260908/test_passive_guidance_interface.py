@@ -1,0 +1,30 @@
+import unittest
+from dataclasses import replace
+from passive_guidance_interface import *
+CFG=FreshnessConfig(0.5); P=PassiveGuidancePolicy(CFG)
+ER=EnvelopeEvidence(EnvelopeState.RELIABLE,10.,'MEDIUM',True,False); ED=replace(ER,state=EnvelopeState.DEGRADED); EU=replace(ER,state=EnvelopeState.UNUSABLE)
+BASE=HorosGuidanceInput('1','TGT-A',10.,'LOCAL_ENU',Lifecycle.OBSERVED,MetricState.VALID,MetricUsability.NOT_VERIFIED,(1.,2.,3.),(0.,0.,0.),(1.,0.,0.,1.),confidence=.9,envelope=ER)
+class T(unittest.TestCase):
+ def e(self,x=BASE,n=10.1): return P.evaluate(x,n)
+ def test_01(self): self.assertEqual(self.e().advisory_state,AdvisoryState.AVAILABLE)
+ def test_02(self): self.assertEqual(self.e(replace(BASE,envelope=ED)).advisory_state,AdvisoryState.DEGRADED)
+ def test_03(self): self.assertEqual(self.e(replace(BASE,envelope=EU)).advisory_state,AdvisoryState.SUPPRESSED)
+ def test_04(self): self.assertEqual(self.e(replace(BASE,metric_state=MetricState.INVALID)).action,ObservationAction.TRACK_STATE_UNUSABLE)
+ def test_05(self): self.assertEqual(self.e(replace(BASE,metric_state=MetricState.CONFLICT)).advisory_state,AdvisoryState.SUPPRESSED)
+ def test_06(self): self.assertEqual(self.e(replace(BASE,lifecycle=Lifecycle.LOST)).advisory_state,AdvisoryState.SUPPRESSED)
+ def test_07(self): self.assertEqual(self.e(replace(BASE,lifecycle=Lifecycle.COASTING)).advisory_state,AdvisoryState.SUPPRESSED)
+ def test_08(self): self.assertTrue(self.e(n=11.).stale)
+ def test_09(self): self.assertFalse(self.e().world_navigation_available)
+ def test_10(self): self.assertTrue(self.e(replace(BASE,carrier_pose=CarrierPoseRef('P',10.,'LOCAL_ENU',True))).world_navigation_available)
+ def test_11(self): self.assertEqual(self.e().metric_usability,MetricUsability.NOT_VERIFIED)
+ def test_12(self): self.assertEqual(self.e(replace(BASE,target_ref='TGT-B')).target_ref,'TGT-B')
+ def test_13(self): self.assertEqual(self.e(n=9.9).reason,'timestamp_discontinuity')
+ def test_14(self): self.assertEqual(self.e(replace(BASE,xyz_m=(1.,2.))).advisory_state,AdvisoryState.SUPPRESSED)
+ def test_15(self):
+  a,b=self.e(),self.e(); self.assertEqual((a.advisory_state,a.action,a.reason),(b.advisory_state,b.action,b.reason))
+ def test_16(self): self.assertFalse(self.e().production_authority)
+ def test_17(self): self.assertFalse(any(x in PassiveGuidanceAdvisory.__dataclass_fields__ for x in ('pwm','dshot','uart','lora','esp_now','motor','esc','arm','takeoff','land')))
+ def test_18(self): self.assertEqual(self.e(replace(BASE,xyz_m=None)).advisory_state,AdvisoryState.SUPPRESSED)
+ def test_19(self): self.assertEqual(self.e(replace(BASE,metric_state=MetricState.DEGRADED)).advisory_state,AdvisoryState.DEGRADED)
+ def test_20(self): self.assertEqual(self.e(replace(BASE,envelope=ED)).geometry_envelope_state,EnvelopeState.DEGRADED)
+if __name__=='__main__': unittest.main()
