@@ -38,6 +38,7 @@ class PassiveHighLevelCommand:
     command_type: CommandType
     source_guidance_state: str
     source_guidance_intent: str
+    source_guidance_reason: str
     target_ref: Optional[str]
     source_timestamp: float
     frame_ref: Optional[str]
@@ -72,6 +73,7 @@ class PassiveHighLevelCommandTranslator:
         state=str(getattr(getattr(guidance,'state',None),'value',getattr(guidance,'state','')))
         intent=str(getattr(getattr(guidance,'intent',None),'value',getattr(guidance,'intent','')))
         target=getattr(guidance,'target_ref',None)
+        source_reason=str(getattr(guidance,'reason',''))
         ts=getattr(guidance,'source_timestamp',float('nan'))
         frame=getattr(guidance,'frame_ref',None)
         metric=self._metric(getattr(guidance,'metric_status','INVALID'))
@@ -82,7 +84,7 @@ class PassiveHighLevelCommandTranslator:
 
         def out(cs, ct, reason, r=None, a=None, h=None, abort=False):
             return PassiveHighLevelCommand(
-                cs,ct,state,intent,target,ts,frame,metric,r,a,h,abort,reason,prov
+                cs,ct,state,intent,source_reason,target,ts,frame,metric,r,a,h,abort,reason,prov
             )
 
         if getattr(guidance,'contract_version',None)!='M2_SHADOW_V1':

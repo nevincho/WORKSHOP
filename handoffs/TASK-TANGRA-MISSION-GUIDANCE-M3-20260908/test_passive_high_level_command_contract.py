@@ -38,6 +38,8 @@ class T(unittest.TestCase):
     def test_11_missing_reference_frame(self): self.assertEqual(tr(gd(m2.GuidanceIntent.MOVE_RELATIVE,frame=None,rel=(1.,2.,3.))).command_type,CommandType.NO_COMMAND)
     def test_12_frame_preservation_no_conversion(self):
         d=tr(gd(m2.GuidanceIntent.MOVE_RELATIVE,frame='BODY_NED',rel=(1.,2.,3.))); self.assertEqual(d.frame_ref,'BODY_NED'); self.assertEqual(d.relative_vector_m,(1.,2.,3.))
+    def test_12b_source_reason_preserved(self):
+        src=gd(m2.GuidanceIntent.HOLD); d=tr(src); self.assertEqual(d.source_guidance_reason,src.reason)
     def test_13_target_identity_mismatch(self):
         d=tr(gd(),ctx=CommandContext(previous_target_ref='OTHER',previous_timestamp=9.,previous_frame_ref='LOCAL')); self.assertEqual(d.reason,'target_identity_mismatch')
     def test_13b_frame_discontinuity(self):
@@ -70,8 +72,7 @@ class T(unittest.TestCase):
         x=gd(); x=m2.PassiveGuidanceDecision(x.state,x.intent,x.target_ref,x.source_timestamp,x.frame_ref,x.metric_status,x.source_mission_state,x.source_mission_action,x.source_mission_reason,x.relative_vector_m,x.altitude_m,x.heading_deg,x.reason,x.provenance,True,'M2_SHADOW_V1'); self.assertEqual(tr(x).state,CommandState.SUPPRESSED)
     def test_27_reserved_commands_never_generated(self):
         generated=set()
-        for intent in m2.GuidanceIntent:
-            generated.add(tr(gd(intent,rel=(1.,2.,3.),alt=5.,head=90.)).command_type)
+        for intent in m2.GuidanceIntent: generated.add(tr(gd(intent,rel=(1.,2.,3.),alt=5.,head=90.)).command_type)
         self.assertTrue({CommandType.ARM,CommandType.DISARM,CommandType.TAKEOFF,CommandType.LAND}.isdisjoint(generated))
 
 if __name__=='__main__': unittest.main()
