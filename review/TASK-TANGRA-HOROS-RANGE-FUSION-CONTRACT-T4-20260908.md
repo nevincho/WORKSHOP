@@ -4,20 +4,32 @@
 REVIEW_RESULT: PASS_WITH_CONDITIONS
 COMMIT_REVIEWED: 6d433582d95cc4664964489697ef3bdfa51fe0bc
 
-### Bounded defects
-1. Cross-context fusion fail-closed gap: multiple usable inputs with conflicting non-null `target_ref` or `frame_id` are currently fused while output consensus becomes null. This can combine evidence from different target/frame contexts. REQUIRED_CORRECTION: reject/fail closed on conflicting non-null target/frame references before independence/fusion; add deterministic tests.
-2. Soft disagreement degradation gap: compatible measurements below the hard CONFLICT gate increase uncertainty but remain VALID when all inputs are verified. TASK 4 requires disagreement to increase uncertainty/degrade status. REQUIRED_CORRECTION: add deterministic bounded soft-disagreement threshold/rule below hard conflict, preserving fused range but marking DEGRADED; add deterministic test.
+BOUNDED_DEFECTS:
+1. conflicting non-null target/frame references could be fused instead of failing closed;
+2. compatible but materially disagreeing verified measurements increased uncertainty without degrading status.
 
-### Verified otherwise
-- clean estimator ownership boundary;
-- correlation-group double-count prevention;
-- invalid/non-finite/non-positive/missing evidence rejection;
-- NOT_VERIFIED propagation prevents numerical agreement from promoting evidence to VERIFIED;
-- hard conflict does not select a convenient source;
-- provenance preserved;
-- LOS_RANGE compatibility is range-only and does not fabricate bearing/LOS;
-- standalone-only files; no authoritative runtime integration;
-- candidate tests 18/18 PASS;
-- benchmark claim scoped to host contract/fusion only.
+## Cycle 2 / Final
+REVIEW_RESULT: PASS
+COMMIT_REVIEWED: 7f628a727b89599ea6977053ea12211b10e0ffcd
 
-No redesign required. Apply only the two corrections above, rerun full TASK 4 suite and benchmark, then resubmit.
+### Verification
+- conflicting non-null `target_ref` and `frame_id` fail closed before fusion;
+- soft disagreement thresholds are explicit, below hard CONFLICT thresholds, and preserve fused range while marking DEGRADED;
+- hard independent-source conflict returns CONFLICT with no selected range;
+- correlated inputs contribute only one deterministic representative per independence group;
+- missing/invalid/non-finite/non-positive range, uncertainty or confidence fail closed;
+- NOT_VERIFIED inputs cannot become VERIFIED through agreement;
+- confidence does not create precision; effective sigma is inflated as confidence falls;
+- output uncertainty includes formal fusion uncertainty, disagreement spread and configured floor;
+- provenance and contributor source/version are preserved;
+- range-only LOS_RANGE compatibility preserves range/sigma/confidence/validity/usability/provenance and does not fabricate bearing/LOS;
+- source estimators retain their own mathematics; no source-specific estimation logic moved into HOROS contract;
+- no authoritative HOROS runtime, existing range estimator, tracking, detector, image, Dashboard, Guidance or command path changed;
+- corrected complete deterministic suite: 21/21 PASS;
+- corrected host-only benchmark: n=100000; mean 0.01194369248 ms; median 0.011006 ms; p95 0.011808 ms; max 11.092934 ms; no Pi5/E2E claim;
+- correction diff relative to review submission is bounded: 32 source-line changes and 9 test additions plus evidence/review artifacts.
+
+DECISION: PASS
+TASK4_COMPLETE: YES
+FROZEN_REVIEWED_COMMIT: 7f628a727b89599ea6977053ea12211b10e0ffcd
+BLOCKER: NONE for standalone TASK 4 completion. Production/runtime integration remains a separate future gate.
