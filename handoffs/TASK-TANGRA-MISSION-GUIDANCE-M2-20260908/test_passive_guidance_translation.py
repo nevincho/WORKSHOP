@@ -50,4 +50,6 @@ class T(unittest.TestCase):
   d=ev(md(MissionAction.OBSERVE_TARGET,MissionState.DEGRADED),nav()); self.assertEqual(d.state,GuidanceState.DEGRADED); self.assertEqual(d.reason,'upstream_mission_degraded_preserved')
  def test_30_upstream_degraded_not_promoted_reacquire(self):
   d=ev(md(MissionAction.REACQUIRE,MissionState.DEGRADED),nav(lifecycle=Lifecycle.DEGRADED,search_relative_vector_m=(2.,0.,0.))); self.assertEqual(d.state,GuidanceState.DEGRADED)
+ def test_31_preserves_m1_state_action_reason(self):
+  d=ev(md(MissionAction.MAINTAIN_TRACK,MissionState.TRACK),nav()); self.assertEqual(d.source_mission_state,'TRACK'); self.assertEqual(d.source_mission_action,'MAINTAIN_TRACK'); self.assertEqual(d.source_mission_reason,'test')
 if __name__=='__main__': unittest.main()

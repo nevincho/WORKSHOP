@@ -28,6 +28,7 @@ class GuidancePolicy:
 @dataclass(frozen=True)
 class PassiveGuidanceDecision:
     state: GuidanceState; intent: GuidanceIntent; target_ref: Optional[str]; source_timestamp: float; frame_ref: Optional[str]; metric_status: MetricStatus
+    source_mission_state: str; source_mission_action: str; source_mission_reason: str
     relative_vector_m: Optional[Tuple[float,float,float]]; altitude_m: Optional[float]; heading_deg: Optional[float]; reason: str; provenance: Tuple[Tuple[str,str],...]
     production_authority: bool=False; contract_version: str='M2_SHADOW_V1'
 
@@ -41,16 +42,17 @@ class PassiveGuidanceTranslator:
         except Exception: return MetricStatus.INVALID
     def evaluate(self, src: GuidanceInput, context: GuidanceContext=GuidanceContext()) -> PassiveGuidanceDecision:
         m=src.mission_decision; ts=getattr(m,'timestamp',float('nan')); target=getattr(m,'target_ref',None); frame=getattr(m,'frame_ref',None); metric=self._metric(getattr(m,'metric_status','INVALID'))
+        mission_state=str(getattr(getattr(m,'state',None),'value',getattr(m,'state',''))); mission_action=str(getattr(getattr(m,'action',None),'value',getattr(m,'action',''))); mission_reason=str(getattr(m,'reason',''))
         prov=tuple(getattr(m,'provenance',()))+(('m2','PASSIVE_GUIDANCE_TRANSLATION'),)
         def out(state,intent,reason,rel=None,alt=None,head=None,nav=None):
-            return PassiveGuidanceDecision(state,intent,target,ts,frame,metric,rel,alt,head,reason,prov+(() if nav is None else tuple(nav.provenance)))
+            return PassiveGuidanceDecision(state,intent,target,ts,frame,metric,mission_state,mission_action,mission_reason,rel,alt,head,reason,prov+(() if nav is None else tuple(nav.provenance)))
         if getattr(m,'version',None)!='M1_SHADOW_V1' or getattr(m,'production_authority',True) is not False: return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'invalid_or_authoritative_m1_contract')
         if not math.isfinite(float(ts)) or not math.isfinite(float(src.evaluated_at)): return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'malformed_timestamp')
         if context.previous_timestamp is not None and ts<context.previous_timestamp: return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'timestamp_regression')
         if context.previous_target_ref is not None and target!=context.previous_target_ref: return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'target_identity_discontinuity_requires_reset')
         age=src.evaluated_at-ts
         if age<0 or age>self.policy.stale_after_s: return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'stale_or_discontinuous_m1_decision')
-        action=getattr(getattr(m,'action',None),'value',getattr(m,'action',None)); state=getattr(getattr(m,'state',None),'value',getattr(m,'state',None)); upstream_degraded=(state=='DEGRADED')
+        action=mission_action; state=mission_state; upstream_degraded=(state=='DEGRADED')
         if action=='NO_ACTION': return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'m1_no_action')
         if action=='HOLD': return out(GuidanceState.AVAILABLE,GuidanceIntent.HOLD,'m1_hold')
         if action=='ABORT' or state=='ABORT': return out(GuidanceState.AVAILABLE,GuidanceIntent.ABORT_HOLD,'m1_abort_passive_hold')
