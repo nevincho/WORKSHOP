@@ -1,0 +1,14 @@
+{
+  "evidence": "SYNTHETIC_HOST",
+  "seed": 20260908,
+  "A_STATIC_NOISE": {"center_rms_jitter_px":0.676472,"left_rms_jitter_px":0.802882,"right_rms_jitter_px":0.809304,"lr_span_cv":0.002883,"nt_span_cv":0.002459,"sparse_range_cv":0.001699,"fused_range_cv":0.001587,"range_bias_m":0.002875,"fused_error_jitter_m":0.031739,"max_transient_error_m":0.082318,"invalid_frames":0,"nose_tail_valid_rate":1.0},
+  "B_TRANSLATION": {"fused_range_cv":0.001769,"range_bias_m":-0.004879,"fused_error_jitter_m":0.035368,"max_transient_error_m":0.081092},
+  "C_SCALE_CHANGE": {"raw_fused_range_cv":0.170551,"range_bias_m":-0.000695,"fused_error_jitter_m":0.040031,"max_transient_error_m":0.114033,"interpretation":"raw CV includes intended truth trend"},
+  "D_ROTATION": {"fused_range_cv":0.001573,"range_bias_m":0.001130,"max_transient_error_m":0.083539},
+  "E_FORESHORTEN": {"fused_range_cv":0.003307,"range_bias_m":0.176591,"fused_error_jitter_m":0.066715,"max_transient_error_m":0.293907},
+  "F_CORRUPT": {"right_rms_jitter_px":15.081292,"fused_range_cv":0.001535,"max_transient_error_m":0.064645},
+  "G_WEAK_CONTRAST": {"invalid_frames":5,"recovery_frames":1},
+  "H_AXIAL_AMBIGUITY": {"nose_tail_valid_rate":0.9375,"invalid_frames":0},
+  "I_PARTIAL_SILHOUETTE": {"fused_error_jitter_m":0.035648,"invalid_frames":0},
+  "J_RECOVERY": {"invalid_frames":5,"recovery_frames":1}
+}
