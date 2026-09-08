@@ -1,7 +1,7 @@
 # M2 — Passive Guidance Decision / Translation Layer
 
 TASK_ID: TASK-TANGRA-MISSION-GUIDANCE-M2-20260908
-STATUS: RE-REVIEW
+STATUS: COMPLETE
 CAMPAIGN: TANGRA Mission Management / Guidance Layer
 BASE_M1_REVIEWED: 88ffcf4932545304c5a82c83c65ad01b99000680
 BASE_M1_COMPLETE_METADATA: 4fc48e0a8bcb25807e84dd94d9e2c7c22ffd5cbd
@@ -20,8 +20,9 @@ CONTROL_SIDE_EFFECTS: NONE
 M1_MODIFIED: NO
 HOROS_T8_TOUCHED: NO
 M3_STARTED: NO
-REVIEW_CYCLE_1: PASS_WITH_CONDITIONS
-REVIEW_CYCLE_2: PASS_WITH_CONDITIONS
+REVIEW_RESULT: PASS after 2 bounded correction cycles
 CORRECTION_CYCLES: 2
+FROZEN_REVIEWED_COMMIT: 75417cb4356a79e61d1196f3f859fa7cd7ba08e8
+M2_COMPLETE: YES
 
 Production gates NOT_VERIFIED: production M1 runtime integration; production M2 integration; exact production navigation inputs; Pi5 E2E; Master ESP32 transport; FC command acceptance; physical flight behavior.
