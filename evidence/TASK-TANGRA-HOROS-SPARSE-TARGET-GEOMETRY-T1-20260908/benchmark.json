@@ -1,0 +1,13 @@
+{
+  "environment": "container x86_64; OpenCV/Numpy microbenchmark; NOT Pi5 end-to-end",
+  "opencv": "4.13.0",
+  "numpy": "2.3.5",
+  "targets_processed": 900,
+  "sizes": [
+    {"roi_hw": [64,64], "target_span_wh_px": [49,33], "n": 300, "mean_ms": 0.56379669, "median_ms": 0.5823445, "p95_ms": 0.68951145, "max_ms": 1.53574},
+    {"roi_hw": [96,128], "target_span_wh_px": [97,50], "n": 300, "mean_ms": 0.6486765833, "median_ms": 0.6304475, "p95_ms": 0.81799615, "max_ms": 2.703202},
+    {"roi_hw": [144,192], "target_span_wh_px": [146,75], "n": 300, "mean_ms": 0.865055, "median_ms": 0.8193775, "p95_ms": 1.0000369, "max_ms": 5.451634}
+  ],
+  "overall": {"mean_ms": 0.6925094244, "median_ms": 0.64567, "p95_ms": 0.9070425, "max_ms": 5.451634},
+  "scope_note": "Synthetic ROI microbenchmark only. No end-to-end FPS, Pi5, physical-target, calibrated-coordinate, or metric-range claim."
+}
