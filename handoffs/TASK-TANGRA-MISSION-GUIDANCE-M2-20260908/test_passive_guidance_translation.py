@@ -46,4 +46,8 @@ class T(unittest.TestCase):
  def test_27_bad_uncertainty(self): self.assertEqual(ev(md(),nav(uncertainty_m=-1.)).state,GuidanceState.SUPPRESSED)
  def test_28_m1_authority_rejected(self):
   x=md(); x=MissionDecision(x.state,x.action,x.target_ref,x.timestamp,x.frame_ref,x.metric_status,x.confidence_authority,x.world_guidance_context_available,x.reason,x.provenance,x.version,True); self.assertEqual(ev(x,nav()).state,GuidanceState.SUPPRESSED)
+ def test_29_upstream_degraded_not_promoted_observe(self):
+  d=ev(md(MissionAction.OBSERVE_TARGET,MissionState.DEGRADED),nav()); self.assertEqual(d.state,GuidanceState.DEGRADED); self.assertEqual(d.reason,'upstream_mission_degraded_preserved')
+ def test_30_upstream_degraded_not_promoted_reacquire(self):
+  d=ev(md(MissionAction.REACQUIRE,MissionState.DEGRADED),nav(lifecycle=Lifecycle.DEGRADED,search_relative_vector_m=(2.,0.,0.))); self.assertEqual(d.state,GuidanceState.DEGRADED)
 if __name__=='__main__': unittest.main()

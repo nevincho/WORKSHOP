@@ -50,7 +50,7 @@ class PassiveGuidanceTranslator:
         if context.previous_target_ref is not None and target!=context.previous_target_ref: return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'target_identity_discontinuity_requires_reset')
         age=src.evaluated_at-ts
         if age<0 or age>self.policy.stale_after_s: return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'stale_or_discontinuous_m1_decision')
-        action=getattr(getattr(m,'action',None),'value',getattr(m,'action',None)); state=getattr(getattr(m,'state',None),'value',getattr(m,'state',None))
+        action=getattr(getattr(m,'action',None),'value',getattr(m,'action',None)); state=getattr(getattr(m,'state',None),'value',getattr(m,'state',None)); upstream_degraded=(state=='DEGRADED')
         if action=='NO_ACTION': return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'m1_no_action')
         if action=='HOLD': return out(GuidanceState.AVAILABLE,GuidanceIntent.HOLD,'m1_hold')
         if action=='ABORT' or state=='ABORT': return out(GuidanceState.AVAILABLE,GuidanceIntent.ABORT_HOLD,'m1_abort_passive_hold')
@@ -77,10 +77,11 @@ class PassiveGuidanceTranslator:
         if action=='REACQUIRE':
             if nav.search_relative_vector_m is None: return out(GuidanceState.DEGRADED,GuidanceIntent.REACQUIRE_TARGET,'reacquire_without_search_geometry',nav=nav)
             if nav_metric!=MetricStatus.VERIFIED: return out(GuidanceState.DEGRADED,GuidanceIntent.REACQUIRE_TARGET,'reacquire_geometry_not_verified',nav=nav)
-            return out(GuidanceState.DEGRADED if uncertain else GuidanceState.AVAILABLE,GuidanceIntent.REACQUIRE_TARGET,'reacquire_with_explicit_search_geometry',rel=tuple(float(x) for x in nav.search_relative_vector_m),nav=nav)
+            return out(GuidanceState.DEGRADED if (uncertain or upstream_degraded) else GuidanceState.AVAILABLE,GuidanceIntent.REACQUIRE_TARGET,'reacquire_with_explicit_search_geometry',rel=tuple(float(x) for x in nav.search_relative_vector_m),nav=nav)
         if action not in ('OBSERVE_TARGET','MAINTAIN_TRACK'): return out(GuidanceState.SUPPRESSED,GuidanceIntent.NO_GUIDANCE,'unsupported_m1_action',nav=nav)
         if nav_metric==MetricStatus.NOT_VERIFIED: return out(GuidanceState.DEGRADED,GuidanceIntent.MAINTAIN_OBSERVATION,'metric_not_verified_no_navigation_authority',nav=nav)
         if nav.target_xyz_m is None: return out(GuidanceState.DEGRADED,GuidanceIntent.NO_GUIDANCE,'target_geometry_missing',nav=nav)
         if nav.carrier_xyz_m is None: return out(GuidanceState.DEGRADED,GuidanceIntent.MAINTAIN_OBSERVATION,'carrier_pose_missing_target_relative_only',nav=nav)
         if uncertain: return out(GuidanceState.DEGRADED,GuidanceIntent.MAINTAIN_OBSERVATION,'uncertainty_above_shadow_threshold',nav=nav)
+        if upstream_degraded: return out(GuidanceState.DEGRADED,GuidanceIntent.MAINTAIN_OBSERVATION,'upstream_mission_degraded_preserved',nav=nav)
         return out(GuidanceState.AVAILABLE,GuidanceIntent.MAINTAIN_OBSERVATION,'verified_geometry_observation_guidance',nav=nav)
