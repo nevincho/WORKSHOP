@@ -53,9 +53,11 @@ class MissionManager:
         if i.system_ready is not True or i.safety_available is not True: return out(MissionState.HOLD,MissionAction.HOLD,'readiness_or_safety_unavailable')
         if i.observation_age_s is None or not math.isfinite(i.observation_age_s) or i.observation_age_s<0 or i.observation_age_s>self.policy.stale_after_s: return out(MissionState.HOLD,MissionAction.NO_ACTION,'stale_or_unknown_observation')
         if not i.target_ref: return out(MissionState.TARGET_LOST,MissionAction.REACQUIRE,'target_unavailable')
+        if i.lifecycle==Lifecycle.LOST:
+            self._target=i.target_ref; self._degrade_count=0; self._last_stable=MissionState.TARGET_LOST
+            return out(MissionState.TARGET_LOST,MissionAction.REACQUIRE,'authoritative_target_lost')
         if self._target is not None and i.target_ref!=self._target: self._target=i.target_ref; self._degrade_count=0; self._last_stable=MissionState.OBSERVE; return out(MissionState.OBSERVE,MissionAction.OBSERVE_TARGET,'target_identity_changed')
         self._target=i.target_ref
-        if i.lifecycle==Lifecycle.LOST: self._degrade_count=0; self._last_stable=MissionState.TARGET_LOST; return out(MissionState.TARGET_LOST,MissionAction.REACQUIRE,'authoritative_target_lost')
         degraded=i.lifecycle in (Lifecycle.DEGRADED,Lifecycle.COASTING) or i.metric_status in (MetricStatus.UNUSABLE,MetricStatus.CONFLICT,MetricStatus.INVALID)
         if degraded:
             self._degrade_count+=1
