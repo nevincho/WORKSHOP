@@ -1,23 +1,27 @@
-# TASK-TANGRA-HOROS-AI-CALIBRATED-GEOMETRY-T2-20260908 — Independent Review Cycle 1
+# TASK-TANGRA-HOROS-AI-CALIBRATED-GEOMETRY-T2-20260908 — Independent Review
 
+## Cycle 1
 REVIEW_RESULT: PASS_WITH_CONDITIONS
 COMMIT_REVIEWED: 1e112de0e197b7dff3a97872282f0ddfe320babe
+DEFECT: documented integer-pixel-center convention was not reflected by half-pixel translation in practical resize/crop/letterbox fixtures.
+REQUIRED_CORRECTION: explicit center-aligned crop/resize constructor and tests; no architecture expansion.
 
-## Verified
-- Explicit finite invertible affine CAL->AI matrix with inverse AI->CAL mapping.
-- Crop/resize/padding represented by transform parameters rather than hidden assumptions.
-- TASK 1 equivalent bbox/center/sparse-point contract; invalid/null sparse points remain null/invalid.
-- Non-invertible and malformed transforms fail closed.
-- K_AI=A*K_CAL consistency test is mathematically correct for affine A.
-- No concrete production A is fabricated; production transform remains NOT_VERIFIED.
-- No TASK 1 or protected runtime modification; no image reconstruction, range, tracking, HOROS or Guidance integration.
-- 12 deterministic tests and bounded host microbenchmark are appropriately scoped.
+## Cycle 2 / Final
+REVIEW_RESULT: PASS
+COMMIT_REVIEWED: 4bd4b5d38357db501de07511aeabaa4c0ae058e1
 
-## Concrete bounded defect
-The declared pixel convention says integer coordinates denote pixel centers, but the practical full-frame resize/crop/letterbox fixtures construct resize transforms with zero half-pixel translation. Under the declared center convention, a standard center-aligned resize should use x_out=(x_in+0.5)*sx-0.5 (and y analog), with crop-origin and padding terms composed explicitly. Leaving this implicit makes the resize examples internally inconsistent with the documented convention and could create a systematic sub-pixel offset when a concrete runtime transform is later instantiated.
+### Verification
+- `center_aligned_crop_resize()` implements x_AI=(x_CAL-crop_x+0.5)*sx-0.5+pad_x and y analog, making half-pixel behavior explicit in A.
+- Generic affine transform contract remains finite, invertible and fail-closed; no production transform is embedded.
+- Identity, anisotropic resize, crop+resize, padding/letterbox, bidirectional round-trip, bbox, TASK 1 sparse points, null preservation, boundaries, malformed/non-invertible transforms, and K consistency are covered.
+- Complete corrected suite: 12/12 PASS.
+- TASK 1 compatibility preserved; invalid/null points never gain coordinates.
+- K_AI=A*K_CAL test remains mathematically consistent with coordinate mapping.
+- Production transform remains NOT_VERIFIED because repository evidence does not prove the full live HQ preprocessing chain. No A was fabricated.
+- No TASK 1 source, HQ acquisition, detector, tracker, CA Kalman, CurrentTargetManager, range estimator, HOROS state, Guidance, Dashboard, command path, full-resolution image reconstruction, second frame/detector/tracker, or production runtime was modified.
+- Corrected host coordinate-only benchmark: n=20,000; mean 0.339406 ms; median 0.300374 ms; p95 0.501191 ms; max 17.675570 ms. No Pi5/end-to-end claim.
 
-## Required correction
-Add a deterministic center-aligned crop/resize transform constructor implementing the documented half-pixel terms; update resize, crop+resize, padding/letterbox and boundary tests/documentation to use and assert that convention. Keep the generic affine contract unchanged. Rerun the complete test suite and affected coordinate microbenchmark. No architecture expansion.
-
-TASK2_COMPLETE: NO
-BLOCKER: bounded pixel-center convention inconsistency only.
+DECISION: PASS
+TASK2_COMPLETE: YES
+FROZEN_REVIEWED_COMMIT: 4bd4b5d38357db501de07511aeabaa4c0ae058e1
+BLOCKER: NONE for TASK 2 standalone completion. Production integration remains gated on authoritative live transform evidence.
