@@ -70,6 +70,7 @@ class ExtractorConfig:
     nose_tail_width_ratio_threshold: float = 1.22
     endpoint_band_fraction: float = 0.18
     border_penalty: float = 0.35
+    min_photometric_separation: float = 12.0
 
 
 class SparseTargetGeometryExtractor:
@@ -101,6 +102,12 @@ class SparseTargetGeometryExtractor:
         notes.append(mask_note)
         if mask is None:
             return self._invalid(target, t0, gray.shape[:2], "no_reliable_foreground", tuple(notes))
+
+        separation = self._photometric_separation(gray, mask)
+        notes.append(f"photometric_separation={separation:.3f}")
+        if separation < self.config.min_photometric_separation:
+            notes.append("weak_photometric_separation")
+            return self._invalid(target, t0, gray.shape[:2], "weak_foreground_background_separation", tuple(notes))
 
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         if not contours:
@@ -163,9 +170,12 @@ class SparseTargetGeometryExtractor:
         center_g = global_xy(center_local)
         left_g = global_xy(left)
         right_g = global_xy(right)
-        nose_g = global_xy(nose_local)
-        tail_g = global_xy(tail_local)
         nt_valid = nose_local is not None and tail_local is not None and semantic_conf >= 0.25
+        if nt_valid:
+            nose_g = global_xy(nose_local)
+            tail_g = global_xy(tail_local)
+        else:
+            nose_g = tail_g = (None, None)
         points = (
             SparsePoint(PointType.CENTER, *center_g, base_conf, True),
             SparsePoint(PointType.LEFT_SILHOUETTE, *left_g, base_conf, True),
@@ -226,6 +236,13 @@ class SparseTargetGeometryExtractor:
                 clean = cv2.morphologyEx(component, cv2.MORPH_CLOSE, kernel, iterations=1)
                 best_score, best_mask, best_conf = score, clean, conf
         return best_score, best_mask, best_conf
+
+    def _photometric_separation(self, gray: np.ndarray, mask: np.ndarray) -> float:
+        fg = gray[mask > 0]
+        bg = gray[mask == 0]
+        if fg.size < self.config.min_component_area_px or bg.size < self.config.min_component_area_px:
+            return 0.0
+        return float(abs(float(np.median(fg)) - float(np.median(bg))))
 
     def _infer_polarity(self, centered, proj_major, minor):
         lo, hi = float(proj_major.min()), float(proj_major.max())

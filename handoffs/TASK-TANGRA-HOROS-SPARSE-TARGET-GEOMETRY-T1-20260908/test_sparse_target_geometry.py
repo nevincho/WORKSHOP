@@ -8,8 +8,8 @@ import numpy as np
 from sparse_target_geometry import GeometryValidity, PointType, SparseTargetGeometryExtractor, TargetGeometryInput
 
 
-def fixture(angle=0.0, clipped=False, symmetric=False):
-    img = np.full((220, 260, 3), 230, np.uint8)
+def fixture(angle=0.0, clipped=False, symmetric=False, fg=30, bg=230):
+    img = np.full((220, 260, 3), bg, np.uint8)
     cx, cy = (32, 45) if clipped else (130, 110)
     if symmetric:
         poly = np.array([[-55,-10],[-12,-10],[-12,-35],[12,-35],[12,-10],[55,-10],[55,10],[12,10],[12,35],[-12,35],[-12,10],[-55,10]], np.float32)
@@ -18,7 +18,7 @@ def fixture(angle=0.0, clipped=False, symmetric=False):
     th = np.deg2rad(angle)
     R = np.array([[np.cos(th),-np.sin(th)],[np.sin(th),np.cos(th)]])
     p = (poly @ R.T) + [cx, cy]
-    cv2.fillPoly(img, [np.rint(p).astype(np.int32)], (30,30,30))
+    cv2.fillPoly(img, [np.rint(p).astype(np.int32)], (fg,fg,fg))
     x1,y1 = np.floor(p.min(axis=0)-8).astype(int)
     x2,y2 = np.ceil(p.max(axis=0)+8).astype(int)
     if clipped:
@@ -49,7 +49,10 @@ class GeometryTests(unittest.TestCase):
     def test_ambiguous_nose_tail_is_not_fabricated(self):
         img,b=fixture(0,symmetric=True); o=self.e.extract(img,meta(b))
         nt=[p for p in o.points if p.point_type in (PointType.NOSE,PointType.TAIL)]
-        self.assertTrue(all(not p.valid for p in nt)); self.assertIn("nose_tail_ambiguous",o.notes)
+        self.assertTrue(all(not p.valid for p in nt)); self.assertTrue(all(p.x is None and p.y is None for p in nt)); self.assertIn("nose_tail_ambiguous",o.notes)
+    def test_weak_contrast_fails_closed(self):
+        img,b=fixture(0,fg=124,bg=128); o=self.e.extract(img,meta(b))
+        self.assertEqual(o.validity,GeometryValidity.INVALID); self.assertEqual(o.geometry_confidence,0.0); self.assertIn("weak_photometric_separation",o.notes)
     def test_roi_boundary_case(self):
         img,b=fixture(0,clipped=True); o=self.e.extract(img,meta(b))
         self.assertIn("bbox_clipped_to_frame",o.notes); self.assertNotEqual(o.validity,GeometryValidity.VALID)
