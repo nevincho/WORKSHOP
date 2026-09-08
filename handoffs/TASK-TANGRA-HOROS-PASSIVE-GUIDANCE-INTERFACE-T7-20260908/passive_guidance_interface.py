@@ -33,6 +33,9 @@ class PassiveGuidanceAdvisory:
     contract_id:str; contract_version:str; advisory_state:AdvisoryState; action:ObservationAction; target_ref:str; source_timestamp:float; evaluated_at:float
     age_s:float; stale:bool; metric_state:MetricState; metric_usability:MetricUsability; geometry_envelope_state:EnvelopeState; confidence:float
     uncertainty:Optional[Tuple[float,...]]; carrier_pose_available:bool; world_navigation_available:bool; production_authority:bool; reason:str; provenance:Tuple[Tuple[str,str],...]; processing_time_ms:float
+@dataclass(frozen=True)
+class AdvisoryContext:
+    previous_target_ref:Optional[str]=None; previous_timestamp:Optional[float]=None
 
 class PassiveGuidancePolicy:
     CONTRACT_ID='TANGRA_PASSIVE_GUIDANCE_ADVISORY'; CONTRACT_VERSION='1.0'
@@ -41,7 +44,7 @@ class PassiveGuidancePolicy:
         self.freshness=freshness
     @staticmethod
     def _finite_vec(v,n): return v is None or (len(v)==n and all(isfinite(float(x)) for x in v))
-    def evaluate(self, src:HorosGuidanceInput, now:float)->PassiveGuidanceAdvisory:
+    def evaluate(self, src:HorosGuidanceInput, now:float, context:Optional[AdvisoryContext]=None)->PassiveGuidanceAdvisory:
         t0=perf_counter_ns()
         def out(state,action,reason,env=EnvelopeState.UNKNOWN,stale=False,age=0.0):
             pose=src.carrier_pose is not None and src.carrier_pose.valid
@@ -53,8 +56,15 @@ class PassiveGuidancePolicy:
             if not self._finite_vec(src.xyz_m,3) or not self._finite_vec(src.vxyz_mps,3): return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'malformed_state_vector')
             if src.covariance is not None and (not src.covariance or not all(isfinite(float(x)) for x in src.covariance)): return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'malformed_covariance')
             age=now-src.timestamp
+            if context is not None:
+                if context.previous_target_ref is not None and context.previous_target_ref != src.target_ref: return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'target_identity_change_requires_context_reset',age=age)
+                if context.previous_timestamp is not None and src.timestamp < context.previous_timestamp: return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'source_timestamp_regression',age=age)
             if age < 0: return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'timestamp_discontinuity',age=age)
             env=src.envelope.state if src.envelope else EnvelopeState.UNKNOWN
+            if src.carrier_pose is not None:
+                p=src.carrier_pose
+                if (not isfinite(p.timestamp)) or not p.pose_ref or not p.frame_id or p.frame_id != src.frame_ref or p.timestamp > now or now-p.timestamp > self.freshness.stale_after_s:
+                    src=HorosGuidanceInput(src.schema_version,src.target_ref,src.timestamp,src.frame_ref,src.lifecycle,src.metric_state,src.metric_usability,src.xyz_m,src.vxyz_mps,src.covariance,src.prediction_ref,src.range_state,src.confidence,None,src.envelope,src.provenance+(("carrier_pose","invalid_or_stale_not_used"),))
             if age > self.freshness.stale_after_s: return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'stale_target_state',env,True,age)
             if src.lifecycle==Lifecycle.LOST: return out(AdvisoryState.SUPPRESSED,ObservationAction.TRACK_STATE_UNUSABLE,'target_lost',env,False,age)
             if src.lifecycle==Lifecycle.COASTING: return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'coasting_metric_navigation_suppressed',env,False,age)
@@ -64,8 +74,7 @@ class PassiveGuidancePolicy:
             if src.metric_state==MetricState.DEGRADED or src.lifecycle==Lifecycle.DEGRADED or env in (EnvelopeState.DEGRADED,EnvelopeState.UNKNOWN):
                 action=ObservationAction.MAINTAIN_OBSERVATION_GEOMETRY if env==EnvelopeState.DEGRADED else ObservationAction.OBSERVE
                 return out(AdvisoryState.DEGRADED,action,'degraded_evidence_preserved',env,False,age)
-            if env==EnvelopeState.RELIABLE:
-                return out(AdvisoryState.AVAILABLE,ObservationAction.OBSERVE,'reliable_passive_observation_advisory',env,False,age)
+            if env==EnvelopeState.RELIABLE: return out(AdvisoryState.AVAILABLE,ObservationAction.OBSERVE,'reliable_passive_observation_advisory',env,False,age)
             return out(AdvisoryState.DEGRADED,ObservationAction.OBSERVE,'envelope_not_supplied_or_unknown',env,False,age)
         except Exception:
             return out(AdvisoryState.SUPPRESSED,ObservationAction.NO_GUIDANCE_AVAILABLE,'malformed_input_fail_closed')

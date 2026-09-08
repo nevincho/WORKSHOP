@@ -1,1 +1,1 @@
-{"scope":"HOST_ONLY_PASSIVE_POLICY","sample_count":100000,"mean_ms":0.00386388029,"median_ms":0.003715,"p95_ms":0.003855,"max_ms":0.858007,"pi5_end_to_end":"NOT_VERIFIED"}
+{"scope":"HOST_ONLY_PASSIVE_POLICY_WITH_CONTEXT","sample_count":100000,"mean_ms":0.00376034039,"median_ms":0.003375,"p95_ms":0.003566,"max_ms":1.797074,"tests":"22/22 PASS","pi5_end_to_end":"NOT_VERIFIED"}

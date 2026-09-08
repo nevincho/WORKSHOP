@@ -17,7 +17,7 @@ class T(unittest.TestCase):
  def test_09(self): self.assertFalse(self.e().world_navigation_available)
  def test_10(self): self.assertTrue(self.e(replace(BASE,carrier_pose=CarrierPoseRef('P',10.,'LOCAL_ENU',True))).world_navigation_available)
  def test_11(self): self.assertEqual(self.e().metric_usability,MetricUsability.NOT_VERIFIED)
- def test_12(self): self.assertEqual(self.e(replace(BASE,target_ref='TGT-B')).target_ref,'TGT-B')
+ def test_12(self): self.assertEqual(P.evaluate(replace(BASE,target_ref='TGT-B'),10.1,AdvisoryContext('TGT-A',9.9)).reason,'target_identity_change_requires_context_reset')
  def test_13(self): self.assertEqual(self.e(n=9.9).reason,'timestamp_discontinuity')
  def test_14(self): self.assertEqual(self.e(replace(BASE,xyz_m=(1.,2.))).advisory_state,AdvisoryState.SUPPRESSED)
  def test_15(self):
@@ -27,4 +27,7 @@ class T(unittest.TestCase):
  def test_18(self): self.assertEqual(self.e(replace(BASE,xyz_m=None)).advisory_state,AdvisoryState.SUPPRESSED)
  def test_19(self): self.assertEqual(self.e(replace(BASE,metric_state=MetricState.DEGRADED)).advisory_state,AdvisoryState.DEGRADED)
  def test_20(self): self.assertEqual(self.e(replace(BASE,envelope=ED)).geometry_envelope_state,EnvelopeState.DEGRADED)
+ def test_21(self): self.assertEqual(P.evaluate(BASE,10.1,AdvisoryContext('TGT-A',10.2)).reason,'source_timestamp_regression')
+ def test_22(self):
+  a=self.e(replace(BASE,carrier_pose=CarrierPoseRef('P',9.,'LOCAL_ENU',True))); self.assertEqual(a.advisory_state,AdvisoryState.AVAILABLE); self.assertFalse(a.world_navigation_available)
 if __name__=='__main__': unittest.main()
