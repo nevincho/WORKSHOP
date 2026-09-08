@@ -1,0 +1,10 @@
+{
+  "evidence": "SYNTHETIC_HOST",
+  "scope": "TASK5 stateless measurement-domain harness only; NOT full production T1->T4 image-stage benchmark",
+  "sample_count": 100000,
+  "mean_ms": 0.01812044595,
+  "median_ms": 0.015984,
+  "p95_ms": 0.021212,
+  "max_ms": 14.437042,
+  "pi5_end_to_end": "NOT_VERIFIED"
+}
