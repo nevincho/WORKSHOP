@@ -82,5 +82,15 @@ class N1Tests(unittest.TestCase):
     def test_26_uncertainty_above_m2_threshold_degrades(self):
         s=src(position_covariance_m2=(9.0,0.0,0.0,0.0,9.0,0.0,0.0,0.0,9.0)); d=m2.PassiveGuidanceTranslator().evaluate(m2.GuidanceInput(md(),m2nav(adapt(s)),10.1)); self.assertEqual(d.state,m2.GuidanceState.DEGRADED); self.assertEqual(d.reason,"uncertainty_above_shadow_threshold")
     def test_27_deterministic_repeated_mapping(self): self.assertEqual(adapt(),adapt())
+    def test_28_malformed_source_provenance_fails_closed(self):
+        class Forged: provenance=1
+        r=build_m2_navigation_evidence(Forged(),"T1","HOROS_LOCAL",10.1); self.assertIsNone(r.m2_kwargs); self.assertEqual(r.reason,"horos_source_required")
+    def test_29_malformed_typed_source_provenance_fails_closed(self):
+        r=adapt(src(provenance=(("ok","x"),("bad",1)))); self.assertIsNone(r.m2_kwargs); self.assertEqual(r.reason,"source_provenance_invalid")
+    def test_30_invalid_or_loose_freshness_policy_fails_closed(self):
+        for value in (float("nan"),0.6,-0.1):
+            r=build_m2_navigation_evidence(src(),"T1","HOROS_LOCAL",10.1,policy=NavigationAdapterPolicy(value)); self.assertIsNone(r.m2_kwargs); self.assertEqual(r.reason,"invalid_freshness_policy")
+    def test_31_malformed_search_provenance_fails_closed(self):
+        search=ExplicitSearchGeometry("T1",10.0,"HOROS_LOCAL",MetricStatus.VERIFIED,(1.0,0.0,0.0),(("bad",1),),False); r=adapt(search=search); self.assertIsNone(r.m2_kwargs); self.assertEqual(r.reason,"search_provenance_invalid")
 
 if __name__=="__main__": unittest.main()

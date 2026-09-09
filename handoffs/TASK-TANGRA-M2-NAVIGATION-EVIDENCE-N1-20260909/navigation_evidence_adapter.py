@@ -70,11 +70,10 @@ def _finite_number(value) -> bool:
     return type(value) in (int, float) and not isinstance(value, bool) and math.isfinite(float(value))
 
 def _finite_vec3(value) -> bool:
-    return (
-        type(value) is tuple
-        and len(value) == 3
-        and all(_finite_number(v) for v in value)
-    )
+    return type(value) is tuple and len(value) == 3 and all(_finite_number(v) for v in value)
+
+def _valid_provenance(value) -> bool:
+    return type(value) is tuple and all(type(item) is tuple and len(item) == 2 and type(item[0]) is str and type(item[1]) is str for item in value)
 
 def _covariance_uncertainty_m(covariance, semantics) -> Optional[float]:
     if covariance is None or semantics != COVARIANCE_SEMANTICS:
@@ -94,30 +93,24 @@ def _covariance_uncertainty_m(covariance, semantics) -> Optional[float]:
         return None
     if p[4]*p[8] - p[5]*p[5] < -1e-12:
         return None
-    det = (
-        p[0]*(p[4]*p[8]-p[5]*p[7])
-        - p[1]*(p[3]*p[8]-p[5]*p[6])
-        + p[2]*(p[3]*p[7]-p[4]*p[6])
-    )
+    det = p[0]*(p[4]*p[8]-p[5]*p[7]) - p[1]*(p[3]*p[8]-p[5]*p[6]) + p[2]*(p[3]*p[7]-p[4]*p[6])
     if det < -1e-12:
         return None
     return math.sqrt(max(0.0, p[0] + p[4] + p[8]))
 
-def build_m2_navigation_evidence(
-    source: HorosTargetNavigationSource,
-    expected_target_ref: str,
-    expected_frame_ref: str,
-    evaluated_at: float,
-    search: Optional[ExplicitSearchGeometry] = None,
-    policy: NavigationAdapterPolicy = NavigationAdapterPolicy(),
-) -> NavigationAdapterResult:
-    base_prov = tuple(getattr(source, "provenance", ())) + (("n1", "M2_NAVIGATION_EVIDENCE_ADAPTER"),)
+def build_m2_navigation_evidence(source: HorosTargetNavigationSource, expected_target_ref: str, expected_frame_ref: str, evaluated_at: float, search: Optional[ExplicitSearchGeometry] = None, policy: NavigationAdapterPolicy = NavigationAdapterPolicy()) -> NavigationAdapterResult:
+    fallback_prov = (("n1", "M2_NAVIGATION_EVIDENCE_ADAPTER"),)
+    if type(source) is not HorosTargetNavigationSource:
+        return NavigationAdapterResult(None, False, "horos_source_required", fallback_prov)
+    if not _valid_provenance(source.provenance):
+        return NavigationAdapterResult(None, False, "source_provenance_invalid", fallback_prov)
+    base_prov = source.provenance + fallback_prov
 
     def fail(reason):
         return NavigationAdapterResult(None, False, reason, base_prov)
 
-    if type(source) is not HorosTargetNavigationSource:
-        return NavigationAdapterResult(None, False, "horos_source_required", (("n1", "M2_NAVIGATION_EVIDENCE_ADAPTER"),))
+    if type(policy) is not NavigationAdapterPolicy or not _finite_number(policy.stale_after_s) or policy.stale_after_s < 0 or policy.stale_after_s > 0.5:
+        return fail("invalid_freshness_policy")
     if source.production_authority is not False:
         return fail("authoritative_source_flag_rejected")
     if type(source.target_ref) is not str or not source.target_ref or source.target_ref != expected_target_ref:
@@ -173,28 +166,11 @@ def build_m2_navigation_evidence(
             return fail("stale_search_geometry")
         if not _finite_vec3(search.relative_vector_m):
             return fail("malformed_search_vector")
+        if not _valid_provenance(search.provenance):
+            return fail("search_provenance_invalid")
         search_vec = tuple(float(v) for v in search.relative_vector_m)
-        provenance += tuple(search.provenance)
+        provenance += search.provenance
 
-    kwargs = (
-        ("target_ref", source.target_ref),
-        ("timestamp", float(source.timestamp)),
-        ("frame_ref", source.frame_ref),
-        ("lifecycle", source.lifecycle.value),
-        ("metric_status", source.metric_status.value),
-        ("observation_age_s", float(source.observation_age_s)),
-        ("uncertainty_m", uncertainty),
-        ("target_xyz_m", None if target_xyz is None else tuple(float(v) for v in target_xyz)),
-        ("carrier_xyz_m", (0.0, 0.0, 0.0)),
-        ("carrier_heading_deg", None),
-        ("carrier_altitude_m", None),
-        ("search_relative_vector_m", search_vec),
-        ("provenance", provenance),
-    )
-    usable = (
-        source.lifecycle is not Lifecycle.LOST
-        and source.metric_status is MetricStatus.VERIFIED
-        and target_xyz is not None
-        and uncertainty is not None
-    )
+    kwargs = (("target_ref", source.target_ref),("timestamp", float(source.timestamp)),("frame_ref", source.frame_ref),("lifecycle", source.lifecycle.value),("metric_status", source.metric_status.value),("observation_age_s", float(source.observation_age_s)),("uncertainty_m", uncertainty),("target_xyz_m", None if target_xyz is None else tuple(float(v) for v in target_xyz)),("carrier_xyz_m", (0.0,0.0,0.0)),("carrier_heading_deg", None),("carrier_altitude_m", None),("search_relative_vector_m", search_vec),("provenance", provenance))
+    usable = source.lifecycle is not Lifecycle.LOST and source.metric_status is MetricStatus.VERIFIED and target_xyz is not None and uncertainty is not None
     return NavigationAdapterResult(kwargs, usable, "navigation_evidence_ready" if usable else "navigation_evidence_nonactive", provenance)

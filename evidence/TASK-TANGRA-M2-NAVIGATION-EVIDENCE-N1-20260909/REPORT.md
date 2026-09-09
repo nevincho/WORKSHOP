@@ -1,7 +1,7 @@
 # N1 Navigation Evidence — Engineering Evidence
 
 TASK_ID: TASK-TANGRA-M2-NAVIGATION-EVIDENCE-N1-20260909
-STATUS: READY_FOR_INDEPENDENT_REVIEW
+STATUS: READY_FOR_INDEPENDENT_REREVIEW
 ARTIFACT_TYPE: CONTRACT / THIN ADAPTER / VALIDATION PACKAGE
 
 ## Source extraction
@@ -16,13 +16,13 @@ The exact field/use matrix is recorded in `M2_NAVIGATION_FIELD_TABLE.md`.
 - HOROS is downstream spatial state with XYZ, velocity, covariance/uncertainty, provenance and lifecycle.
 - HOROS local scene/map is carrier-relative.
 - HOROS metric path is range/LOS -> XYZ; physical class-size accuracy remains not yet validated.
-- gps_bridge / MAVLink exist, but exact heading/altitude field/datum/frame contracts were not source-verified for this task and are not consumed by N1.
+- gps_bridge / MAVLink exist, but exact heading/altitude field/datum/frame contracts were not source-verified and are not consumed by N1.
 
 ## Frame rule
 N1 performs no frame transform.
 Accepted source semantics are exactly `CARRIER_RELATIVE_LOCAL_METRIC`.
-`source.frame_ref` must exactly equal M1 expected frame_ref.
-`carrier_xyz_m=(0,0,0)` is emitted only when `carrier_origin_is_zero=True` and exact carrier-relative frame semantics are present. This is the frame-origin definition, not target-position reuse or carrier-position estimation.
+`source.frame_ref` must exactly equal the expected M1 frame_ref.
+`carrier_xyz_m=(0,0,0)` is emitted only when `carrier_origin_is_zero=True` and exact carrier-relative frame semantics are present. This is the coordinate-frame origin definition, not target-position reuse or carrier-position estimation.
 Any other frame semantic or frame mismatch fails closed.
 
 ## Uncertainty rule
@@ -37,11 +37,11 @@ N1 never derives search vectors from target XYZ, velocity, image orientation or 
 `search_relative_vector_m` is None unless an explicit same-target, same-frame, fresh, VERIFIED `ExplicitSearchGeometry` is supplied.
 
 ## Fail-closed
-No M2 payload is emitted for target mismatch, frame mismatch/unsupported semantics, missing carrier-origin authority, stale/future/malformed timestamps, stale observation age, malformed/absent VERIFIED target XYZ, missing/invalid VERIFIED covariance, malformed covariance, invalid explicit search geometry, or source marked production_authority=True.
+No M2 payload is emitted for target mismatch, frame mismatch/unsupported semantics, missing carrier-origin authority, stale/future/malformed timestamps, stale observation age, malformed/absent VERIFIED target XYZ, missing/invalid VERIFIED covariance, malformed covariance, invalid explicit search geometry, malformed source/search provenance, invalid or looser-than-M2 freshness policy, or source marked production_authority=True.
 NOT_VERIFIED evidence may be preserved as NOT_VERIFIED; it is never promoted to VERIFIED and frozen M2 degrades it.
 
-## Tests
-27 deterministic tests PASS locally.
+## Validation
+31/31 deterministic tests PASS locally after Cycle 1 bounded repair.
 Compatibility tests load the real frozen M1, M2 and M3 artifact implementations from WORKSHOP paths.
 Exact behavior:
 - valid VERIFIED carrier-relative HOROS fixture -> M2 AVAILABLE / MAINTAIN_OBSERVATION;
@@ -49,7 +49,12 @@ Exact behavior:
 - HOLD -> M2 HOLD -> M3 HOLD;
 - ABORT -> M2 ABORT_HOLD -> M3 HOLD with abort_semantic=True;
 - high uncertainty -> M2 DEGRADED;
-- target/frame/staleness/covariance failures fail closed.
+- target/frame/staleness/covariance/provenance/policy failures fail closed.
+
+## Review history
+Cycle 1 candidate `b34abc9ddda315b0fc903424bb65e51d18d18f5a`: FAIL.
+Findings: provenance access before source validation; unvalidated freshness policy; unvalidated search provenance.
+Bounded repair: source type now precedes provenance access; source/search provenance is exact tuple-of-string-pairs; policy must be exact `NavigationAdapterPolicy`, finite, >=0 and <= frozen M2 0.5 s stale limit.
 
 ## Runtime availability boundary
 The adapter package is software-complete and deterministic.
