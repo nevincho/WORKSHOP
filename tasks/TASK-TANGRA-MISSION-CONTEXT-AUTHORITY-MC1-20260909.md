@@ -1,22 +1,22 @@
-# Mission Context Authority Contract
+# MC1 — Mission Context Authority Contract
 
 TASK_ID: TASK-TANGRA-MISSION-CONTEXT-AUTHORITY-MC1-20260909
-STATUS: READY_FOR_INDEPENDENT_REVIEW
-SCOPE: minimal authoritative contract for frozen M1 mission_active/operator_intent/system_ready/safety_available only.
+STATUS: READY_FOR_INDEPENDENT_REREVIEW
+CAMPAIGN: TANGRA Mission Management / Guidance Layer
+SCOPE: isolated PASSIVE/non-production four-field Mission Context authority contract.
+
+BASE_M1_REVIEWED: 88ffcf4932545304c5a82c83c65ad01b99000680
+BASE_M2_COMPLETE: 66df7d43b5df2b9cca39143677b9c89acd0fe4bb
+PRIOR_CANDIDATE: e46b73f598b6bc2a404bddafa6cbb1523153c451
+PRIOR_REVIEW: FAIL — mapping-boundary authority validation bypass.
+REPAIR: bounded mapping-boundary independent validation only.
 
 IMPLEMENTATION: handoffs/TASK-TANGRA-MISSION-CONTEXT-AUTHORITY-MC1-20260909/mission_context_contract.py
-TESTS: handoffs/TASK-TANGRA-MISSION-CONTEXT-AUTHORITY-MC1-20260909/test_mission_context_contract.py
-HANDOFF: handoffs/TASK-TANGRA-MISSION-CONTEXT-AUTHORITY-MC1-20260909/M1_MAPPING.md
-EVIDENCE: evidence/TASK-TANGRA-MISSION-CONTEXT-AUTHORITY-MC1-20260909/REPORT.md
-
-LOCAL_VALIDATION: 19/19 PASS
+TESTS: 37/37 PASS deterministic local
 PRODUCTION_INTEGRATION: NO
 PRODUCTION_AUTHORITY: FALSE
+CONTROL_SIDE_EFFECTS: NONE
 M1_MODIFIED: NO
 M2_MODIFIED: NO
-M3_STARTED: NO
-HOROS_MODIFIED: NO
-CONTROL_SIDE_EFFECTS: NONE
-INDEPENDENT_REVIEW: PENDING
-
-Do not mark COMPLETE/FROZEN until an independent reviewer verifies the committed candidate.
+INDEPENDENT_REREVIEW: PENDING
+FREEZE_STATUS: NOT_FROZEN

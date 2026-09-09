@@ -1,19 +1,18 @@
-# Independent Review Request — Mission Context Authority
+# MC1 INDEPENDENT REREVIEW REQUEST
 
 TASK_ID: TASK-TANGRA-MISSION-CONTEXT-AUTHORITY-MC1-20260909
-CANDIDATE_STATUS: READY_FOR_INDEPENDENT_REVIEW
+PRIOR_CANDIDATE: e46b73f598b6bc2a404bddafa6cbb1523153c451
+PRIOR_RESULT: FAIL
+PRIOR_FINDING: public map_to_m1_context() could accept forged directly-constructed MissionContext authority evidence.
 
-Verify:
-1. exactly four authoritative mission-context channels exist;
-2. semantics do not overlap;
-3. no inference from target/detector/HOROS/T7/connectivity/UI/generic ACTIVE/telemetry;
-4. unavailable authority fails closed and cannot produce TRACK/OBSERVE/COMPLETE progression;
-5. explicit ABORT/HOLD remain safety-conservative under partial context;
-6. owner/source/revision rules prevent silent authority takeover or stale update;
-7. frozen M1 mapping is value-compatible and does not change M1 semantics;
-8. M1/M2 and protected P-HQ/P-DET/P-NANO/P-CA/P-CT/P-HOROS/P-PROD are untouched;
-9. no transport/control/hardware side effects;
-10. 19/19 tests reproduce.
+REREVIEW SCOPE:
+- verify mapping boundary independently validates exact value type, AuthorityStamp type, expected owner, explicit non-empty source_ref and valid non-negative integer revision for all four fields;
+- reproduce prior forged TRACK case and confirm fail closed;
+- verify partial valid HOLD/ABORT preservation only when operator authority itself validates;
+- verify malformed/forged contexts cannot produce authoritative=True;
+- inspect 37-test suite including retained original 19 tests and new direct-boundary adversarial tests;
+- confirm no production/control side effects;
+- compare against prior candidate and base; only MC1 candidate files may change;
+- frozen M1/M2 must remain unchanged.
 
-Required result: PASS, PASS_WITH_CONDITIONS, or BLOCKER.
-Only PASS may freeze this package.
+No implementation changes are authorized during rereview.

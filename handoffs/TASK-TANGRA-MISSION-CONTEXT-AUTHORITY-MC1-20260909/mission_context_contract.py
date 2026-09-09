@@ -58,14 +58,11 @@ class MissionContextStore:
 
     @staticmethod
     def _validate_stamp(stamp: AuthorityStamp, expected: AuthorityOwner, previous: Optional[AuthorityStamp]) -> None:
-        if not isinstance(stamp, AuthorityStamp):
-            raise TypeError("authority_stamp_required")
-        if stamp.owner != expected:
-            raise ValueError("authority_owner_mismatch")
-        if not stamp.source_ref or not isinstance(stamp.source_ref, str):
-            raise ValueError("authority_source_ref_required")
-        if not isinstance(stamp.revision, int) or isinstance(stamp.revision, bool) or stamp.revision < 0:
-            raise ValueError("authority_revision_invalid")
+        error = _validate_authority_stamp(stamp, expected)
+        if error is not None:
+            if error == "authority_stamp_required":
+                raise TypeError(error)
+            raise ValueError(error)
         if previous is not None:
             if stamp.source_ref != previous.source_ref:
                 raise ValueError("authority_source_change_requires_reset")
@@ -104,21 +101,55 @@ class MissionContextStore:
         self._context = MissionContext()
         return self._context
 
+def _validate_authority_stamp(stamp: object, expected: AuthorityOwner) -> Optional[str]:
+    if not isinstance(stamp, AuthorityStamp):
+        return "authority_stamp_required"
+    if stamp.owner != expected:
+        return "authority_owner_mismatch"
+    if not isinstance(stamp.source_ref, str) or not stamp.source_ref.strip():
+        return "authority_source_ref_required"
+    if not isinstance(stamp.revision, int) or isinstance(stamp.revision, bool) or stamp.revision < 0:
+        return "authority_revision_invalid"
+    return None
+
+def _field_valid(value: object, stamp: object, expected: AuthorityOwner, value_kind: str) -> Tuple[bool, Optional[str]]:
+    if value_kind == "bool":
+        if type(value) is not bool:
+            return False, "value_bool_required"
+    elif value_kind == "intent":
+        if not isinstance(value, OperatorIntent):
+            return False, "value_operator_intent_required"
+    else:
+        return False, "internal_value_kind_invalid"
+    stamp_error = _validate_authority_stamp(stamp, expected)
+    if stamp_error is not None:
+        return False, stamp_error
+    return True, None
+
 def map_to_m1_context(context: MissionContext) -> M1ContextMapping:
+    if not isinstance(context, MissionContext):
+        return M1ContextMapping(False, OperatorIntent.NONE, False, False, False, ("mission_context_required",))
+
+    checks = (
+        ("mission_active", context.mission_active, context.mission_active_stamp, AuthorityOwner.MISSION_ACTIVATION, "bool"),
+        ("operator_intent", context.operator_intent, context.operator_intent_stamp, AuthorityOwner.OPERATOR_INTENT, "intent"),
+        ("system_ready", context.system_ready, context.system_ready_stamp, AuthorityOwner.SYSTEM_READINESS, "bool"),
+        ("safety_available", context.safety_available, context.safety_available_stamp, AuthorityOwner.SAFETY_AVAILABILITY, "bool"),
+    )
+
     reasons = []
-    if context.mission_active is None or context.mission_active_stamp is None:
-        reasons.append("mission_active_unavailable")
-    if context.operator_intent is None or context.operator_intent_stamp is None:
-        reasons.append("operator_intent_unavailable")
-    if context.system_ready is None or context.system_ready_stamp is None:
-        reasons.append("system_ready_unavailable")
-    if context.safety_available is None or context.safety_available_stamp is None:
-        reasons.append("safety_available_unavailable")
+    field_validity = {}
+    for field_name, value, stamp, expected_owner, value_kind in checks:
+        valid, error = _field_valid(value, stamp, expected_owner, value_kind)
+        field_validity[field_name] = valid
+        if not valid:
+            reasons.append(f"{field_name}_{error}")
+
     if reasons:
+        operator_valid = field_validity["operator_intent"]
         conservative_intent = (
             context.operator_intent
-            if context.operator_intent in (OperatorIntent.ABORT, OperatorIntent.HOLD)
-            and context.operator_intent_stamp is not None
+            if operator_valid and context.operator_intent in (OperatorIntent.ABORT, OperatorIntent.HOLD)
             else OperatorIntent.NONE
         )
         return M1ContextMapping(
@@ -129,6 +160,7 @@ def map_to_m1_context(context: MissionContext) -> M1ContextMapping:
             authoritative=False,
             reasons=tuple(reasons),
         )
+
     return M1ContextMapping(
         mission_active=context.mission_active,
         operator_intent=context.operator_intent,

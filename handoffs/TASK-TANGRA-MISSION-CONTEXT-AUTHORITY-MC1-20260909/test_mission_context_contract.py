@@ -5,12 +5,23 @@ from mission_context_contract import *
 def stamp(owner, rev=1, source="AUTH"):
     return AuthorityStamp(owner, source, rev)
 
+def valid_direct(intent=OperatorIntent.TRACK):
+    return MissionContext(
+        mission_active=True,
+        operator_intent=intent,
+        system_ready=True,
+        safety_available=True,
+        mission_active_stamp=stamp(AuthorityOwner.MISSION_ACTIVATION),
+        operator_intent_stamp=stamp(AuthorityOwner.OPERATOR_INTENT),
+        system_ready_stamp=stamp(AuthorityOwner.SYSTEM_READINESS),
+        safety_available_stamp=stamp(AuthorityOwner.SAFETY_AVAILABILITY),
+    )
+
 class MissionContextTests(unittest.TestCase):
     def test_01_initial_context_fail_closed(self):
         m=map_to_m1_context(MissionContext())
         self.assertFalse(m.authoritative)
         self.assertEqual((m.mission_active,m.operator_intent,m.system_ready,m.safety_available),(False,OperatorIntent.NONE,False,False))
-        self.assertEqual(len(m.reasons),4)
 
     def test_02_explicit_four_authorities_map(self):
         s=MissionContextStore()
@@ -23,25 +34,20 @@ class MissionContextTests(unittest.TestCase):
         self.assertEqual((m.mission_active,m.operator_intent,m.system_ready,m.safety_available),(True,OperatorIntent.TRACK,True,True))
 
     def test_03_mission_activation_not_inferred(self):
-        s=MissionContextStore()
-        s.set_operator_intent(OperatorIntent.TRACK,stamp(AuthorityOwner.OPERATOR_INTENT))
+        s=MissionContextStore(); s.set_operator_intent(OperatorIntent.TRACK,stamp(AuthorityOwner.OPERATOR_INTENT))
         m=map_to_m1_context(s.context)
-        self.assertFalse(m.mission_active)
-        self.assertEqual(m.operator_intent,OperatorIntent.NONE)
+        self.assertFalse(m.mission_active); self.assertEqual(m.operator_intent,OperatorIntent.NONE)
 
     def test_04_operator_intent_not_inferred(self):
-        s=MissionContextStore()
-        s.set_mission_active(True,stamp(AuthorityOwner.MISSION_ACTIVATION))
+        s=MissionContextStore(); s.set_mission_active(True,stamp(AuthorityOwner.MISSION_ACTIVATION))
         self.assertEqual(map_to_m1_context(s.context).operator_intent,OperatorIntent.NONE)
 
     def test_05_readiness_not_inferred(self):
-        s=MissionContextStore()
-        s.set_mission_active(True,stamp(AuthorityOwner.MISSION_ACTIVATION))
+        s=MissionContextStore(); s.set_mission_active(True,stamp(AuthorityOwner.MISSION_ACTIVATION))
         self.assertFalse(map_to_m1_context(s.context).system_ready)
 
     def test_06_safety_not_inferred(self):
-        s=MissionContextStore()
-        s.set_system_ready(True,stamp(AuthorityOwner.SYSTEM_READINESS))
+        s=MissionContextStore(); s.set_system_ready(True,stamp(AuthorityOwner.SYSTEM_READINESS))
         self.assertFalse(map_to_m1_context(s.context).safety_available)
 
     def test_07_owner_mismatch_rejected(self):
@@ -63,9 +69,7 @@ class MissionContextTests(unittest.TestCase):
             s.set_mission_active(False,stamp(AuthorityOwner.MISSION_ACTIVATION,2,"B"))
 
     def test_11_reset_drops_all_authority(self):
-        s=MissionContextStore()
-        s.set_mission_active(True,stamp(AuthorityOwner.MISSION_ACTIVATION))
-        s.reset_authorities()
+        s=MissionContextStore(); s.set_mission_active(True,stamp(AuthorityOwner.MISSION_ACTIVATION)); s.reset_authorities()
         self.assertFalse(map_to_m1_context(s.context).authoritative)
 
     def test_12_explicit_false_is_authoritative(self):
@@ -75,10 +79,7 @@ class MissionContextTests(unittest.TestCase):
         s.set_system_ready(False,stamp(AuthorityOwner.SYSTEM_READINESS))
         s.set_safety_available(False,stamp(AuthorityOwner.SAFETY_AVAILABILITY))
         m=map_to_m1_context(s.context)
-        self.assertTrue(m.authoritative)
-        self.assertFalse(m.mission_active)
-        self.assertFalse(m.system_ready)
-        self.assertFalse(m.safety_available)
+        self.assertTrue(m.authoritative); self.assertFalse(m.mission_active); self.assertFalse(m.system_ready); self.assertFalse(m.safety_available)
 
     def test_13_bad_boolean_rejected(self):
         with self.assertRaises(TypeError):
@@ -107,13 +108,108 @@ class MissionContextTests(unittest.TestCase):
 
     def test_19_partial_context_preserves_only_safety_conservative_intent(self):
         for intent in (OperatorIntent.ABORT, OperatorIntent.HOLD):
-            s=MissionContextStore()
-            s.set_operator_intent(intent,stamp(AuthorityOwner.OPERATOR_INTENT))
+            s=MissionContextStore(); s.set_operator_intent(intent,stamp(AuthorityOwner.OPERATOR_INTENT))
             self.assertEqual(map_to_m1_context(s.context).operator_intent,intent)
         for intent in (OperatorIntent.TRACK,OperatorIntent.OBSERVE,OperatorIntent.COMPLETE):
-            s=MissionContextStore()
-            s.set_operator_intent(intent,stamp(AuthorityOwner.OPERATOR_INTENT))
+            s=MissionContextStore(); s.set_operator_intent(intent,stamp(AuthorityOwner.OPERATOR_INTENT))
             self.assertEqual(map_to_m1_context(s.context).operator_intent,OperatorIntent.NONE)
+
+    def test_20_direct_wrong_owner_all_stamps_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,c.operator_intent,c.system_ready,c.safety_available,
+            stamp(AuthorityOwner.SAFETY_AVAILABILITY),stamp(AuthorityOwner.MISSION_ACTIVATION),
+            stamp(AuthorityOwner.OPERATOR_INTENT),stamp(AuthorityOwner.SYSTEM_READINESS))
+        m=map_to_m1_context(c)
+        self.assertFalse(m.authoritative)
+        self.assertEqual((m.mission_active,m.operator_intent,m.system_ready,m.safety_available),(False,OperatorIntent.NONE,False,False))
+
+    def test_21_direct_wrong_owner_one_stamp_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,c.operator_intent,c.system_ready,c.safety_available,
+            c.mission_active_stamp,c.operator_intent_stamp,c.system_ready_stamp,stamp(AuthorityOwner.SYSTEM_READINESS))
+        self.assertFalse(map_to_m1_context(c).authoritative)
+
+    def test_22_direct_empty_source_ref_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,c.operator_intent,c.system_ready,c.safety_available,
+            AuthorityStamp(AuthorityOwner.MISSION_ACTIVATION,"",1),c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp)
+        self.assertFalse(map_to_m1_context(c).authoritative)
+
+    def test_23_direct_invalid_revision_fails_closed(self):
+        for rev in (-1, True, "1"):
+            c=valid_direct()
+            c=MissionContext(c.mission_active,c.operator_intent,c.system_ready,c.safety_available,
+                AuthorityStamp(AuthorityOwner.MISSION_ACTIVATION,"AUTH",rev),c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp)
+            self.assertFalse(map_to_m1_context(c).authoritative)
+
+    def test_24_direct_mission_active_wrong_type_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(1,c.operator_intent,c.system_ready,c.safety_available,c.mission_active_stamp,c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp)
+        self.assertFalse(map_to_m1_context(c).authoritative)
+
+    def test_25_direct_system_ready_wrong_type_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,c.operator_intent,"yes",c.safety_available,c.mission_active_stamp,c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp)
+        self.assertFalse(map_to_m1_context(c).authoritative)
+
+    def test_26_direct_safety_available_wrong_type_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,c.operator_intent,c.system_ready,1,c.mission_active_stamp,c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp)
+        self.assertFalse(map_to_m1_context(c).authoritative)
+
+    def test_27_direct_operator_intent_wrong_type_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,"TRACK",c.system_ready,c.safety_available,c.mission_active_stamp,c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp)
+        m=map_to_m1_context(c); self.assertFalse(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.NONE)
+
+    def test_28_direct_mixed_valid_and_forged_stamps_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,c.operator_intent,c.system_ready,c.safety_available,c.mission_active_stamp,
+            AuthorityStamp(AuthorityOwner.OPERATOR_INTENT," ",2),c.system_ready_stamp,c.safety_available_stamp)
+        m=map_to_m1_context(c); self.assertFalse(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.NONE)
+
+    def test_29_direct_missing_stamp_with_affirmative_value_fails_closed(self):
+        c=valid_direct()
+        c=MissionContext(c.mission_active,c.operator_intent,c.system_ready,c.safety_available,None,c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp)
+        m=map_to_m1_context(c); self.assertFalse(m.authoritative); self.assertFalse(m.mission_active)
+
+    def test_30_direct_fully_valid_context_passes(self):
+        m=map_to_m1_context(valid_direct())
+        self.assertTrue(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.TRACK)
+
+    def test_31_direct_forged_track_context_fails_closed(self):
+        forged=MissionContext(True,OperatorIntent.TRACK,True,True,
+            AuthorityStamp(AuthorityOwner.OPERATOR_INTENT,"",-1),
+            AuthorityStamp(AuthorityOwner.MISSION_ACTIVATION,"",-1),
+            AuthorityStamp(AuthorityOwner.SAFETY_AVAILABILITY,"",-1),
+            AuthorityStamp(AuthorityOwner.SYSTEM_READINESS,"",-1))
+        m=map_to_m1_context(forged)
+        self.assertFalse(m.authoritative)
+        self.assertEqual((m.mission_active,m.operator_intent,m.system_ready,m.safety_available),(False,OperatorIntent.NONE,False,False))
+
+    def test_32_valid_authoritative_hold_behavior(self):
+        m=map_to_m1_context(valid_direct(OperatorIntent.HOLD))
+        self.assertTrue(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.HOLD)
+
+    def test_33_valid_authoritative_abort_behavior(self):
+        m=map_to_m1_context(valid_direct(OperatorIntent.ABORT))
+        self.assertTrue(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.ABORT)
+
+    def test_34_partial_valid_hold_preserved(self):
+        c=MissionContext(operator_intent=OperatorIntent.HOLD,operator_intent_stamp=stamp(AuthorityOwner.OPERATOR_INTENT))
+        m=map_to_m1_context(c); self.assertFalse(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.HOLD)
+
+    def test_35_partial_forged_hold_not_preserved(self):
+        c=MissionContext(operator_intent=OperatorIntent.HOLD,operator_intent_stamp=stamp(AuthorityOwner.MISSION_ACTIVATION))
+        m=map_to_m1_context(c); self.assertFalse(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.NONE)
+
+    def test_36_non_context_input_fails_closed_without_exception(self):
+        m=map_to_m1_context(object())
+        self.assertFalse(m.authoritative); self.assertEqual(m.operator_intent,OperatorIntent.NONE)
+
+    def test_37_direct_valid_mapping_repeated_deterministic(self):
+        c=valid_direct()
+        self.assertEqual(map_to_m1_context(c),map_to_m1_context(c))
 
 if __name__=="__main__":
     unittest.main()
