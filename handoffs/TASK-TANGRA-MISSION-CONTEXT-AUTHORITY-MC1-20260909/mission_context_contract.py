@@ -102,13 +102,15 @@ class MissionContextStore:
         return self._context
 
 def _validate_authority_stamp(stamp: object, expected: AuthorityOwner) -> Optional[str]:
-    if not isinstance(stamp, AuthorityStamp):
+    if type(stamp) is not AuthorityStamp:
         return "authority_stamp_required"
-    if stamp.owner != expected:
+    if type(stamp.owner) is not AuthorityOwner:
+        return "authority_owner_type_invalid"
+    if stamp.owner is not expected:
         return "authority_owner_mismatch"
-    if not isinstance(stamp.source_ref, str) or not stamp.source_ref.strip():
+    if type(stamp.source_ref) is not str or not stamp.source_ref.strip():
         return "authority_source_ref_required"
-    if not isinstance(stamp.revision, int) or isinstance(stamp.revision, bool) or stamp.revision < 0:
+    if type(stamp.revision) is not int or stamp.revision < 0:
         return "authority_revision_invalid"
     return None
 
@@ -117,7 +119,7 @@ def _field_valid(value: object, stamp: object, expected: AuthorityOwner, value_k
         if type(value) is not bool:
             return False, "value_bool_required"
     elif value_kind == "intent":
-        if not isinstance(value, OperatorIntent):
+        if type(value) is not OperatorIntent:
             return False, "value_operator_intent_required"
     else:
         return False, "internal_value_kind_invalid"
@@ -127,7 +129,7 @@ def _field_valid(value: object, stamp: object, expected: AuthorityOwner, value_k
     return True, None
 
 def map_to_m1_context(context: MissionContext) -> M1ContextMapping:
-    if not isinstance(context, MissionContext):
+    if type(context) is not MissionContext:
         return M1ContextMapping(False, OperatorIntent.NONE, False, False, False, ("mission_context_required",))
 
     checks = (

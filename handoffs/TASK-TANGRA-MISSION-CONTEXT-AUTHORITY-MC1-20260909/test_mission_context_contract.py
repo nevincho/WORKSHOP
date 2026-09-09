@@ -211,5 +211,42 @@ class MissionContextTests(unittest.TestCase):
         c=valid_direct()
         self.assertEqual(map_to_m1_context(c),map_to_m1_context(c))
 
+    def test_38_string_typed_authority_owner_fails_closed(self):
+        c=MissionContext(
+            True,OperatorIntent.TRACK,True,True,
+            AuthorityStamp("MISSION_ACTIVATION_AUTHORITY","AUTH",1),
+            AuthorityStamp("OPERATOR_INTENT_AUTHORITY","AUTH",1),
+            AuthorityStamp("SYSTEM_READINESS_AUTHORITY","AUTH",1),
+            AuthorityStamp("SAFETY_AVAILABILITY_AUTHORITY","AUTH",1),
+        )
+        m=map_to_m1_context(c)
+        self.assertFalse(m.authoritative)
+        self.assertEqual((m.mission_active,m.operator_intent,m.system_ready,m.safety_available),(False,OperatorIntent.NONE,False,False))
+
+    def test_39_context_subclass_rejected_fail_closed(self):
+        class DerivedMissionContext(MissionContext):
+            pass
+        c=DerivedMissionContext(
+            True,OperatorIntent.TRACK,True,True,
+            stamp(AuthorityOwner.MISSION_ACTIVATION),
+            stamp(AuthorityOwner.OPERATOR_INTENT),
+            stamp(AuthorityOwner.SYSTEM_READINESS),
+            stamp(AuthorityOwner.SAFETY_AVAILABILITY),
+        )
+        m=map_to_m1_context(c)
+        self.assertFalse(m.authoritative)
+        self.assertEqual(m.operator_intent,OperatorIntent.NONE)
+
+    def test_40_stamp_subclass_rejected_fail_closed(self):
+        class DerivedStamp(AuthorityStamp):
+            pass
+        c=valid_direct()
+        c=MissionContext(
+            c.mission_active,c.operator_intent,c.system_ready,c.safety_available,
+            DerivedStamp(AuthorityOwner.MISSION_ACTIVATION,"AUTH",1),
+            c.operator_intent_stamp,c.system_ready_stamp,c.safety_available_stamp,
+        )
+        self.assertFalse(map_to_m1_context(c).authoritative)
+
 if __name__=="__main__":
     unittest.main()

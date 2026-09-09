@@ -17,7 +17,8 @@ The prior `map_to_m1_context()` trusted arbitrary directly-constructed `MissionC
 - operator_intent: exact OperatorIntent + matching OPERATOR_INTENT authority stamp
 - system_ready: exact bool + matching SYSTEM_READINESS authority stamp
 - safety_available: exact bool + matching SAFETY_AVAILABILITY authority stamp
-- each stamp must be AuthorityStamp with explicit non-whitespace source_ref and non-negative integer revision (bool rejected as revision)
+- each stamp must be AuthorityStamp with explicit non-whitespace source_ref and non-negative integer revision
+- exact AuthorityStamp, AuthorityOwner, OperatorIntent and MissionContext public types are enforced at the trust boundary
 
 The mapper does not trust construction through `MissionContextStore`.
 Non-MissionContext inputs fail closed without propagating an exception.
@@ -49,24 +50,13 @@ system_ready -> frozen M1 MissionInput.system_ready
 safety_available -> frozen M1 MissionInput.safety_available
 
 ## Validation
-37/37 deterministic local unit tests PASS.
-The original 19 tests are retained.
-18 additional boundary/adversarial checks include:
-- all stamps wrong owner
-- one stamp wrong owner
-- empty/whitespace source
-- malformed revision
-- wrong bool types
-- wrong operator-intent type
-- mixed valid/forged stamps
-- missing stamp with affirmative value
-- fully valid direct MissionContext
-- exact prior forged TRACK reproduction
-- authoritative HOLD/ABORT
-- partial valid HOLD preservation
-- forged HOLD rejection
-- non-context input fail closed
-- repeated direct mapping determinism
+40/40 deterministic local unit tests PASS after second bounded repair.
+The original 19 tests are retained. Direct-boundary adversarial coverage includes wrong owners, one wrong owner, empty/whitespace source, malformed revision, wrong value types, mixed valid/forged stamps, missing stamps, fully valid direct context, exact prior forged TRACK reproduction, authoritative HOLD/ABORT, forged HOLD rejection, non-context input, repeated determinism, raw string-typed AuthorityOwner rejection, MissionContext subclass rejection, and AuthorityStamp subclass rejection.
+
+## Independent review history
+REREVIEW_CYCLE_1: FAIL at 83e00fac2dd5f5003577bc2459cf25b01d0f5a5b — raw string AuthorityOwner values could satisfy str-Enum equality.
+SECOND_BOUNDED_REPAIR: exact public boundary types are now required for MissionContext, AuthorityStamp, AuthorityOwner and OperatorIntent.
+INDEPENDENT_REREVIEW_CYCLE_2: PENDING
 
 ## Side-effect audit
 No control/transport/hardware behavior added. No ARM/TAKEOFF/LAND/PWM/DShot/PID/mixer/ESC. Pi remains mission-level only; Flight Controller remains final stabilization/safety/motor authority.
@@ -75,4 +65,3 @@ PRODUCTION_INTEGRATION: NO
 PRODUCTION_AUTHORITY: FALSE
 FROZEN_M1_MODIFIED: NO
 FROZEN_M2_MODIFIED: NO
-INDEPENDENT_REREVIEW: PENDING
