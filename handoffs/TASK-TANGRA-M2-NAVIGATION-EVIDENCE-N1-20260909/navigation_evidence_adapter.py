@@ -72,11 +72,14 @@ def _finite_number(value) -> bool:
 def _finite_vec3(value) -> bool:
     return type(value) is tuple and len(value) == 3 and all(_finite_number(v) for v in value)
 
+def _valid_ref(value) -> bool:
+    return type(value) is str and bool(value.strip())
+
 def _valid_provenance(value) -> bool:
     return type(value) is tuple and all(type(item) is tuple and len(item) == 2 and type(item[0]) is str and type(item[1]) is str for item in value)
 
 def _covariance_uncertainty_m(covariance, semantics) -> Optional[float]:
-    if covariance is None or semantics != COVARIANCE_SEMANTICS:
+    if covariance is None or type(semantics) is not str or semantics != COVARIANCE_SEMANTICS:
         return None
     if type(covariance) is not tuple or len(covariance) != 9:
         return None
@@ -111,11 +114,15 @@ def build_m2_navigation_evidence(source: HorosTargetNavigationSource, expected_t
 
     if type(policy) is not NavigationAdapterPolicy or not _finite_number(policy.stale_after_s) or policy.stale_after_s < 0 or policy.stale_after_s > 0.5:
         return fail("invalid_freshness_policy")
+    if not _valid_ref(expected_target_ref):
+        return fail("expected_target_ref_invalid")
+    if not _valid_ref(expected_frame_ref):
+        return fail("expected_frame_ref_invalid")
     if source.production_authority is not False:
         return fail("authoritative_source_flag_rejected")
-    if type(source.target_ref) is not str or not source.target_ref or source.target_ref != expected_target_ref:
+    if not _valid_ref(source.target_ref) or source.target_ref != expected_target_ref:
         return fail("target_identity_mismatch")
-    if type(source.frame_ref) is not str or not source.frame_ref or source.frame_ref != expected_frame_ref:
+    if not _valid_ref(source.frame_ref) or source.frame_ref != expected_frame_ref:
         return fail("frame_mismatch")
     if type(source.frame_semantics) is not FrameSemantics or source.frame_semantics is not FrameSemantics.CARRIER_RELATIVE_LOCAL_METRIC:
         return fail("unsupported_frame_semantics")
@@ -156,9 +163,9 @@ def build_m2_navigation_evidence(source: HorosTargetNavigationSource, expected_t
             return fail("search_geometry_type_invalid")
         if search.production_authority is not False:
             return fail("authoritative_search_flag_rejected")
-        if search.target_ref != source.target_ref:
+        if not _valid_ref(search.target_ref) or search.target_ref != source.target_ref:
             return fail("search_target_mismatch")
-        if search.frame_ref != source.frame_ref:
+        if not _valid_ref(search.frame_ref) or search.frame_ref != source.frame_ref:
             return fail("search_frame_mismatch")
         if search.metric_status is not MetricStatus.VERIFIED:
             return fail("search_metric_not_verified")

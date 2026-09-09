@@ -1,68 +1,55 @@
 # N1 Navigation Evidence — Engineering Evidence
 
 TASK_ID: TASK-TANGRA-M2-NAVIGATION-EVIDENCE-N1-20260909
-STATUS: READY_FOR_INDEPENDENT_REREVIEW
+STATUS: READY_FOR_INDEPENDENT_REREVIEW_CYCLE3
 ARTIFACT_TYPE: CONTRACT / THIN ADAPTER / VALIDATION PACKAGE
 
-## Source extraction
 Frozen M2 reviewed commit: `75417cb4356a79e61d1196f3f859fa7cd7ba08e8`.
 Frozen M2 implementation blob: `5616d5930c8ffca0cef7876d6c192bc7627efb2c`.
 Frozen M3 reviewed commit: `f041325369edea08888f8ee9ec5fd7ab9ce0e1ce`.
-M2 accepts `GuidanceInput(mission_decision, navigation: Optional[NavigationEvidence], evaluated_at)`.
-The exact field/use matrix is recorded in `M2_NAVIGATION_FIELD_TABLE.md`.
 
-## Existing authority mapping
-- CurrentTargetManager is mission identity authority feeding HOROS identity.
-- HOROS is downstream spatial state with XYZ, velocity, covariance/uncertainty, provenance and lifecycle.
-- HOROS local scene/map is carrier-relative.
-- HOROS metric path is range/LOS -> XYZ; physical class-size accuracy remains not yet validated.
-- gps_bridge / MAVLink exist, but exact heading/altitude field/datum/frame contracts were not source-verified and are not consumed by N1.
+## Exact purpose
+Convert explicitly typed existing HOROS carrier-relative metric target evidence into kwargs for frozen M2 `NavigationEvidence` without frame conversion, new estimation, target/carrier confusion, search synthesis or authority escalation.
 
-## Frame rule
-N1 performs no frame transform.
-Accepted source semantics are exactly `CARRIER_RELATIVE_LOCAL_METRIC`.
-`source.frame_ref` must exactly equal the expected M1 frame_ref.
-`carrier_xyz_m=(0,0,0)` is emitted only when `carrier_origin_is_zero=True` and exact carrier-relative frame semantics are present. This is the coordinate-frame origin definition, not target-position reuse or carrier-position estimation.
-Any other frame semantic or frame mismatch fails closed.
+## Frame contract
+Accepted frame semantics: `CARRIER_RELATIVE_LOCAL_METRIC` only.
+Expected M1 target/frame refs, HOROS source refs and explicit search refs must be exact non-whitespace strings and match exactly.
+No ENU/NED/body/camera/world conversion is performed.
+When the source explicitly proves carrier-relative frame semantics and `carrier_origin_is_zero=True`, N1 emits `carrier_xyz_m=(0,0,0)` as the mathematical frame origin. It never substitutes target XYZ as carrier XYZ.
 
-## Uncertainty rule
-For VERIFIED non-LOST target geometry, N1 requires explicit 3x3 symmetric positive-semidefinite position covariance with semantics exactly `POSITION_COVARIANCE_3X3_M2`.
-Row-major covariance units are m^2.
-N1 maps `uncertainty_m = sqrt(trace(P_xyz))`.
-For PSD P, `trace(P) >= lambda_max(P)`, so the scalar does not understate standard deviation along any unit spatial direction. It is the Euclidean RMS 1-sigma position error implied by P.
-Missing/malformed/semantically unidentified covariance fails closed for VERIFIED active TRACK.
+## Uncertainty contract
+For VERIFIED non-LOST target geometry N1 requires exact covariance semantics string `POSITION_COVARIANCE_3X3_M2` and a finite symmetric PSD 3x3 row-major position covariance in m^2.
+Scalar rule: `uncertainty_m = sqrt(trace(P_xyz))`.
+For PSD P, `trace(P) >= lambda_max(P)`; therefore this value does not understate the standard deviation along any unit spatial direction and equals Euclidean RMS one-sigma positional error implied by P.
+No constant uncertainty is used.
 
-## Search geometry
-N1 never derives search vectors from target XYZ, velocity, image orientation or heading.
-`search_relative_vector_m` is None unless an explicit same-target, same-frame, fresh, VERIFIED `ExplicitSearchGeometry` is supplied.
+## Field authority
+CurrentTargetManager/HOROS supplies target identity continuity; HOROS supplies target XYZ/lifecycle/freshness/provenance and covariance/uncertainty contractually; HOROS local map is documented carrier-relative. Exact runtime frame string and exact local covariance layout/units remain future integration binding gates. gps_bridge/MAVLink exist but heading/altitude are not required for current frozen M2 TRACK and N1 emits both as None. Search vector remains None unless a separate explicit fresh same-target/same-frame VERIFIED search-geometry source is supplied.
 
-## Fail-closed
-No M2 payload is emitted for target mismatch, frame mismatch/unsupported semantics, missing carrier-origin authority, stale/future/malformed timestamps, stale observation age, malformed/absent VERIFIED target XYZ, missing/invalid VERIFIED covariance, malformed covariance, invalid explicit search geometry, malformed source/search provenance, invalid or looser-than-M2 freshness policy, or source marked production_authority=True.
-NOT_VERIFIED evidence may be preserved as NOT_VERIFIED; it is never promoted to VERIFIED and frozen M2 degrades it.
+## Fail closed
+No M2 payload is emitted for malformed source type, malformed provenance, invalid freshness policy, malformed expected/source refs, frame mismatch/unsupported semantics, non-authoritative carrier-origin evidence, stale/future data, stale observation age, malformed or missing VERIFIED target XYZ, missing/malformed/wrong-semantics VERIFIED covariance, malformed search type/ref/frame/metric/timestamp/vector/provenance, or any input flagged production_authority=True.
+NOT_VERIFIED remains NOT_VERIFIED and is never promoted.
+
+## Compatibility behavior
+With a valid VERIFIED software fixture using the real frozen artifacts:
+M1 TRACK/MAINTAIN_TRACK -> M2 AVAILABLE/MAINTAIN_OBSERVATION (`verified_geometry_observation_guidance`).
+That exact M2 output -> M3 SUPPRESSED/NO_COMMAND (`semantic_guidance_without_explicit_movement`) because N1 does not fabricate movement geometry.
+HOLD -> M2 HOLD -> M3 HOLD.
+ABORT -> M2 ABORT_HOLD -> M3 HOLD with abort_semantic=True.
+High uncertainty (>5 m frozen M2 threshold) -> M2 DEGRADED/MAINTAIN_OBSERVATION.
 
 ## Validation
-31/31 deterministic tests PASS locally after Cycle 1 bounded repair.
-Compatibility tests load the real frozen M1, M2 and M3 artifact implementations from WORKSHOP paths.
-Exact behavior:
-- valid VERIFIED carrier-relative HOROS fixture -> M2 AVAILABLE / MAINTAIN_OBSERVATION;
-- same M2 output -> M3 SUPPRESSED / NO_COMMAND because no movement vector is fabricated;
-- HOLD -> M2 HOLD -> M3 HOLD;
-- ABORT -> M2 ABORT_HOLD -> M3 HOLD with abort_semantic=True;
-- high uncertainty -> M2 DEGRADED;
-- target/frame/staleness/covariance/provenance/policy failures fail closed.
+Core/compatibility suite: 31/31 PASS.
+Additional strict boundary regression suite: 5/5 PASS.
+TOTAL: 36/36 PASS.
 
 ## Review history
-Cycle 1 candidate `b34abc9ddda315b0fc903424bb65e51d18d18f5a`: FAIL.
-Findings: provenance access before source validation; unvalidated freshness policy; unvalidated search provenance.
-Bounded repair: source type now precedes provenance access; source/search provenance is exact tuple-of-string-pairs; policy must be exact `NavigationAdapterPolicy`, finite, >=0 and <= frozen M2 0.5 s stale limit.
+Cycle 1 candidate `b34abc9ddda315b0fc903424bb65e51d18d18f5a`: FAIL — provenance and freshness-policy boundary defects.
+Cycle 1 repair `8bbcdb58fb7963147d73fe57f85a68361bcecc43`: FAIL on rereview — equality-spoof paths for covariance semantic tag and expected/search refs, plus whitespace refs.
+Cycle 2 bounded repair: exact non-whitespace refs; exact covariance-semantics string type; adversarial equality-spoof tests added.
 
 ## Runtime availability boundary
-The adapter package is software-complete and deterministic.
-Before future Codex runtime integration may supply active VERIFIED TRACK evidence, local source inspection must bind:
-1. exact HOROS frame_ref and prove it is the carrier-relative metric frame used by M1;
-2. exact HOROS 3x3 target position covariance layout and units as m^2;
-3. CurrentTarget/HOROS target_ref continuity at the call point;
-4. current metric_status truth; physical VERIFIED must not be claimed from provisional/non-validated range evidence.
+Software contract is complete/testable. Future runtime integration must source-verify the exact current `horos_shadow_runtime.py`/HOROS state fields before asserting live VERIFIED NavigationEvidence: exact frame_ref semantics, exact 3x3 target covariance layout/units, CurrentTarget identity continuity at call point, and truthful metric status. Physical class-size metric accuracy remains NOT VERIFIED in current documentation.
 
 CONTROL_AUTHORITY: NONE
 PRODUCTION_INTEGRATION: NO
