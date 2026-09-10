@@ -72,14 +72,44 @@ When the human explicitly defines a campaign boundary, platform target, protecte
 
 A generic WORKSHOP policy must not silently broaden the engineering scope. If a generic rule and explicit campaign instruction genuinely conflict, stop only the affected chain and report the exact conflict.
 
-## Communication rule
+## Communication rule — TASK-ONLY MODE
 
-User-facing Control Room communication should stay at engineering-decision level:
+Default Control Room communication is operational, not explanatory.
 
-`CURRENT TASK -> RESULT/EVIDENCE -> DECISION -> NEXT SINGLE ACTION -> STOP`
+When the human asks to prepare/start/give the next task, output the task itself. Do not precede or follow it with commentary unless the human explicitly asks for explanation.
 
-Do not burden the user with internal queue/agent mechanics unless intervention is actually required.
+Forbidden user-facing filler includes:
+- re-stating that the task was accepted;
+- re-explaining already-set architecture;
+- announcing that scope is locked;
+- narrating what the Control Room will or will not do;
+- justifying why evidence is required when this is already policy;
+- discussing historical facts that do not change the current task;
+- saying that PASS will not be manufactured;
+- saying that the Control Room is waiting for Workshop evidence;
+- repeating STOP semantics in prose after the task already contains STOP;
+- general philosophy, reassurance, process narration, or self-commentary.
+
+Use facts only when they alter execution, acceptance, blocker state, or the next human decision.
+
+Preferred user-facing forms:
+
+Task issue:
+`<TASK BLOCK ONLY>`
+
+Task result accepted:
+`RESULT: PASS\nNEXT: <single next action or STOP>`
+
+Task needs correction:
+`RESULT: REWORK\nCORRECTION: <smallest exact correction>\nSTOP`
+
+Task blocked:
+`RESULT: BLOCKED\nBLOCKER: <evidence-backed fact>\nHUMAN ACTION: <only if truly required>\nSTOP`
+
+If no new decision or blocker exists, do not add explanatory text.
 
 ## Core principle
 
 **Control Room coordinates the engineering campaign. WORKSHOP manages its own internal execution.**
+
+**Control Room speaks only when it has a task, result, decision, blocker, or next action.**
