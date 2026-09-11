@@ -19,7 +19,7 @@ Implementation:
 - no raw telemetry health derivation exists in HB-05.
 
 Test command: `node --test tests/test_ui.mjs`
-Result: 12 tests; 12 PASS; 0 FAIL.
+Result: 14 tests; 14 PASS; 0 FAIL.
 
 Coverage:
 1. exact 12 canonical concepts/order: PASS
@@ -34,6 +34,8 @@ Coverage:
 10. invalid state rejected: PASS
 11. optional remote ingest diagnostic does not override HB-04 supplied NOMINAL state: PASS
 12. not_verified annotations preserved: PASS
+13. renderer emits exactly 12 concept cards and preserves supplied state classes: PASS
+14. invalid normalized input renders System Health unavailable and no nominal state: PASS
 
 Boundary audit:
 - HB-04 engine logic copied/reimplemented: NO
