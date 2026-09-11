@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {CANONICAL_CONCEPTS, STATES, buildViewModel, validateHealthContract} from '../ui/system_health_v1.js';
+import {CANONICAL_CONCEPTS, STATES, buildViewModel, validateHealthContract, renderSystemHealth} from '../ui/system_health_v1.js';
 const here=path.dirname(fileURLToPath(import.meta.url));
 const fixture=n=>JSON.parse(fs.readFileSync(path.join(here,'..','fixtures',n),'utf8'));
 
@@ -81,4 +81,19 @@ test('not_verified annotations preserved for operator context',()=>{
  const vm=buildViewModel(fixture('hb04_current_output.json'));
  const hq=vm.cards.find(x=>x.concept==='HQ_CAMERA_HEALTH');
  assert.equal(hq.notVerified.includes('HQ_FRAME_FRESHNESS'),true);
+});
+
+test('renderer emits exactly 12 concept cards with supplied states',()=>{
+ const p=fixture('hb04_state_matrix_output.json');
+ const root={classList:{add(){}},innerHTML:''};
+ const vm=renderSystemHealth(root,p); assert.equal(vm.ok,true);
+ assert.equal((root.innerHTML.match(/data-concept=/g)||[]).length,12);
+ for(const item of Object.values(p.concepts)) assert.equal(root.innerHTML.includes(`state-${item.state}`),true);
+});
+
+test('renderer shows contract unavailable for invalid normalized input',()=>{
+ const root={classList:{add(){}},innerHTML:''};
+ const vm=renderSystemHealth(root,{schema:'BROKEN',concepts:{}});
+ assert.equal(vm.ok,false); assert.equal(root.innerHTML.includes('System Health unavailable'),true);
+ assert.equal(root.innerHTML.includes('state-NOMINAL'),false);
 });
