@@ -62,7 +62,7 @@ class SystemHealthV1Engine:
         if not isinstance(w,Mapping):return out("WIDE_PIPELINE_HEALTH","UNAVAILABLE",["WIDE_STATE_UNAVAILABLE"],p=pr,f=fresh(basis="SOURCE_NATIVE"))
         env=w.get("environment"); v={k:w.get(k) for k in ("running","fail_open","last_age_s","last_fresh","max_age_s","stale_rejected","input_dropped","output_dropped","failures","environment_failures","last_error","environment_last_error")}; v["environment_status"]=env.get("status") if isinstance(env,Mapping) else w.get("environment_status"); age,fr,thr=w.get("last_age_s"),w.get("last_fresh"),w.get("max_age_s"); stale=fr is False or (num(age) and num(thr) and age>thr); f=fresh(age,"STALE" if stale else "FRESH" if fr is True else "UNKNOWN",thr,"SOURCE_NATIVE")
         if w.get("running") is False:return out("WIDE_PIPELINE_HEALTH","FAULT",["WIDE_WORKER_NOT_RUNNING"],v,f,pr)
-        if err(w.get("last_error")) or err(w.get("environment_last_error")) or (num(w.get("failures")) and w.get("failures")>0):return out("WIDE_PIPELINE_HEALTH","FAULT",["WIDE_ERROR" if err(w.get("last_error")) or err(w.get("environment_last_error")) else "WIDE_FAILURE"],v,f,pr)
+        if err(w.get("last_error")) or err(w.get("environment_last_error")):return out("WIDE_PIPELINE_HEALTH","FAULT",["WIDE_ERROR"],v,f,pr)
         if stale:return out("WIDE_PIPELINE_HEALTH","STALE",["WIDE_STALE"],v,f,pr)
         if w.get("running") is True and fr is True:return out("WIDE_PIPELINE_HEALTH","NOMINAL",v=v,f=f,p=pr)
         return out("WIDE_PIPELINE_HEALTH","UNAVAILABLE",["WIDE_STATE_UNAVAILABLE"],v,f,pr)
