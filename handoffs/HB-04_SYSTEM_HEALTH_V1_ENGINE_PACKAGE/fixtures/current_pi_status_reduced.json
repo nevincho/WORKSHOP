@@ -1,0 +1,10 @@
+{
+  "_fixture_note": "Reduced Runtime Controller status fixture transcribed from HB-00 captured evidence.",
+  "state": "ACTIVE",
+  "camera_status": "OPEN",
+  "hailo": true,
+  "hailo_status": "BUSY",
+  "pi_status": "CONNECTED",
+  "telemetry": "HEALTHY",
+  "errors": []
+}
