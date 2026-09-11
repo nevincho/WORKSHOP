@@ -5,7 +5,7 @@ STATUS: MANDATORY ENTRYPOINT FOR ALL AGENTS, CONTROLLERS AND CODEX HANDOFF PREPA
 Before processing any task, in this order:
 
 1. Read `README.md`.
-2. Read all applicable files in `policies/`, especially AUTONOMY, REPOSITORY_COMMUNICATION, VALIDATION, EXECUTION_ROUTING, CODEX_BUDGET, HUMAN_GATE, CHECKPOINT_AND_BACKUP, REPORTING, CONTROL_ROOM, and CONTROL_ROOM_WORKSHOP_CAMPAIGN.
+2. Read all applicable files in `policies/`, especially AUTONOMY, REPOSITORY_COMMUNICATION, VALIDATION, EXECUTION_ROUTING, CODEX_BUDGET, HUMAN_GATE, CHECKPOINT_AND_BACKUP, REPORTING, CONTROL_ROOM, CONTROL_ROOM_WORKSHOP_CAMPAIGN, and for TANGRA campaigns `TANGRA_ENGINEERING_TO_PROMOTION_WORKFLOW_POLICY.md`.
 3. Read your role definition in `agents/`.
 4. Read `registry/PROJECTS.md` and `registry/CONNECTIONS.md`.
 5. Read the target `projects/<PROJECT>.md` profile.
@@ -25,5 +25,6 @@ Hard rules:
 - Codex is scarce and gated.
 - COMPLETE requires independent Reviewer PASS and checkpoint evidence when implementation changed.
 - In human-directed campaigns, Control Room coordinates one bounded engineering task at a time; WORKSHOP owns internal Worker/Reviewer/queue/Codex routing. Do not turn Control Room conversation into internal orchestration management.
+- For TANGRA campaigns, complete and independently review the engineering campaign before Codex integration by default. Codex integrates reviewed units one at a time into an authorized development copy; promotion requires the defined shadow, combined, real-copy runtime, regression, and explicit human gates.
 
 If instructions conflict, stop only the affected chain and record the conflict/blocker for Control Room resolution.
