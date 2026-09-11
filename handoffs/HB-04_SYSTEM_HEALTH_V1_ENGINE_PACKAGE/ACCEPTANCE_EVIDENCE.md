@@ -1,20 +1,29 @@
 # HB-04 Acceptance Evidence
 
 Date: 2026-09-11
-Status: WORKSHOP IMPLEMENTATION COMPLETE / READY FOR INDEPENDENT REVIEW
+Status: WORKSHOP BOUNDED CORRECTION COMPLETE / READY FOR INDEPENDENT RE-REVIEW
 
 Inputs:
 - `REPORTS/HB-02_SYSTEM_HEALTH_V1_PC_DERIVATION_MODEL_20260910.md`
 - `REPORTS/HB-03_SYSTEM_HEALTH_V1_PC_DATA_CONTRACT_20260910.md`
 - HB-03 base commit `8038bf770e09aa2330447d5baca33a515c2a215c`
+- Failed review commit `a67058eb8eacefdcd16e7fb6cd16703cf38b9e20`
 
 Implemented exactly 12 canonical concepts: RUNTIME_HEALTH, SYSTEM_CPU, SYSTEM_RAM, CPU_TEMPERATURE, RUNTIME_PERFORMANCE, HQ_CAMERA_HEALTH, WIDE_PIPELINE_HEALTH, HAILO_HEALTH, CA_AUTHORITY_STATE, METRIC_HEALTH, HOROS_HEALTH, TELEMETRY_EDGE_HEALTH.
 
+Bounded correction:
+- Removed cumulative `wide_worker.failures > 0` as an independent current `FAULT` trigger.
+- Preserved `failures` in WIDE supporting diagnostic values.
+- Current explicit WIDE error semantics (`last_error`, `environment_last_error`), worker liveness, and source-native freshness semantics remain unchanged.
+
 Test command: `PYTHONPATH=. python -m unittest discover -s tests -v`
 
-Result: 15 tests run; 0 failures; 0 errors; PASS.
+Result: 16 tests run; 0 failures; 0 errors; PASS.
 
 Acceptance coverage:
+- original 15 tests: PASS
+- exact regression `running=true`, `last_fresh=true`, `last_age_s=0.1`, `max_age_s=0.5`, no current errors, `failures=1`: PASS
+- regression result: `WIDE_PIPELINE_HEALTH` is not `FAULT`; current state is `NOMINAL`; `values.failures=1` remains available as diagnostic context
 - exact 12 concepts: PASS
 - captured current telemetry/status reduced fixtures: PASS
 - current fixture false-green behavior: PASS
@@ -47,4 +56,4 @@ Protected boundaries:
 - Performance Observatory: NO
 - Codex used: NO
 
-Independent Review Agent validation is required before HB-04 acceptance/closure.
+Independent Review Agent re-validation is required before HB-04 acceptance/closure.
