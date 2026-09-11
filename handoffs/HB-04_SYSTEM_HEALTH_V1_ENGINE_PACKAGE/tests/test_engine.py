@@ -40,6 +40,11 @@ class EngineTests(unittest.TestCase):
     def test_wide_worker_not_running_is_fault(self):
         t=copy.deepcopy(self.telemetry); t["horos_shadow"]["wide_worker"]["running"]=False
         self.assertEqual(self.health(t)["WIDE_PIPELINE_HEALTH"]["state"],"FAULT")
+    def test_wide_historical_failure_counter_is_diagnostic_only(self):
+        t=copy.deepcopy(self.telemetry); w=t["horos_shadow"]["wide_worker"]
+        w["running"]=True; w["last_fresh"]=True; w["last_age_s"]=0.1; w["max_age_s"]=0.5; w["last_error"]=None; w["environment_last_error"]=None; w["failures"]=1
+        c=self.health(t)["WIDE_PIPELINE_HEALTH"]
+        self.assertNotEqual(c["state"],"FAULT"); self.assertEqual(c["state"],"NOMINAL"); self.assertEqual(c["values"]["failures"],1)
     def test_numeric_resource_values_never_self_green(self):
         t=copy.deepcopy(self.telemetry); t["cpu_usage"]=0.1; t["ram_usage"]=0.1; t["cpu_temp"]=1.0; c=self.health(t)
         self.assertEqual(c["SYSTEM_CPU"]["state"],"NOT_VERIFIED"); self.assertEqual(c["SYSTEM_RAM"]["state"],"NOT_VERIFIED"); self.assertEqual(c["CPU_TEMPERATURE"]["state"],"NOT_VERIFIED")
