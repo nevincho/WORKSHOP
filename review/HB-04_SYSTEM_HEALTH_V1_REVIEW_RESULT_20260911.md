@@ -1,53 +1,36 @@
 # HB-04 — Independent Review Result
 
 Date: 2026-09-11
-Scope: review only `handoffs/HB-04_SYSTEM_HEALTH_V1_ENGINE_PACKAGE/` at package commit `d0763c7722c25fce68480a61e53f2de7d7cd6677` against the accepted HB-02/HB-03 contracts and `review/HB-04_SYSTEM_HEALTH_V1_REVIEW_REQUEST_20260911.md`.
+Scope: independent re-review only of `handoffs/HB-04_SYSTEM_HEALTH_V1_ENGINE_PACKAGE/` at package commit `0a4bb367e29d9b361c5677cd2a1de3d4718f817d` against accepted HB-02/HB-03 contracts and corrected review request commit `f0c78027aaade00d103ffb69dd3339d7b56bb509`.
 
 ## RESULT
 
-**FAIL — one bounded contract defect.**
+**PASS — corrected HB-04 satisfies the bounded review scope.**
 
 ## Verified facts
 
-- Exactly 12 canonical concepts: PASS.
-- Standalone package structure and integration manifest: PASS.
-- Existing test suite: 15/15 PASS when executed independently.
-- No production Dashboard/Pi/runtime integration performed by the package: PASS.
-- No invented numeric threshold found; WIDE uses source-provided `max_age_s`: PASS.
-- STALE/UNAVAILABLE/NOT_VERIFIED protections are present across tested cases: PASS, except for the defect below affecting current WIDE failure semantics.
-
-## Defect
-
-`system_health_v1/engine.py` derives `WIDE_PIPELINE_HEALTH=FAULT` whenever cumulative `wide_worker.failures > 0`, even when:
-- `running=true`;
-- `last_fresh=true`;
-- `last_age_s <= max_age_s`;
-- `last_error=null`;
-- `environment_last_error=null`.
-
-Minimal independent simulation result:
-
-```text
-input wide_worker: running=true, last_fresh=true, last_age_s=0.1, max_age_s=0.5, failures=1, no current errors
-actual state: FAULT
-actual reason_codes: [WIDE_FAILURE]
-```
-
-This violates accepted HB-02/HB-03 semantics: cumulative/nonzero historical counters are diagnostic context and must not independently establish current `FAULT`; only a direct current failure/error semantic may do so. Counter deltas may be diagnostic but are not an authorized standalone fault rule.
-
-## Required bounded correction
-
-Remove the rule that treats a nonzero cumulative `failures` counter by itself as current `FAULT`. Preserve the counter as supporting diagnostic context. Add a regression test proving a healthy/fresh/running WIDE worker with historical nonzero cumulative failures and no current error does not become `FAULT` solely from that counter.
-
-No other defect is asserted by this review.
+- Exactly 12 canonical concepts and no extra top-level health components: PASS.
+- Original HB-02/HB-03 state/reason semantics reviewed: PASS.
+- Prior WIDE defect corrected: cumulative `wide_worker.failures > 0` no longer independently produces current `FAULT`.
+- `failures` remains present in WIDE supporting diagnostic values: PASS.
+- Exact regression case `running=true`, `last_fresh=true`, `last_age_s=0.1`, `max_age_s=0.5`, no current errors, `failures=1` returns `NOMINAL`, not `FAULT`, while preserving `values.failures=1`: PASS.
+- Original 15 tests plus exact WIDE regression: 16/16 PASS when independently executed against the corrected unit.
+- WIDE source-native freshness rule remains unchanged and uses only source-provided `max_age_s`; no new threshold introduced: PASS.
+- Existing STALE / UNAVAILABLE / NOT_VERIFIED false-green protections remain intact: PASS.
+- Compare from failed package commit `d0763c7722c25fce68480a61e53f2de7d7cd6677` to corrected package commit shows the implementation correction is bounded to one engine line replacement plus one regression test; acceptance/review evidence changes do not alter runtime logic: PASS.
+- No regression detected outside the corrected WIDE unit in the 16-test suite: PASS.
+- Integration manifest remains applicable to the existing Dashboard merged telemetry and Runtime Controller status surfaces; no Pi polling/protocol extension, new telemetry, SOURCE_GAP synthesis, UI, history, recovery, or authority change is introduced: PASS.
+- Production Dashboard, Pi/runtime, EDGE LINK, CA/tracking/range/HOROS authorities remain untouched by this package: PASS.
 
 ## Verdict fields
 
-- CONTRACT_FIDELITY: FAIL
-- TEST_EVIDENCE: existing suite 15/15 PASS; added independent simulation exposes uncovered contract defect
+- CONTRACT_FIDELITY: PASS
+- TEST_EVIDENCE: 16/16 PASS; includes exact historical cumulative WIDE failure-counter regression
 - BOUNDARY_EVIDENCE: PASS
-- FALSE_GREEN_PROTECTION: PASS for reviewed false-green cases; defect is false-fault/current-state semantics, not false-green
-- INTEGRATION_READINESS: FAIL pending bounded WIDE correction and regression test
-- DEFECTS: one, as above
+- FALSE_GREEN_PROTECTION: PASS
+- INTEGRATION_READINESS: PASS for later bounded Dashboard COPY integration
+- DEFECTS: NONE within HB-04 review scope
+
+HB-04 may be CLOSED.
 
 STOP.
