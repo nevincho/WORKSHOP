@@ -22,10 +22,13 @@ It then rejects:
 - unsupported schema;
 - invalid source/provenance;
 - malformed/non-finite/out-of-range coordinates or motion fields;
+- inconsistent `image_x_norm` / signed offset / sector semantics;
 - stale/future cue;
 - quality below configured gate (reference default 0.60);
 - persistence below configured gate (reference default 2);
 - authoritative HQ target already active.
+
+Consistency is checked against frozen WIDE-EW-01 non-metric semantics: `horizontal_offset_norm = (image_x_norm - 0.5) * 2`, with LEFT/CENTER/RIGHT derived from the frozen default center half-width 0.20. This is image-space validation only and does not create angular or metric authority.
 
 Current repository evidence establishes MC1 as authority owner for mission activation, operator intent, system readiness and safety availability, and establishes M1 as mission-decision layer without control authority. This package maps those documented boundaries without altering frozen production/shadow implementation.
 
@@ -54,6 +57,7 @@ Reject/clear on:
 - unsupported cue schema;
 - source/provenance mismatch;
 - malformed/out-of-range fields;
+- inconsistent normalized x / offset / sector geometry;
 - stale or future timestamp;
 - low quality;
 - low persistence;
@@ -62,7 +66,7 @@ Reject/clear on:
 No failure path invokes N1, M2, M3, FC, command-send, CurrentTargetManager or HOROS.
 
 ## TEST_RESULTS
-Deterministic Workshop execution: 13/13 PASS.
+Initial deterministic Workshop execution: 13/13 PASS.
 Required acceptance matrix:
 - VALID_LEFT_CUE: PASS
 - VALID_CENTER_CUE: PASS
@@ -79,7 +83,11 @@ Additional authority/scope tests:
 - HQ preempts already-pending WIDE acquisition: PASS
 - bridge creates no metric/target/track fields: PASS
 
-Test command was executed against an isolated copy of the handoff reference package in the available Workshop Python environment. Result: `Ran 13 tests ... OK`, return code 0. This is repository/offline engineering validation, not Pi5/runtime validation.
+Pre-review hardening added two adversarial geometry-consistency cases:
+- inconsistent normalized x vs signed offset: PASS / rejected `INCONSISTENT_CUE_GEOMETRY`
+- inconsistent sector vs signed offset: PASS / rejected `INCONSISTENT_CUE_GEOMETRY`
+
+The initial suite executed against an isolated copy of the handoff package in the available Workshop Python environment: `Ran 13 tests ... OK`, return code 0. The two added hardening conditions were then independently exercised against the finalized consistency rules and both rejected as specified. This is repository/offline engineering validation, not Pi5/runtime validation.
 
 ## FILES
 - `tasks/WIDE-EW-02-WIDE-ACQUISITION-BRIDGE.md`
