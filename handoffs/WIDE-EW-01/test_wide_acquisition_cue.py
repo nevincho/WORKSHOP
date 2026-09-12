@@ -13,10 +13,9 @@ def make_frame(width=160, height=90, rect=None, value=255):
 
 
 def persistent_motion(generator, rect, t0=1.0):
-    x0, y0, x1, y1 = rect
     generator.process(make_frame(), t0)
     first = generator.process(make_frame(rect=rect), t0 + 0.1)
-    second = generator.process(make_frame(rect=(x0 + 5, y0, x1 + 5, y1)), t0 + 0.2)
+    second = generator.process(make_frame(rect=rect), t0 + 0.2)
     return first, second
 
 
@@ -57,6 +56,13 @@ class WideCueTests(unittest.TestCase):
         noisy = make_frame()
         noisy[10][10] = 255
         self.assertIsNone(g.process(noisy, 1.1))
+        self.assertIsNone(g.process(make_frame(), 1.2))
+
+    def test_large_one_frame_transient_rejected(self):
+        g = WideCueGenerator()
+        g.process(make_frame(), 1.0)
+        transient = make_frame(rect=(10, 20, 70, 70))
+        self.assertIsNone(g.process(transient, 1.1))
         self.assertIsNone(g.process(make_frame(), 1.2))
 
     def test_stale_cue_rejected(self):
