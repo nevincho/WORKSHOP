@@ -69,6 +69,16 @@ class BridgeTests(unittest.TestCase):
         self.assertFalse(r.accepted)
         self.assertEqual(r.reason, "MALFORMED_CUE")
 
+    def test_inconsistent_offset_rejected(self):
+        r = accepted(replace(Cue(), horizontal_offset_norm=0.2))
+        self.assertFalse(r.accepted)
+        self.assertEqual(r.reason, "INCONSISTENT_CUE_GEOMETRY")
+
+    def test_inconsistent_sector_rejected(self):
+        r = accepted(replace(Cue(), sector="RIGHT"))
+        self.assertFalse(r.accepted)
+        self.assertEqual(r.reason, "INCONSISTENT_CUE_GEOMETRY")
+
     def test_mission_inactive(self):
         bad = MC1AuthorityContext(False, True, True, True)
         r = accepted(Cue(), authority=bad)
