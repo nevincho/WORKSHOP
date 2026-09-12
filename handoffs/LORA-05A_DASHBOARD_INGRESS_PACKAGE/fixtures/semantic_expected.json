@@ -1,0 +1,10 @@
+{
+  "transport": "LORA",
+  "semantic_sections": ["SYSTEM", "TARGET", "SPATIAL", "EVENT", "DIAGNOSTIC", "LINK"],
+  "link_is_receiver_derived": true,
+  "transmitted_lora_connected_dependency": false,
+  "real_dashboard_bindings": "ADAPTER_MAPPING_REQUIRED",
+  "wide_implementation": false,
+  "physical_transport": false,
+  "command_path": false
+}

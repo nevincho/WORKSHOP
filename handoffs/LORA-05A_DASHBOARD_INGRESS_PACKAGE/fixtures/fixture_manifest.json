@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "LORA-02": "f24e5c3064b0331df0c231f752f3ff5571c931a6",
+    "LORA-03": "543f0771d420e460b3ae3e631cd285e9f880e691"
+  },
+  "clock_thresholds_for_tests_only": {"stale_after_s": 5, "disconnect_after_s": 15},
+  "production_timeout_claim": false
+}
