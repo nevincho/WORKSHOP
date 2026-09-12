@@ -2,7 +2,7 @@
 
 PROJECT: TANGRA
 CAMPAIGN: WIDE Acquisition Cue / Orientation
-STATUS: IN_PROGRESS
+STATUS: COMPLETE
 TYPE: ENGINEERING / PASSIVE M2 CONTRACT EXTENSION + DETERMINISTIC TESTS
 CODEX: FORBIDDEN
 PRODUCTION/Pi5 MODIFICATION: FORBIDDEN
@@ -25,8 +25,13 @@ N1 remains excluded pre-confirmation.
 ## Protected
 No modification to WideAcquisitionCue v1, HQ detector, NanoTracker, CA Kalman, CurrentTargetManager, HOROS, N1, M3, FC/carrier adapter, command-send authority, Pi5 or production. No metric bearing/yaw/heading/range/XYZ semantics.
 
-## Acceptance
-PASS only if exact M1→M2 contract, `ORIENT_OBSERVATION_AXIS` semantics, contract-status classification, non-metric preservation, HQ preemption, expiry/cancellation, fail-closed behavior, bounded tests and independent review are present, and M3 receives nothing.
+## Acceptance result
+Independent review: PASS.
+M2 contract status: `BOUNDED_EXTENSION_REQUIRED`.
+Deterministic tests: 11/11 PASS.
+Evidence: `evidence/WIDE-EW-03/RESULT.md`.
+Review: `review/WIDE-EW-03.md`.
+M3 output: NONE.
 
 ## STOP
-After independent review, STOP. Do not start WIDE-EW-04.
+WIDE-EW-03 complete. Do not start WIDE-EW-04 in this cycle.
