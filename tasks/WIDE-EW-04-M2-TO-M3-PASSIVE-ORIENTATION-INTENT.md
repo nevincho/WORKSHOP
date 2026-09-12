@@ -2,7 +2,7 @@
 
 PROJECT: TANGRA
 CAMPAIGN: WIDE Acquisition Cue / Orientation
-STATUS: IN_PROGRESS
+STATUS: COMPLETE
 TYPE: ENGINEERING / PASSIVE M3 CONTRACT EXTENSION + DETERMINISTIC TESTS
 CODEX: FORBIDDEN
 PRODUCTION/Pi5 MODIFICATION: FORBIDDEN
@@ -28,5 +28,10 @@ No modification to WideAcquisitionCue v1, MC1, M1, N1, HQ detector, NanoTracker,
 ## Acceptance
 PASS only if exact M2→M3 contract, schema-status classification, passive carrier-independent semantics, non-metric geometry, HQ preemption, expiry/cancellation, fail-closed behavior, bounded tests and independent review are present, with zero carrier/FC/physical command output.
 
+## Completion
+Independent review verdict: PASS.
+Evidence: `evidence/WIDE-EW-04/RESULT.md`.
+Review: `review/WIDE-EW-04.md`.
+
 ## STOP
-After independent review, STOP. Do not start another engineering unit.
+WIDE-EW-04 is complete. Do not start another engineering unit in this cycle.
