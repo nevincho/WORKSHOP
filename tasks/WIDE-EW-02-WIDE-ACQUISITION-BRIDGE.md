@@ -2,7 +2,7 @@
 
 PROJECT: TANGRA
 CAMPAIGN: WIDE Acquisition Cue / Orientation
-STATUS: IN_PROGRESS
+STATUS: COMPLETE
 TYPE: ENGINEERING / MC1-M1 CONTRACT EXTENSION + DETERMINISTIC TESTS
 CODEX: FORBIDDEN
 PRODUCTION/Pi5 MODIFICATION: FORBIDDEN
@@ -32,5 +32,12 @@ No changes to HQ detector, NanoTracker, CA Kalman, CurrentTargetManager, HOROS, 
 ## Acceptance
 PASS only if exact bridge contract, MC1 validation, M1 acquisition semantics, timeout/rejection, HQ conflict behavior, required tests and independent review are present and no downstream guidance/command authority is activated.
 
+## Completion
+Engineering evidence: `evidence/WIDE-EW-02/RESULT.md`.
+Independent review: `review/WIDE-EW-02.md` — PASS.
+Reference package:
+- `handoffs/WIDE-EW-02/wide_acquisition_bridge.py`
+- `handoffs/WIDE-EW-02/test_wide_acquisition_bridge.py`
+
 ## STOP
-After independent review, STOP. Do not start WIDE-EW-03.
+WIDE-EW-02 is complete. Do not start WIDE-EW-03 in this cycle.
