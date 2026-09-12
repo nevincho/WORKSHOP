@@ -17,7 +17,7 @@ class WideAcquisitionCue:
     motion_area_norm: float
     quality: float
     persistence_frames: int
-    provenance: str = "WIDE_MOTION_DIFFERENCE_NON_METRIC"
+    provenance: str = "WIDE_STABLE_BACKGROUND_DIFFERENCE_NON_METRIC"
 
     def age_s(self, now_s: float) -> float:
         return now_s - self.timestamp_monotonic_s
@@ -29,7 +29,7 @@ class WideAcquisitionCue:
     def validate(self) -> bool:
         if self.schema_version != 1 or self.source != "WIDE_IMX708":
             return False
-        if self.provenance != "WIDE_MOTION_DIFFERENCE_NON_METRIC":
+        if self.provenance != "WIDE_STABLE_BACKGROUND_DIFFERENCE_NON_METRIC":
             return False
         vals = (
             self.timestamp_monotonic_s,
@@ -60,12 +60,14 @@ def cue_is_acceptable(cue: Optional[WideAcquisitionCue], now_s: float) -> bool:
 
 
 class WideCueGenerator:
-    """Deterministic, non-metric motion cue generator.
+    """Deterministic, non-metric acquisition-cue generator.
 
     Input is an already-downscaled grayscale frame represented as a 2D
-    sequence of integer samples in [0, 255]. State is bounded to the latest
-    previous frame plus a persistence counter. No neural inference, tracking,
-    metric geometry, target identity or command authority is present.
+    sequence of integer samples in [0, 255]. A stable-background frame is
+    retained. Background is refreshed only on non-motion observations, so a
+    one-frame disturbance followed by return to the stable scene cannot count
+    as two persistent observations. No neural inference, tracking, metric
+    geometry, target identity or command authority is present.
     """
 
     def __init__(
@@ -98,7 +100,7 @@ class WideCueGenerator:
         self.min_persistence_frames = min_persistence_frames
         self.max_age_s = max_age_s
         self.center_half_width_norm = center_half_width_norm
-        self._prev: Optional[Tuple[Tuple[int, ...], ...]] = None
+        self._background: Optional[Tuple[Tuple[int, ...], ...]] = None
         self._persistence = 0
         self._cue_id = 0
 
@@ -133,9 +135,9 @@ class WideCueGenerator:
             self._persistence = 0
             return None
 
-        prev = self._prev
-        self._prev = cur
-        if prev is None:
+        background = self._background
+        if background is None:
+            self._background = cur
             self._persistence = 0
             return None
 
@@ -144,10 +146,10 @@ class WideCueGenerator:
         sy = 0
         diff_sum = 0
         for y in range(self.height):
-            prow = prev[y]
+            brow = background[y]
             crow = cur[y]
             for x in range(self.width):
-                d = abs(crow[x] - prow[x])
+                d = abs(crow[x] - brow[x])
                 if d >= self.pixel_diff_threshold:
                     changed += 1
                     sx += x
@@ -157,6 +159,7 @@ class WideCueGenerator:
         total = self.width * self.height
         area = changed / total
         if changed == 0 or area < self.min_motion_area_norm:
+            self._background = cur
             self._persistence = 0
             return None
 
@@ -168,10 +171,8 @@ class WideCueGenerator:
         y_norm = sy / changed / max(1, self.height - 1)
         offset = max(-1.0, min(1.0, (x_norm - 0.5) * 2.0))
         mean_diff = diff_sum / changed / 255.0
-        quality = max(
-            0.0,
-            min(1.0, 0.5 * area / self.min_motion_area_norm + 0.5 * mean_diff),
-        )
+        area_strength = min(1.0, area / max(self.min_motion_area_norm * 4.0, 1e-9))
+        quality = max(0.0, min(1.0, 0.5 * area_strength + 0.5 * mean_diff))
         self._cue_id += 1
         cue = WideAcquisitionCue(
             schema_version=1,
