@@ -5,6 +5,8 @@ import math
 EXPECTED_SOURCE = "WIDE_IMX708"
 EXPECTED_PROVENANCE = "WIDE_STABLE_BACKGROUND_DIFFERENCE_NON_METRIC"
 VALID_SECTORS = {"LEFT", "CENTER", "RIGHT"}
+CENTER_HALF_WIDTH_NORM = 0.20
+COORD_TOLERANCE = 1e-6
 
 
 @dataclass(frozen=True)
@@ -50,6 +52,14 @@ class M1AcquisitionDecision:
     sector: Optional[str]
     horizontal_offset_norm: Optional[float]
     reason: str
+
+
+def _expected_sector(offset: float) -> str:
+    if offset < -CENTER_HALF_WIDTH_NORM:
+        return "LEFT"
+    if offset > CENTER_HALF_WIDTH_NORM:
+        return "RIGHT"
+    return "CENTER"
 
 
 def validate_wide_acquisition_cue(
@@ -113,6 +123,12 @@ def validate_wide_acquisition_cue(
             return BridgeResult(False, "MALFORMED_CUE")
         if int(cue.persistence_frames) < 1:
             return BridgeResult(False, "MALFORMED_CUE")
+
+        expected_offset = (cue.image_x_norm - 0.5) * 2.0
+        if abs(cue.horizontal_offset_norm - expected_offset) > COORD_TOLERANCE:
+            return BridgeResult(False, "INCONSISTENT_CUE_GEOMETRY")
+        if cue.sector != _expected_sector(cue.horizontal_offset_norm):
+            return BridgeResult(False, "INCONSISTENT_CUE_GEOMETRY")
     except Exception:
         return BridgeResult(False, "MALFORMED_CUE")
 
