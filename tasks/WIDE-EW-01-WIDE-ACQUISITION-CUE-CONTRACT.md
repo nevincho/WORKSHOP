@@ -2,7 +2,7 @@
 
 PROJECT: TANGRA
 CAMPAIGN: WIDE Acquisition Cue / Orientation
-STATUS: IN_PROGRESS
+STATUS: COMPLETE
 TYPE: ENGINEERING / CONTRACT + REFERENCE IMPLEMENTATION + DETERMINISTIC TESTS
 CODEX: FORBIDDEN
 PRODUCTION/Pi5 MODIFICATION: FORBIDDEN
@@ -42,5 +42,10 @@ No changes to HQ detector, NanoTracker, CA Kalman, CurrentTargetManager, HOROS, 
 ## Acceptance
 PASS only if exact schema/provenance/freshness semantics, deterministic generation, bounded temporal filtering, fail-closed behavior, required synthetic tests, measured resource cost and exact future MC1/M1 ingress boundary are all present and independently reviewable.
 
+## Completion
+Independent review verdict: PASS.
+Evidence: `evidence/WIDE-EW-01/RESULT.md`.
+Review: `review/WIDE-EW-01.md`.
+
 ## STOP
-After independent review verdict, STOP. Do not start WIDE-EW-02.
+WIDE-EW-01 is complete. Do not start WIDE-EW-02 in this cycle.
