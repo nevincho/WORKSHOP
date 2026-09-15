@@ -31,7 +31,9 @@ Exact case-sensitive strings. StateClass: SHARED_REPLICATED, NODE_LOCAL, TRANSIE
 StateClass is explicit. Durability/storage never implies replication eligibility. Only exact SHARED_REPLICATED is synchronization eligible. No receiver may infer it from database presence, record type, transport or persistence location.
 
 ## 8. Time
-`observed_at` is null or canonical RFC3339 UTC `YYYY-MM-DDTHH:MM:SS[.fraction]Z`; fraction 1..9 digits with trailing fractional zeros removed. Pre-wire application values with offsets may be exactly converted to UTC, but canonical wire always uses Z. Invalid = INVALID_SCHEMA. Wall time is never causal authority.
+`observed_at` is null or canonical RFC3339 UTC `YYYY-MM-DDTHH:MM:SS[.fraction]Z`; fraction 1..9 digits with trailing fractional zeros removed. Calendar/date-time values MUST be real and MUST NOT be normalized from invalid values. Hour is 00..23, minute is 00..59, and second is exactly 00..59. Wire Profile v1 does not represent leap seconds using `:60`; for example `2016-12-31T23:59:60Z` is INVALID_SCHEMA. Pre-wire application values with offsets may be exactly converted to UTC, but canonical wire always uses Z. Invalid = INVALID_SCHEMA. Wall time is metadata only and never causal authority.
+
+The explicit 00..59 seconds rule preserves deterministic cross-language canonical validation. Leap seconds are not denied as a timekeeping phenomenon; their `:60` representation is intentionally excluded from Wire Profile v1 rather than introducing platform/runtime-dependent leap-second handling.
 
 ## 9. Identifiers
 Identifiers are non-empty NFC strings, max 255 UTF-8 bytes, no controls. `record_id` is globally unique opaque or deterministic under its record-type contract; `vk_identity_id` identifies LogicalIdentity; `node_id` identifies a node; checkpoint/reconciliation IDs are opaque. No timestamp-based causal precedence.
