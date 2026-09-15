@@ -1,0 +1,29 @@
+name: VK-WIRE-05 C++ cross-language conformance
+on:
+  push:
+    branches: [vk-wire-05-cpp]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          g++ --version
+          cmake --version
+          pkg-config --modversion icu-uc
+          openssl version
+      - name: Build independent C++ codec
+        working-directory: cpp/vk_wire_v1
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release -j2
+      - name: Execute authoritative vectors and cross-language matrix
+        run: python3 cpp/vk_wire_v1/conformance.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vk-wire-05-cross-language-matrix
+          path: evidence/VK-WIRE-05/cross_language_matrix.json
