@@ -22,7 +22,9 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release -j2
       - name: Execute authoritative vectors and cross-language matrix
-        run: python3 cpp/vk_wire_v1/conformance.py
+        run: |
+          python3 cpp/vk_wire_v1/conformance.py
+          python3 cpp/vk_wire_v1/verify_logical_domain.py
       - uses: actions/upload-artifact@v4
         with:
           name: vk-wire-05-cross-language-matrix
