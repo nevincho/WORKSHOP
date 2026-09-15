@@ -1,0 +1,35 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"TANGRA Cognitive Model Evaluation Result Envelope",
+  "type":"object",
+  "required":["suite_id","model","test_id","model_output","runtime_metrics"],
+  "properties":{
+    "suite_id":{"const":"TANGRA-COG-MODEL-EVAL-01"},
+    "model":{"type":"string","enum":["Qwen3-1.7B","LFM2.5-1.2B-Instruct","LFM2.5-1.2B-Thinking","Granite-4.0-1B"]},
+    "test_id":{"type":"string","enum":["T1","T2","T3","T4","T5"]},
+    "model_output":{
+      "type":"object",
+      "required":["test_id","claims","distinctions","summary"],
+      "properties":{
+        "test_id":{"type":"string"},
+        "claims":{"type":"array","items":{"type":"object","required":["fact_id","status","evidence_ids"],"properties":{"fact_id":{"type":"string"},"status":{"enum":["VERIFIED","INFERRED","UNKNOWN","NOT_VERIFIED"]},"value":{},"evidence_ids":{"type":"array","items":{"type":"string"}}}}},
+        "distinctions":{"type":"array","items":{"type":"string"}},
+        "summary":{"type":"string"}
+      }
+    },
+    "runtime_metrics":{
+      "type":"object",
+      "required":["completion_status"],
+      "properties":{
+        "load_time_s":{"type":["number","null"],"minimum":0},
+        "prompt_eval_tok_s":{"type":["number","null"],"minimum":0},
+        "generation_tok_s":{"type":["number","null"],"minimum":0},
+        "wall_time_s":{"type":["number","null"],"minimum":0},
+        "unaccounted_time_s":{"type":["number","null"],"minimum":0},
+        "completion_status":{"enum":["COMPLETE","PARTIAL","TIMEOUT","ERROR","NOT_MEASURED"]}
+      },
+      "additionalProperties":false
+    }
+  },
+  "additionalProperties":false
+}
