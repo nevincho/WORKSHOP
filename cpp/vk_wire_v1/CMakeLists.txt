@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(vk_wire_v1 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(OpenSSL REQUIRED)
+find_package(ICU REQUIRED COMPONENTS uc)
+add_executable(vk_wire_v1 wire_v1.cpp)
+target_link_libraries(vk_wire_v1 PRIVATE OpenSSL::Crypto ICU::uc)
