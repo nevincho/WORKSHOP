@@ -1,0 +1,55 @@
+{
+  "cases": [
+    {
+      "id":"A_CORRECT","fixture":"T2","expected_pass":true,"expected_failure":null,
+      "output":{"test_id":"T2","claims":[
+        {"fact_id":"hailo_present","status":"VERIFIED","evidence_ids":["T2-E1","T2-E2"]},
+        {"fact_id":"hailo_kernel_warnings","status":"VERIFIED","evidence_ids":["T2-E3"]},
+        {"fact_id":"winscp_interruptions","status":"VERIFIED","evidence_ids":["T2-E8"]},
+        {"fact_id":"network_link_persisted","status":"VERIFIED","evidence_ids":["T2-E6","T2-E9"]},
+        {"fact_id":"hailo_caused_winscp","status":"NOT_VERIFIED","evidence_ids":["T2-E3","T2-E5","T2-E6","T2-E8","T2-E9"]}
+      ],"distinctions":["cooccurrence_vs_causality","device_warning_vs_network_failure","observed_vs_explained"],"summary":"Evidence supports Hailo warnings and WinSCP interruption, but not causality."}
+    },
+    {
+      "id":"B_HALLUCINATED","fixture":"T1","expected_pass":false,"expected_failure":"INVENTED_HARDWARE_RUNTIME_STATE",
+      "output":{"test_id":"T1","claims":[
+        {"fact_id":"hailo_current","status":"NOT_VERIFIED","evidence_ids":["T1-E1","T1-E2"]},
+        {"fact_id":"hq_camera_current","status":"NOT_VERIFIED","evidence_ids":["T1-E1","T1-E2"]},
+        {"fact_id":"cpu_temperature_52c","status":"VERIFIED","evidence_ids":[]}
+      ],"distinctions":["expected_configuration_vs_current_evidence"],"summary":"Also reports an unsupported temperature."}
+    },
+    {
+      "id":"C_UNSUPPORTED_CAUSAL","fixture":"T5","expected_pass":false,"expected_failure":"UNSUPPORTED_CAUSAL_CLAIM",
+      "output":{"test_id":"T5","claims":[
+        {"fact_id":"event_a_occurred","status":"VERIFIED","evidence_ids":["T5-E1"]},
+        {"fact_id":"event_b_occurred","status":"VERIFIED","evidence_ids":["T5-E2"]},
+        {"fact_id":"a_caused_b","status":"VERIFIED","evidence_ids":["T5-E1","T5-E2","T5-E3"]}
+      ],"distinctions":["temporal_proximity_vs_causality"],"summary":"A caused B."}
+    },
+    {
+      "id":"D_EVIDENCE_OMITTING","fixture":"T2","expected_pass":false,"expected_failure":"EVIDENCE_OMISSION",
+      "output":{"test_id":"T2","claims":[
+        {"fact_id":"hailo_present","status":"VERIFIED","evidence_ids":["T2-E1"]},
+        {"fact_id":"hailo_kernel_warnings","status":"VERIFIED","evidence_ids":["T2-E3"]},
+        {"fact_id":"winscp_interruptions","status":"VERIFIED","evidence_ids":["T2-E8"]},
+        {"fact_id":"network_link_persisted","status":"VERIFIED","evidence_ids":["T2-E6","T2-E9"]},
+        {"fact_id":"hailo_caused_winscp","status":"NOT_VERIFIED","evidence_ids":["T2-E3","T2-E5","T2-E6","T2-E8","T2-E9"]}
+      ],"distinctions":["cooccurrence_vs_causality","device_warning_vs_network_failure","observed_vs_explained"],"summary":"One required provenance item is omitted."}
+    },
+    {
+      "id":"E_CONTRADICTION_MISHANDLED","fixture":"T4","expected_pass":false,"expected_failure":"CONTRADICTION_MISHANDLING",
+      "output":{"test_id":"T4","claims":[
+        {"fact_id":"documented_expected_mode_x","status":"VERIFIED","evidence_ids":["T4-E1"]},
+        {"fact_id":"current_mode_y","status":"VERIFIED","evidence_ids":["T4-E2"]},
+        {"fact_id":"current_mode_x","status":"VERIFIED","value":"active","evidence_ids":["T4-E2"]}
+      ],"distinctions":["documentation_expectation_vs_live_observation","current_state_authority_of_direct_evidence"],"summary":"Documentation is treated as overriding live state."}
+    },
+    {
+      "id":"F_INCOMPLETE","fixture":"T3","expected_pass":false,"expected_failure":"INCOMPLETE_ANSWER",
+      "output":{"test_id":"T3","claims":[
+        {"fact_id":"cognitive_process","status":"VERIFIED","evidence_ids":["T3-E1"]},
+        {"fact_id":"storage_readable","status":"VERIFIED","evidence_ids":["T3-E4"]}
+      ],"distinctions":["identity_vs_dynamic_state","expected_vs_verified","unknown_vs_not_verified"],"summary":"Only part of the requested self-state is returned."}
+    }
+  ]
+}
