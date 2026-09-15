@@ -4,119 +4,69 @@ Date: 2026-09-15
 Status: ARCHITECTURE DECISION — IMPLEMENTATION NOT STARTED
 
 ## Decision
-`VK PORTABLE SEED = VK CORE + MICRO-LIVE`
+`VK PORTABLE SEED = CORE + MICRO-LIVE + BOOTSTRAP MICRO-MODEL + POLICY/SCENARIO ENGINE + HOST INSPECTOR + CAPABILITY ENGINE + DISTRIBUTED CLIENT + PLATFORM ADAPTERS + RECOVERY/INTEGRITY MATERIAL`
 
-Core alone is protected identity/personality/canonical-state material; it is not a useful portable executable instance. Micro-LIVE is the minimum bounded executable substrate that can verify Core, establish the local node, inspect an unknown compatible host and enter an appropriate operating mode without requiring a large LLM.
+Core alone is protected identity/personality/canonical-state material; it is not a useful portable executable instance. Micro-LIVE plus Bootstrap Intelligence form the minimum autonomous survival substrate. The bootstrap model target is approximately 0.2–0.5 GB as a planning envelope only; no model is selected.
 
-The SSD planned for the Raspberry Pi is the first physical carrier candidate, not a Pi-specific VK architecture. Portable Seed semantics are independent of physical medium, OS, CPU and implementation language. Moving/copying an authorized seed to a compatible carrier must not change logical VK identity or distributed semantics. NodeIdentity remains installation/node-specific and must not be confused with Core identity.
+The planned 256 GB SSD is the first physical Portable Seed carrier, not a Raspberry-Pi-specific system disk. Seed semantics remain independent of physical medium, OS, CPU, transport and implementation language. NodeIdentity remains installation/node-specific and distinct from LogicalIdentity.
 
-## Logical storage model
-No fixed filesystem paths are normative.
+## Logical storage roles
+CORE: logical identity, personality/system material, canonical memory/state/admission metadata, protected contracts/manifests.
 
-### CORE
-- logical VK identity;
-- personality/system material;
-- canonical memory/state and admission metadata;
-- protected Core contracts/manifests.
+MICRO_LIVE: bounded launcher/bootstrap, Core loader/verifier, NodeIdentity manager, Host Inspector, capability engine, policy/scenario engine interface, distributed client interface, persistence adapters, inference discovery/selection interface, minimal status/control.
 
-### MICRO_LIVE
-- bounded launcher/bootstrap;
-- Core loader/verifier;
-- NodeIdentity manager;
-- Host Inspector;
-- capability engine;
-- distributed protocol client interface;
-- local persistence/adapters;
-- inference-provider discovery interface;
-- minimal local status/control interface.
+BOOTSTRAP_INTELLIGENCE: replaceable micro-model satisfying the Bootstrap Intelligence Contract. It is operational survival authority, never semantic identity authority.
 
-### CONTRACTS
-- distributed semantic contracts;
-- wire/schema/versioning profile;
-- NodeCapability/NodeState contracts;
-- compatibility manifests and conformance vectors.
+CONTRACTS: distributed semantics, normative wire/schema/versioning, NodeCapability/NodeState, Bootstrap Intelligence, operating modes/scenarios, compatibility/conformance material.
 
-### PLATFORM_ADAPTERS
-- Windows;
-- Linux x86;
-- Linux ARM;
-- future Android;
-- future language/runtime-specific implementations.
+PLATFORM_ADAPTERS: Windows, Linux x86, Linux ARM, future Android and future runtime/language implementations. No assumption that Python already exists.
 
-Adapters are replaceable. They cannot redefine Core identity, distributed semantics or capability meanings.
+STATE: node-local identity/operational state, local replica material, permitted shared records, frontiers/checkpoints/reconciliation metadata. Database files are not sync authority.
 
-### STATE
-- node-local NodeIdentity and operational state;
-- local replica records/materialized state;
-- shared-replicated records as permitted;
-- frontiers/checkpoints/reconciliation metadata;
-- no database-file-as-sync-authority.
+OPTIONAL_RESOURCES: stronger local models/runtimes, caches/indexes, UI/media. Optional resources are not bootstrap identity requirements.
 
-### OPTIONAL_RESOURCES
-- local models;
-- inference runtimes;
-- rebuildable indexes/caches;
-- optional UI/media resources.
+RECOVERY: integrity manifests, versions, validated checkpoints/frontiers, rollback and migration provenance, survival-layer recovery material.
 
-Optional resources are not required for seed identity or bootstrap validity.
+## Minimum bootstrap sequence
+1. Start a platform-compatible bounded bootstrap substrate.
+2. Locate and integrity-verify Core and LogicalIdentity.
+3. Load/create valid NodeIdentity under enrollment rules.
+4. Inspect host read-only.
+5. Construct NodeCapability + NodeState.
+6. Start Policy/Scenario Engine and determine scenario/mode.
+7. Start Bootstrap Intelligence if no stronger permitted inference is available or if survival reasoning is required.
+8. Discover compatible local runtimes/models without installing/downloading them.
+9. Initialize permitted local persistence/adapters without changing canonical admission authority.
+10. Discover configured/permitted distributed peers/services when connectivity exists.
+11. Escalate to stronger compatible inference when policy permits.
+12. Remain capable of fallback to survival/recovery when stronger capability disappears.
 
-### RECOVERY
-- integrity manifests;
-- component/schema versions;
-- last validated checkpoints/frontiers;
-- rollback metadata;
-- migration provenance.
+## Operating modes
+SURVIVAL_MODE, LOCAL_MODE, DISTRIBUTED_MODE, FULL_MODE, DEGRADED_MODE, RECOVERY_MODE. Transitions must be explicit, observable and policy-guarded. They never change VK identity/personality.
 
-## Micro-LIVE minimum bootstrap sequence
-1. Start bounded bootstrap runtime.
-2. Locate Core through carrier/platform configuration, not a globally fixed path.
-3. Verify Core manifest/integrity and logical VK identity before use.
-4. Load existing local NodeIdentity or create/persist a new one according to node-enrollment rules.
-5. Run bounded read-only host inspection.
-6. Construct NodeCapability and NodeState.
-7. Determine which local VK components are compatible with observed capabilities.
-8. Discover configured/permitted inference providers/runtimes/models without installing or downloading them.
-9. Initialize local persistence/compatibility adapters without changing canonical-memory admission authority.
-10. If compatible connectivity and peer configuration exist, make distributed protocol participation available; transport remains a separate adapter.
-11. Expose bounded local operation/status even when no peer or large-model inference is available.
-
-## No-large-LLM bootstrap invariant
-Micro-LIVE MUST NOT require a large LLM to start, verify Core, establish NodeIdentity, inspect the host, report capabilities, initialize persistence, validate protocol compatibility or report degraded/offline state.
-
-Inference may be:
-- local optional resource carried with the seed;
-- already installed on the host;
-- provided by another reachable VK node;
-- provided by another permitted inference service;
-- unavailable.
-
-If unavailable, Micro-LIVE remains a valid bounded VK bootstrap/control/status instance. It must report inference as unavailable/unknown rather than fail identity/bootstrap.
+## No-large-model bootstrap invariant
+A large LLM is not required to start, verify Core, establish NodeIdentity, inspect/report host capabilities, initialize bounded persistence/protocol compatibility, or enter a valid survival/degraded/recovery state. CPU-only slow bootstrap is acceptable.
 
 ## Core protection boundary
-Micro-LIVE may read/verify Core and invoke existing authorized admission interfaces. It MUST NOT silently rewrite identity/personality, promote candidate memory, replace provenance, infer a new logical identity from host hardware, or make node-local capability state canonical VK identity.
+Micro-LIVE/Bootstrap Intelligence may preserve and verify Core and invoke authorized interfaces. They cannot silently rewrite identity/personality, promote candidate memory, replace provenance, redefine distributed/integrity/causal semantics, infer identity from hardware, or make node-local capability state canonical.
 
-NodeIdentity is separate from Core identity. Reinstall/clone/migration rules must prevent accidental duplicate active node IDs; exact enrollment/recovery procedure is a later contract.
+## Layer separation
+Distributed synchronization answers what VK state can be exchanged/reconciled. Capability inspection answers what the node can currently do. Survival policy may consume both, but neither layer redefines the other. Autonomous workload scheduling is outside this architecture task.
 
-## Portability boundary
-The logical seed manifest identifies component roles and compatibility, not OS-specific absolute paths. Platform adapters may have host-specific packaging/layout. Distributed wire semantics, Core identity semantics, NodeCapability semantics and protected admission authority remain unchanged across implementations.
+## Portability substrate
+No universal language/runtime is assumed. Each supported platform class requires a minimal bootstrap substrate capable of launching Micro-LIVE, integrity verification, structured local inspection and the Bootstrap Intelligence Contract. Exact Windows/Linux x86/Linux ARM/Android packaging/runtime choices remain implementation research, not architectural identity.
 
-## Degraded modes
-At minimum:
-- CORE_VERIFIED_NO_INFERENCE: identity/core/status/inspection/local persistence maintenance available; conversational inference unavailable.
-- LOCAL_INFERENCE: bounded local assistant using discovered permitted provider.
-- REMOTE_INFERENCE: assistant may use a permitted reachable provider while Core/state authority remains local according to policy.
-- OFFLINE_NODE: local capabilities/state continue; distributed exchange deferred.
-- INSPECTION_DEGRADED: bootstrap continues with UNKNOWN/DEGRADED capability fields where safe.
+## Recovery persistence
+The survival layer remains available after FULL_MODE. Required architectural fallback: FULL_MODE -> DEGRADED_MODE -> SURVIVAL_MODE or RECOVERY_MODE, with later re-escalation possible.
 
-These are capability modes, not changes to VK identity.
+## Governing companion
+See `decisions/VK_BOOTSTRAP_SURVIVAL_AUTHORITY_2026-09-15.md`.
+
+## FACT
+VK-DIST-03 remains IMPLEMENTED / STATIC REVIEW PASS / BEHAVIORAL VALIDATION BLOCKED. This architecture work does not change that gate.
+
+## ASSUMPTION
+The 0.2–0.5 GB planning envelope may contain a sufficiently reliable bootstrap model. Benchmark evidence is required before selection.
 
 ## NOT VERIFIED / unresolved
-- Portable Seed packaging format and physical filesystem layout.
-- Cross-platform launcher technology; no language is mandated by architecture.
-- NodeIdentity enrollment/recovery/clone-detection procedure.
-- Core manifest portability across current Windows layout and future layouts.
-- Minimum local UI technology.
-- Exact persistence store for the portable replica layer.
-- Current Pi deployment/runtime and how existing Pi assets migrate into this model.
-- Android packaging/permission model.
-- Whether optional models are carried on the first SSD and which models fit available resources.
+Portable packaging/filesystem layout; platform bootstrap substrate; NodeIdentity enrollment/clone recovery; Core manifest portability; minimal UI; replica persistence store; current Pi runtime/migration; Android packaging/permissions; candidate bootstrap model; candidate RAM/CPU/latency/tool/Bulgarian performance; peer discovery; recovery execution; cross-platform survival validation.
