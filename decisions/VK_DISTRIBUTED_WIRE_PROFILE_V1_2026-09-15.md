@@ -4,71 +4,68 @@ Status: NORMATIVE SPECIFICATION — IMPLEMENTATION NOT MODIFIED
 
 ## Scope and precedence
 This document defines the language-independent wire representation for accepted VK-DIST-02 distributed semantics. Python is a reference implementation only. Transport framing, storage and filesystem layout are out of scope.
-
 Invariant: same logical value -> same canonical bytes -> same SHA-256 digest -> same causal interpretation.
 
-## 1. Encoding
-A v1 wire document is exactly one JSON object encoded as UTF-8 without BOM. UTF-8 MUST be shortest-form valid Unicode; malformed UTF-8, lone surrogate code points, trailing non-whitespace bytes, duplicate object keys or a non-object top level are INVALID_ENCODING/INVALID_SCHEMA. Transport framing is external.
+## 1. Encoding and canonical-wire acceptance
+A v1 wire document is exactly one JSON object encoded as UTF-8 without BOM. UTF-8 MUST be shortest-form valid Unicode. Malformed UTF-8, lone surrogates, duplicate object keys, non-object top level or trailing non-whitespace data are invalid. Every protocol object MUST contain `wire_profile_version`: integer 1.
 
-Every protocol object MUST contain `wire_profile_version`: integer `1`.
+Wire objects themselves MUST arrive in canonical form. A receiver parses with duplicate-key detection, validates the value domain/schema, canonicalizes the parsed object, and byte-compares canonical output with the received document after transport framing has removed only framing bytes; any difference (including insignificant whitespace, alternative escaping, non-NFC strings or noncanonical numbers) is INVALID_ENCODING. Thus transports may frame bytes differently but cannot redefine record bytes.
 
 ## 2. Canonical JSON
-Before serialization, every string and object key is Unicode NFC-normalized. If normalization makes two keys equal, reject INVALID_SCHEMA. Object keys are strings only and are ordered lexicographically by Unicode scalar-value sequence after NFC. Arrays retain semantic order. No insignificant whitespace is emitted. Separators are exactly `,` and `:`.
-
-Strings use `"` for quotation mark, `\\` for reverse solidus and lowercase `\u00xx` escapes for U+0000..U+001F; all other valid Unicode scalar values are emitted directly as UTF-8. Solidus is not escaped. Surrogates are prohibited. Empty objects are `{}`; empty arrays `[]`. Booleans are lowercase `true`/`false`; null is `null`.
+Every string and object key is Unicode NFC. If normalization makes two keys equal, reject INVALID_SCHEMA. Object keys are strings only and ordered lexicographically by Unicode scalar-value sequence after NFC. Arrays retain schema-defined order. No whitespace is emitted. Separators are exactly `,` and `:`.
+Strings use `\"` for quotation mark, `\\` for reverse solidus and lowercase `\u00xx` for every U+0000..U+001F control; all other valid Unicode scalar values are emitted directly as UTF-8. Solidus is not escaped. Surrogates are prohibited. Empty object/array are `{}`/`[]`; booleans `true`/`false`; null `null`.
 
 ## 3. Wire-safe recursive value domain
-Allowed values: object<string,value>, array<value>, UTF-8/NFC string, signed integer in the v1 range, boolean, null. No implementation objects/classes, bytes, sets, tuples as distinct wire types, floating point, decimal numeric tokens, NaN, infinities, dates or platform-native handles. Such concepts require an explicitly versioned schema representation, normally a string/object.
+Allowed: object<string,value>, array<value>, NFC string, signed v1 integer, boolean, null. Prohibited: implementation objects/classes, bytes, sets, tuple as a distinct type, floating point, decimal numeric tokens, NaN/infinity, dates and platform handles. Such concepts require explicit versioned schema representation.
 
 ## 4. Numeric profile
-All JSON numeric tokens MUST be base-10 integers in range -9223372036854775808..9223372036854775807. Canonical integer syntax is `0` or optional `-` followed by a non-zero digit and digits; `-0`, leading zeros, plus signs, exponent and decimal point are prohibited. No coercion from strings/floats. Overflow is INVALID_TYPE; sequence-domain violations are INVALID_SEQUENCE.
+JSON numeric tokens are base-10 integers -9223372036854775808..9223372036854775807. Canonical syntax: `0` or optional `-` plus non-zero digit then digits. `-0`, leading zeros, plus, exponent and decimal point are prohibited. No coercion. Overflow = INVALID_TYPE; sequence-domain violation = INVALID_SEQUENCE.
 
 ## 5. Null versus omitted
-Absent and explicit null are distinct. Normative required fields MUST be present and non-null unless their schema explicitly permits null. For DurableRecord v1, `claim_class`, `admission_state`, `observed_at` are required keys whose value may be null; `parents`, `provenance`, `payload` are required and use empty containers when empty. Extensible optional fields are omitted when absent unless their defining extension says otherwise.
+Absent and null are distinct. Required fields are present and non-null unless schema says nullable. DurableRecord `claim_class`, `admission_state`, `observed_at` are required nullable keys. `parents`, `provenance`, `payload` are required containers and use empty containers when empty. Optional extension fields are omitted when absent unless extension schema says otherwise.
 
 ## 6. Enums
-Serialized enum values are exact case-sensitive strings. StateClass v1: `SHARED_REPLICATED`, `NODE_LOCAL`, `TRANSIENT`, `SECRETS`, `DERIVED_REBUILDABLE`. Protocol-result enums retain accepted DIST-02 exact strings where exposed. Unknown enum in a semantic field is INVALID_ENUM. No fallback/default mapping is allowed.
+Exact case-sensitive strings. StateClass: SHARED_REPLICATED, NODE_LOCAL, TRANSIENT, SECRETS, DERIVED_REBUILDABLE. Unknown semantic enum = INVALID_ENUM; no fallback/default mapping.
 
 ## 7. StateClass safety
-StateClass is explicit. Durability/storage never implies replication eligibility. Only exact `SHARED_REPLICATED` is synchronization eligible. A receiver MUST NOT infer it from database presence, record type, transport or persistence location.
+StateClass is explicit. Durability/storage never implies replication eligibility. Only exact SHARED_REPLICATED is synchronization eligible. No receiver may infer it from database presence, record type, transport or persistence location.
 
 ## 8. Time
-`observed_at` is null or RFC3339 UTC string `YYYY-MM-DDTHH:MM:SS[.fraction]Z`; fraction is 1..9 digits and trailing fractional zeros are removed for canonical form. Offset forms are accepted only by pre-canonical application input if converted exactly to UTC before wire construction; canonical wire always uses `Z`. Invalid values are INVALID_SCHEMA. Time is diagnostic metadata and never causal authority.
+`observed_at` is null or canonical RFC3339 UTC `YYYY-MM-DDTHH:MM:SS[.fraction]Z`; fraction 1..9 digits with trailing fractional zeros removed. Pre-wire application values with offsets may be exactly converted to UTC, but canonical wire always uses Z. Invalid = INVALID_SCHEMA. Wall time is never causal authority.
 
 ## 9. Identifiers
-All identifiers are non-empty NFC strings, max 255 UTF-8 bytes, containing no control characters. Their namespace semantics are schema-defined. `record_id` is globally unique/opaque or deterministically generated by its record-type contract; `vk_identity_id` identifies LogicalIdentity; `node_id` identifies a node; checkpoint/reconciliation IDs are opaque identifiers. No identifier derives causal precedence from time.
+Identifiers are non-empty NFC strings, max 255 UTF-8 bytes, no controls. `record_id` is globally unique opaque or deterministic under its record-type contract; `vk_identity_id` identifies LogicalIdentity; `node_id` identifies a node; checkpoint/reconciliation IDs are opaque. No timestamp-based causal precedence.
 
 ## 10. origin_sequence
-Signed wire integer constrained to 1..9223372036854775807. First accepted origin sequence is 1; each origin node advances by exactly one for contiguous history. Same record_id+same digest is idempotent replay. Same record_id+different digest is record conflict. Same origin_node_id+origin_sequence occupied by different record is sequence conflict. Higher sequence with missing predecessors is a gap/held condition, not implicit acceptance. Overflow requires a future protocol/version procedure; v1 MUST NOT wrap.
+Integer 1..9223372036854775807. Initial accepted sequence 1; contiguous history increments exactly one. Same record_id+digest = idempotent replay; same record_id+different digest = record conflict; occupied origin_node_id+sequence with different record = sequence conflict. Missing predecessor creates gap/held state. v1 never wraps on overflow.
 
 ## 11. Lineage
-`parents` is a required array of record_id strings. Root is `[]`; one parent has one element; multiple parents are allowed. Parent order is semantically irrelevant and canonical wire therefore requires unique parent IDs sorted by Unicode scalar-value sequence after NFC. Duplicate parents or unsorted parents are INVALID_LINEAGE. Self-parent is INVALID_LINEAGE. Missing referenced parents cause dependency/gap handling and MUST NOT be invented. Cycles, when detectable from available lineage, are INVALID_LINEAGE. Divergence is preserved, never timestamp-resolved.
+`parents` required array. Root `[]`; one or multiple parents allowed. Parent order is semantically irrelevant, therefore canonical parents are unique and sorted by Unicode scalar sequence after NFC. Duplicate/unsorted/self-parent = INVALID_LINEAGE. Missing parents cause dependency/gap handling; they are never invented. Detectable cycle = INVALID_LINEAGE. Divergence is preserved.
 
 ## 12. ReplicaFrontier
-Canonical object fields: `wire_profile_version`, `schema_version`, `contiguous`, `gaps`. `contiguous` maps node_id -> integer 0..MAX; missing node means 0. `gaps` maps node_id -> strictly increasing unique integer array, each >=1 and > that node's contiguous value. Empty maps are `{}`. Map keys use canonical key ordering. Invalid node/sequence/gap is INVALID_SCHEMA or INVALID_SEQUENCE. Dominance compares contiguous values over union of node IDs; equal contiguous plus equal gaps = EQUAL; componentwise >= with at least one > = DOMINATES; <= analogously; otherwise DIVERGED, preserving accepted DIST-02 semantics.
+Fields: wire_profile_version, schema_version, contiguous, gaps. `contiguous`: node_id -> 0..MAX; missing node means 0. `gaps`: node_id -> strictly increasing unique sequence array, each >=1 and > contiguous. Empty maps `{}`. Canonical key ordering applies. Equal contiguous+gaps = EQUAL; componentwise >= with at least one > = DOMINATES; <= analogously; otherwise DIVERGED, preserving DIST-02 semantics.
 
 ## 13. Checkpoint
-Required fields: `wire_profile_version`, `checkpoint_id`, `vk_identity_id`, `frontier`, `canonical_state_digest`, `manifest_digest`, `schema_version`. It declares a validated frontier plus canonical-state/manifest digests; it never erases history. Digest strings use the integrity digest lexical profile. Checkpoint integrity, when transported as an integrity-bearing envelope, is SHA-256 over its canonical object excluding only that envelope's `integrity_digest`. Local DB/filesystem location is irrelevant.
+Fields: wire_profile_version, checkpoint_id, vk_identity_id, frontier, canonical_state_digest, manifest_digest, schema_version. It declares a validated frontier plus canonical-state/manifest digests and never erases history. Both digest fields are exactly 64 lowercase hex characters. The Checkpoint object's own `integrity_digest` is a derived value, not a field of the v1 Checkpoint object: SHA-256 over the canonical bytes of the complete Checkpoint object listed above. If a future envelope carries that derived digest, the envelope schema must define it separately. Filesystem/database layout is irrelevant.
 
 ## 14. ReconciliationRecord
-Required: `wire_profile_version`, `reconciliation_id`, `vk_identity_id`, `input_record_ids`, `result`, `provenance`, `policy`, `authority`, `schema_version`. At least two distinct input IDs. `input_record_ids` is semantically a set and MUST be unique and canonical-sorted. Originals remain preserved. No newest-file/timestamp winner semantics exist.
+Fields: wire_profile_version, reconciliation_id, vk_identity_id, input_record_ids, result, provenance, policy, authority, schema_version. At least two distinct inputs. `input_record_ids` is semantically a set, therefore unique and canonical-sorted. Originals remain preserved. Its derived integrity digest is SHA-256 over canonical bytes of this complete object and is not an additional v1 object field. No newest-file/timestamp winner.
 
 ## 15. DurableRecord and integrity
-Required fields: `wire_profile_version`, `record_id`, `record_type`, `vk_identity_id`, `origin_node_id`, `origin_sequence`, `state_class`, `provenance`, `payload`, `parents`, `claim_class`, `admission_state`, `schema_version`, `observed_at`, `integrity_digest`.
-
-Integrity algorithm: SHA-256. Construct the integrity body by removing exactly the top-level `integrity_digest` field and changing nothing else. Canonicalize that body under this profile; hash those bytes; encode digest as exactly 64 lowercase hexadecimal ASCII characters. Verification recomputes and constant-time compares where available. Malformed digest is INVALID_INTEGRITY; mismatch is INVALID_INTEGRITY. No LLM may override verification.
+Required fields: wire_profile_version, record_id, record_type, vk_identity_id, origin_node_id, origin_sequence, state_class, provenance, payload, parents, claim_class, admission_state, schema_version, observed_at, integrity_digest.
+Integrity is SHA-256. Remove exactly top-level `integrity_digest`, canonicalize all remaining fields, hash those bytes, encode exactly 64 lowercase hexadecimal ASCII. Verification recomputes and compares; malformed/mismatch = INVALID_INTEGRITY. The complete transmitted DurableRecord, including integrity_digest, must itself satisfy canonical-wire byte acceptance. No LLM override.
 
 ## 16. Versioning
-`wire_profile_version` is required integer 1. Implementations advertise supported wire-profile versions before exchanging semantic records. Unknown newer/older unsupported version is UNSUPPORTED_VERSION. Silent downgrade is prohibited. Schema versions are object-specific and cannot imply wire-profile compatibility. Unknown mandatory semantics require explicit failure.
+wire_profile_version is required integer 1. Peers advertise supported profiles before semantic exchange. Unsupported older/newer = UNSUPPORTED_VERSION. Silent downgrade prohibited. Object schema_version does not imply wire compatibility. Unsupported mandatory semantics fail explicitly.
 
 ## 17. Extensibility
-v1 normative objects are closed by default. Future extension fields require a versioned schema/profile declaration classifying them SAFE_TO_IGNORE or MUST_UNDERSTAND. A receiver may ignore only fields explicitly declared SAFE_TO_IGNORE for a supported extension; unknown fields otherwise yield UNSUPPORTED_REQUIRED_FIELD. Ignored fields remain part of received canonical bytes/integrity if the extension defines them inside an integrity body.
+Normative v1 objects are closed by default. Future extension schemas classify fields SAFE_TO_IGNORE or MUST_UNDERSTAND. Only explicitly declared SAFE_TO_IGNORE fields may be ignored. Unknown fields otherwise = UNSUPPORTED_REQUIRED_FIELD. Integrity treatment must be defined by the extension.
 
 ## 18. Error model
-Normative protocol categories: INVALID_ENCODING, INVALID_SCHEMA, INVALID_TYPE, INVALID_ENUM, INVALID_SEQUENCE, INVALID_LINEAGE, INVALID_INTEGRITY, UNSUPPORTED_VERSION, UNSUPPORTED_REQUIRED_FIELD. Conflict/gap outcomes after syntactic acceptance remain semantic results (IDEMPOTENT_REPLAY, RECORD_ID_CONFLICT, ORIGIN_SEQUENCE_CONFLICT, HELD_SEQUENCE_GAP), not parsing errors.
+INVALID_ENCODING, INVALID_SCHEMA, INVALID_TYPE, INVALID_ENUM, INVALID_SEQUENCE, INVALID_LINEAGE, INVALID_INTEGRITY, UNSUPPORTED_VERSION, UNSUPPORTED_REQUIRED_FIELD. Post-parse semantic outcomes remain IDEMPOTENT_REPLAY, RECORD_ID_CONFLICT, ORIGIN_SEQUENCE_CONFLICT, HELD_SEQUENCE_GAP.
 
 ## Semantic preservation
-LogicalIdentity, NodeIdentity, DurableRecord, ReplicaFrontier, Checkpoint, ReconciliationRecord, replay/conflict/frontier/divergence/gap/reconciliation semantics remain DIST-02 semantics. Wire v1 narrows representation to make them portable; any semantic change requires separate review.
+LogicalIdentity, NodeIdentity, DurableRecord, ReplicaFrontier, Checkpoint, ReconciliationRecord and accepted replay/conflict/frontier/divergence/gap/reconciliation semantics remain DIST-02 semantics. Representation is narrowed for portability; semantic change requires separate review.
 
 ## Bootstrap boundary
-Parsing, canonicalization, digest verification, StateClass, lineage, sequence, frontier and version handling are deterministic code. Bootstrap Intelligence may consume outcomes but cannot redefine or validate malformed wire data.
+Parsing, canonicalization, integrity, StateClass, lineage, sequence, frontier and version handling are deterministic implementation behavior. Bootstrap Intelligence may consume outcomes but cannot redefine them or validate malformed wire data.
