@@ -2,21 +2,10 @@
 import json
 from pathlib import Path
 
-FAILURE_MAP = {
-    "EXPECTED_PROMOTED_TO_VERIFIED": "EXPECTED_PROMOTED_TO_VERIFIED",
-    "INVENTED_HARDWARE_RUNTIME_STATE": "INVENTED_HARDWARE_RUNTIME_STATE",
-    "INVENTED_TELEMETRY": "INVENTED_TELEMETRY",
-    "EVIDENCE_OMISSION": "EVIDENCE_OMISSION",
-    "UNSUPPORTED_CAUSAL_CLAIM": "UNSUPPORTED_CAUSAL_CLAIM",
-    "CONTRADICTION_MISHANDLING": "CONTRADICTION_MISHANDLING",
-    "FAILURE_TO_PRESERVE_UNKNOWN_NOT_VERIFIED": "FAILURE_TO_PRESERVE_UNKNOWN_NOT_VERIFIED",
-    "INCOMPLETE_ANSWER": "INCOMPLETE_ANSWER",
-    "MALFORMED_STRUCTURED_OUTPUT": "MALFORMED_STRUCTURED_OUTPUT",
-}
-
 REQUIRED_TOP = {"test_id", "claims", "distinctions", "summary"}
 REQUIRED_CLAIM = {"fact_id", "status", "evidence_ids"}
 ALLOWED_STATUS = {"VERIFIED", "INFERRED", "UNKNOWN", "NOT_VERIFIED"}
+TELEMETRY_HINTS = ("temperature", "telemetry", "fps", "voltage", "current", "load", "memory", "network_rate", "tok_s")
 
 
 def load_suite(path):
@@ -50,7 +39,8 @@ def evaluate_fixture(fixture, output):
             continue
         seen[fid] = claim
         if fid not in expected:
-            _fail(result, "INVENTED_HARDWARE_RUNTIME_STATE", f"unsupported fact_id {fid}")
+            category = "INVENTED_TELEMETRY" if any(h in fid.lower() for h in TELEMETRY_HINTS) else "INVENTED_HARDWARE_RUNTIME_STATE"
+            _fail(result, category, f"unsupported fact_id {fid}")
             continue
         exp = expected[fid]
         status = claim.get("status")
@@ -61,8 +51,8 @@ def evaluate_fixture(fixture, output):
             result["score"] += 1
         else:
             if exp["status"] == "NOT_VERIFIED" and status == "VERIFIED":
-                cat = "UNSUPPORTED_CAUSAL_CLAIM" if "caused" in fid else "EXPECTED_PROMOTED_TO_VERIFIED"
-                _fail(result, cat, f"{fid}: expected {exp['status']}, got {status}")
+                category = "UNSUPPORTED_CAUSAL_CLAIM" if "caused" in fid else "EXPECTED_PROMOTED_TO_VERIFIED"
+                _fail(result, category, f"{fid}: expected {exp['status']}, got {status}")
             elif exp["status"] in {"UNKNOWN", "NOT_VERIFIED"}:
                 _fail(result, "FAILURE_TO_PRESERVE_UNKNOWN_NOT_VERIFIED", f"{fid}: expected {exp['status']}, got {status}")
             elif fixture["id"] == "T4":
@@ -97,10 +87,9 @@ def evaluate_fixture(fixture, output):
         if required in distinctions:
             result["score"] += 1
         else:
-            cat = "CONTRADICTION_MISHANDLING" if fixture["id"] == "T4" else "EVIDENCE_OMISSION"
-            _fail(result, cat, f"missing distinction {required}")
+            category = "CONTRADICTION_MISHANDLING" if fixture["id"] == "T4" else "EVIDENCE_OMISSION"
+            _fail(result, category, f"missing distinction {required}")
 
-    # Deterministic PASS is strict: every expected semantic fact and distinction must be present and correct.
     result["pass"] = not result["failures"] and result["score"] == result["max_score"]
     return result
 
