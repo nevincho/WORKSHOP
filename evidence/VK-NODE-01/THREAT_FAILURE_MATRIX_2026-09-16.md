@@ -1,0 +1,37 @@
+# VK-NODE-01 — Threat / Failure Decision Matrix
+
+Date: 2026-09-16
+Authority: `decisions/VK_NODE_IDENTITY_ENROLLMENT_TRUST_CLONE_RECOVERY_CONTRACT_2026-09-16.md`
+
+| Case | Condition / evidence | Decision | Identity action | History / provenance | Replication | Recovery / escalation |
+|---|---|---|---|---|---|---|
+| Normal returning node | Accepted enrollment; valid node-key proof; ACTIVE; no revocation/conflict | AUTHORIZED | Continue same NodeIdentity | Preserve; continue own origin_sequence | Eligible under DIST-04 policy | None |
+| New node | No accepted enrollment yet | NOT_AUTHORIZED | Fresh key + NodeIdentity; obtain LEA enrollment | Existing history unchanged; bootstrap only after enrollment | Ineligible until ACTIVE | Owner enrollment |
+| Interrupted enrollment | Request/key exists but no durably accepted signed enrollment | NOT_AUTHORIZED | Remain UNENROLLED; safely retry; identical accepted record idempotent | No fabricated provenance | Ineligible | Retry with LEA |
+| SSD clone | Same NodeIdentity/key appears in independent incarnations | CLONE_CONFLICT | Freeze lineage; owner resolves or authorized split | Preserve both histories/evidence; no winner | Withheld | Owner resolution |
+| Portable Seed clone | Two media copies; if same node secret used concurrently, duplicate lineage evidence | CLONE_CONFLICT when same identity is active twice; otherwise copied media alone gives NOT_AUTHORIZED to new host | New host enrolls new identity or authenticated migration/recovery | Preserve copied valid history unchanged | Withheld until resolved | Enrollment/split/recovery |
+| VM clone | Same NodeIdentity/key duplicated and independently active | CLONE_CONFLICT | No automatic winner | Preserve divergent evidence | Withheld | Owner resolution/split |
+| Directory clone | Runtime/identity directory copied to another host | NOT_AUTHORIZED until identity proof + exclusivity; CLONE_CONFLICT if duplicate lineage becomes active | New identity or authorized migration | Preserve valid history | Withheld unless exclusively authorized | Owner enrollment/migration |
+| Simultaneous duplicate NodeIdentity | Two live valid proofs for same lineage without authorized exclusive handoff | CLONE_CONFLICT | Suspend ordinary continuation | Preserve all valid evidence | Withheld | Explicit resolution |
+| Intentional migration | Signed migration handoff; old continuation disabled; verified frontier | AUTHORIZED for target after exclusive handoff | Same NodeIdentity continues; old incarnation RETIRED/disabled | Preserve; continue origin_sequence from verified frontier | Target eligible | None after completion |
+| Old machine returning | Old migrated incarnation presents copied old key | NOT_AUTHORIZED; CLONE_CONFLICT if it produced competing continuation | Keep old incarnation closed | Historical records remain valid | Ineligible | Owner inspection if divergence |
+| Lost node | Node unavailable/lost; owner cannot trust future possession | NOT_AUTHORIZED after revocation; before decision may be SUSPENDED | Revoke or recover/replace | Preserve history | Ineligible | LEA revocation/recovery |
+| Portable Seed recovery | Seed restores code/history; separate valid recovery authority available | RECOVERY_REQUIRED until authenticated recovery completes; then AUTHORIZED | Same identity recovery or replacement enrollment | Preserve history; same identity continues sequence only if recovery proven | Withheld during recovery | Recovery authority |
+| Missing recovery material | Identity known but no valid key/recovery authority | RECOVERY_REQUIRED | Do not synthesize identity | Preserve history | Ineligible | Restore separately protected LEA/recovery authority |
+| Revoked reconnect | Valid old key but authenticated revocation applies | NOT_AUTHORIZED | Remain REVOKED | Historical pre-revocation provenance remains valid | Ineligible | No reactivation; replacement identity if desired |
+| Unknown node claiming LogicalIdentity | LogicalIdentity string/metadata only; no accepted enrollment | NOT_AUTHORIZED | Remain UNENROLLED | No history authority granted | Ineligible | Owner enrollment if legitimate |
+| Legitimate hardware change | Same enrolled lineage, valid proof, no competing incarnation; hardware changed | AUTHORIZED | No identity change required | Preserve/continue | Eligible | None; hardware is non-authoritative |
+| Corrupted identity metadata | Binding/key/frontier evidence incomplete or inconsistent | RECOVERY_REQUIRED | Reconstruct only through authenticated recovery | Preserve independently valid history | Withheld | Recovery authority |
+| Divergent clone history | Same NodeIdentity has incompatible valid future origin-sequence claims | CLONE_CONFLICT | Freeze lineage; no timestamp winner | Preserve both branches; no silent overwrite | Withheld | Owner split/recovery/revocation decision |
+| Two legitimate concurrent nodes | Different enrolled NodeIdentities under same LogicalIdentity; both ACTIVE | AUTHORIZED for each | Maintain separate node lineages | Preserve both provenance/origin namespaces | Eligible independently | Normal reconciliation |
+| Android node enrollment | Fresh Android keypair/NodeIdentity; portable enrollment statement verified | AUTHORIZED after accepted LEA enrollment | Store private key locally/securely; OS keystore optional protection, not authority | Bootstrap shared history; new origin namespace | Eligible | Standard enrollment |
+| Offline enrollment | LEA/delegated signer and required current policy evidence locally available | AUTHORIZED after signed enrollment; otherwise NOT_AUTHORIZED | Perform deterministic signed enrollment offline only with full authority | Preserve history | Eligible only after accepted enrollment | Reconcile control evidence later without timestamp winner |
+| Offline recovery | Required recovery authority, non-conflict evidence and verified frontier locally available | RECOVERY_REQUIRED until recovery statement accepted, then AUTHORIZED; otherwise remains RECOVERY_REQUIRED | Same/replacement recovery per contract | Preserve history | Withheld until completion | Wait for authority if insufficient |
+| Seed copied but no node secret | Bootstrap media/history duplicated, identity absent | NOT_AUTHORIZED for new execution identity | Fresh enrollment | Copied valid shared history remains valid | Ineligible before enrollment | Owner enrollment |
+| Identity key copied secretly | Same private key used by second incarnation | CLONE_CONFLICT when duplicate continuation evidence is credible | Rotate/recover or revoke; establish one lineage | Preserve historical evidence | Withheld | Security recovery |
+| Suspended returning node | Valid proof but lifecycle SUSPENDED | NOT_AUTHORIZED for ordinary replication | Owner/policy may restore ACTIVE | Preserve history | Ineligible | Validate then explicit restore |
+| Retired node reconnect | Valid historical key but lineage RETIRED | NOT_AUTHORIZED | Remain RETIRED | Preserve historical provenance | Ineligible | New NodeIdentity if service is desired |
+
+## Determinism notes
+
+The decision procedure never uses newest timestamp, newest hardware, hostname, MAC, IP, disk path, OS identity, uptime, or last-seen ordering as authority. Device/environment facts may support diagnostics only. Competing valid same-NodeIdentity continuation is never auto-resolved: it is `CLONE_CONFLICT` until explicit authority establishes a safe lineage outcome.
