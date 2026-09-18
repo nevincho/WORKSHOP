@@ -49,7 +49,8 @@ int main(int argc,char**argv){try{
  auto db=hx(dh);std::string exp((char*)db.data(),db.size()),pre="VK-NODE-CONTROL-V1/"+a+"\n";V base=parsecanon(exp.substr(pre.size()));
  auto reject=[&](V x,const char*name){std::string m=action_domain(a,x);require(!edverify(pk,sg,m),name);negative++;};
  {V x=base;setstr(obj(x),"vk_identity_id","vk-mutated");reject(x,"logical identity");}
- {V x=base;setstr(obj(x),"origin_node_id","node-mutated");reject(x,"node identity");}
+ {V x=base;setstr(obj(x),"origin_node_id","origin-mutated");reject(x,"origin node identity");}
+ {V x=base;O p=obj(obj(x).at("payload"));setstr(p,"subject_node_id","node-mutated");obj(x)["payload"]=V(p);reject(x,"subject node identity");}
  {V x=base;setstr(obj(x),"record_type","NodeRevocationRecord");reject(x,"record type");}
  {V x=base;setint(obj(x),"origin_sequence",2);reject(x,"origin sequence");}
  {V x=base;obj(x)["parents"]=V(A{V(std::string("parent-x"))});reject(x,"parents");}
