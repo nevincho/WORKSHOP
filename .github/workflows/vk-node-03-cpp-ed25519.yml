@@ -9,10 +9,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: nevincho/WORKSHOP
-          ref: 401c9409621bd184bcf4fcc1a03da8319f9f0e31
+          ref: bf7f52f49974a0dce58959e986239ed3aca634c4
       - name: Provenance
         run: |
-          test "$(git rev-parse HEAD)" = "401c9409621bd184bcf4fcc1a03da8319f9f0e31"
+          test "$(git rev-parse HEAD)" = "bf7f52f49974a0dce58959e986239ed3aca634c4"
           test "$(git hash-object evidence/VK-NODE-02/crypto_vectors_v1.json)" = "52714a69495936107690e54b70ecefc2b3832eae"
           test "$(git hash-object cpp/vk_wire_v1/wire_v1.cpp)" = "5a16649e2dd6996b6306cffe143b5082b315a328"
           echo VECTOR_PROVENANCE_PASS
