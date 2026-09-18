@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(vk_node03 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(OpenSSL REQUIRED)
+find_package(ICU REQUIRED COMPONENTS uc)
+add_executable(vk_node03 node03_crypto.cpp)
+target_link_libraries(vk_node03 PRIVATE OpenSSL::Crypto ICU::uc)
