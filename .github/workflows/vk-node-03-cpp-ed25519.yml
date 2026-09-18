@@ -1,0 +1,29 @@
+name: VK-NODE-03-CPP-ED25519-CONFORMANCE
+on:
+  push:
+    branches: [ main ]
+jobs:
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: nevincho/WORKSHOP
+          ref: 401c9409621bd184bcf4fcc1a03da8319f9f0e31
+      - name: Provenance
+        run: |
+          test "$(git rev-parse HEAD)" = "401c9409621bd184bcf4fcc1a03da8319f9f0e31"
+          test "$(git hash-object evidence/VK-NODE-02/crypto_vectors_v1.json)" = "52714a69495936107690e54b70ecefc2b3832eae"
+          test "$(git hash-object cpp/vk_wire_v1/wire_v1.cpp)" = "5a16649e2dd6996b6306cffe143b5082b315a328"
+          echo VECTOR_PROVENANCE_PASS
+          echo WIRE05_CPP_PROVENANCE_PASS
+      - name: Toolchain
+        run: |
+          g++ --version | head -1
+          cmake --version | head -1
+          openssl version
+          pkg-config --modversion icu-uc
+      - name: Build
+        run: cmake -S cpp/vk_node03 -B build && cmake --build build --parallel
+      - name: Cross-language crypto conformance
+        run: ./build/vk_node03 evidence/VK-NODE-02/crypto_vectors_v1.json
