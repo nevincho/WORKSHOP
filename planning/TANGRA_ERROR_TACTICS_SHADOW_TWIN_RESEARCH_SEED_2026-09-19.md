@@ -108,6 +108,57 @@ real heavy-run failures
 
 Real TANGRA failures provide empirical cases; the Error Tactics research provides a possible reasoning framework for studying how small errors and reasonable reactions can compound across a trajectory.
 
+
+## E. Conditional ETM mode and controlled strategic deviation
+
+ETM is **not** intended as a normal or continuously active TANGRA strategy. Under nominal conditions, when the current deterministic/authorized strategy is working, there is no reason to invoke it.
+
+Candidate conceptual state progression:
+
+```
+NORMAL -> ADAPTIVE -> ETM
+```
+
+ETM becomes a research candidate only after bounded trigger conditions indicate that normal behavior is becoming ineffective, repetitive, or exploitable. Example evidence may include repeated escape/reaction patterns, repeated strategic failure, or sufficient observed behavioral regularity. Activation criteria are **not yet defined** and require later formalization and simulation.
+
+A central distinction is:
+
+```
+E_accidental != E_controlled
+```
+
+- `E_accidental`: an actual unplanned failure/deviation.
+- `E_controlled`: a deliberately selected, bounded local deviation from the otherwise locally optimal response, considered only after scenario evaluation predicts a better later trajectory.
+
+The research hypothesis is that an action may be locally worse while still producing a better bounded trajectory. This must be evaluated over the trajectory, not by immediate outcome alone.
+
+An accidental failure should also be treated as potential behavioral evidence rather than wasted information. If another actor repeatedly obtains success using the same observable response, TANGRA may update the probability that the response will recur. The model must remain behavioral and evidence-based; it must **not** assert unobserved mental states such as confidence, intent, or psychology as facts.
+
+Candidate loop:
+
+```
+operational failure
+    -> observed external response
+    -> behavioral evidence/history update
+    -> recurrence hypothesis with explicit confidence
+    -> Shadow Twin trajectory comparison
+    -> reduced probability of repeating the same strategic error
+```
+
+A future ETM simulation may consider a controlled deviation only when all later-defined safety and evidence gates are satisfied. Every such scenario must include both the expected-response branch and an unexpected-response recovery branch:
+
+```
+E_controlled
+    -> expected response   -> planned continuation
+    -> other response      -> abort / recovery trajectory
+```
+
+This produces a stricter research question:
+
+> Under what evidence, uncertainty, safety bounds, and recovery conditions can a locally suboptimal controlled deviation improve the expected future trajectory without creating unacceptable downside if the predicted response does not occur?
+
+The intended interpretation is therefore **conditional contingency reasoning**, not routine deliberate error. Any future implementation remains Shadow Twin analysis/proposal only and does not itself authorize operational execution.
+
 ## Research gates
 
 This seed does not authorize implementation.
