@@ -9,6 +9,22 @@ APPLIES TO: ALL AGENTS, CONTROLLERS, CODEX HANDOFFS
 3. Use Codex only when required by complexity/risk and only after inexpensive preparation is complete.
 4. Use human manual transfer only as a fallback where automated/Codex access cannot complete the required step.
 
+## Repository-side Worker Python execution guard
+For repository-side Worker Python validation in an isolated execution environment, lack of outbound GitHub network MUST NOT by itself be interpreted as inability to execute.
+
+Before declaring `BLOCKED — EXECUTION ACCESS`, orchestration MUST check the established repository-payload execution route:
+`authenticated repository/submitted payload -> temporary exact-content execution mirror -> Python/shell validation -> independent authoritative repository/blob identity verification`.
+
+Rules:
+- Do not invent authenticated Git clone/checkout inside the isolated Python environment as a prerequisite when the assigned execution model uses submitted repository payloads.
+- Preserve repository-relative paths and exact source content in the temporary mirror.
+- Record authoritative repository, ref, commit/tree identity and relevant blob identities before execution.
+- Preserve raw commands, stdout/stderr, exit codes and relevant environment facts.
+- Verify executed payload identity against authoritative repository content after execution before accepting qualification.
+- A temporary execution mirror is not implementation authority and must not weaken repository-as-authority rules.
+- If the payload-to-mirror platform operation itself is unavailable, name that exact boundary as the blocker; do not substitute generic Git/network failure.
+- Historical incident and rationale: `control_room/WORKER_EXECUTION_INCIDENT_2026-09-20.md`.
+
 ## Project routing
 ### TANGRA
 Default: monitor, audit, validate, report. No autonomous implementation unless explicitly authorized.
