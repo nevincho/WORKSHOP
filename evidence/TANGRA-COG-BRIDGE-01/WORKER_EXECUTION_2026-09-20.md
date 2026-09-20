@@ -135,3 +135,36 @@ REVIEWER_SENT: NO
 CHECKPOINT_CREATED: NO
 
 No regression implementation defect has been established. The incomplete regression gate remains the only outstanding Worker qualification item.
+
+
+## Cumulative regression materialization attempt — 2026-09-20
+
+Target repaired HEAD: `bd11d92f396b68de00a0f3636ae49ed8310ce420`.
+
+Worker enumerated the authoritative repaired-head regression dependency tree and began authenticated retrieval of the missing Cognitive implementation payload. The first bulk retrieval attempt requested the full regression payload file-by-file through the authenticated repository connector.
+
+Concrete tool failure:
+```
+Code Mode exceeded the maximum number of tool calls.
+```
+
+A second bounded batch successfully retrieved implementation files from the repaired head, but the connector response was truncated before the complete batch content was available for exact local materialization:
+```
+Warning: truncated output (original token count: 43070)
+```
+
+Because exact repository bytes for the complete dependency payload were not available in the tool result, Worker did not write unverifiable/truncated content into the execution workspace and did not execute a knowingly incomplete 317-test surface.
+
+REGRESSION_COMMAND: NOT RUN
+EXIT_CODE: NOT_RUN
+TESTS_COLLECTED: NOT_RUN
+TESTS_PASSED: NOT_RUN
+TESTS_FAILED: NOT_RUN
+TESTS_ERRORED: NOT_RUN
+STDOUT: NONE
+STDERR: NONE
+RESULT: BLOCKED — COMPLETE REGRESSION PAYLOAD RETRIEVAL HIT CURRENT CONNECTOR TOOL-CALL/OUTPUT LIMIT BEFORE EXECUTION
+
+This is not the superseded repository-to-executor capability blocker and not a missing-local-file blocker. The proven content->filesystem mechanism remains valid. The concrete current boundary occurred while retrieving the complete 317-test dependency payload: the bulk connector loop exceeded its maximum tool-call count, and the bounded multi-file result was truncated before all exact bytes could be relayed and identity-verified.
+
+No regression test executed, so no implementation defect is established. No regression PASS is claimed. Reviewer and checkpoint remain pending.
