@@ -3,7 +3,7 @@
 TASK_ID: TANGRA-COG-BRIDGE-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: REVIEW — QUALIFIED WITH REGRESSION LIMITATION
+STATUS: QUALIFIED_WITH_REGRESSION_LIMITATION — READY_FOR_REAL_PI_QUALIFICATION
 OBJECTIVE: Implement and independently qualify the minimal read-only Cognitive bridge between current TANGRA operational evidence and the reviewed Cognitive Layer, stopping at READY FOR REAL PI QUALIFICATION.
 SOURCE_PLAN_OR_REQUEST: Vlad Control Room authorization, 2026-09-20.
 CURRENT_STATE: Repository-to-executor transfer and Python/shell execution are proven. Existing bridge implementation at nevincho/TANGRA-2.0:cognitive-bridge-integration@bd11d92f396b68de00a0f3636ae49ed8310ce420 passed the bounded bridge qualification 17/17 after two qualification-test harness/path defects were repaired. No bridge implementation defect is established. The cumulative 317-test regression was NOT EXECUTED because complete exact regression-environment acquisition/persistence hit demonstrated connector/tool lifecycle limits. No 317/317 PASS is claimed. Pi remains untouched. Codex has not been used.
@@ -22,7 +22,7 @@ AFFECTED_COMPONENTS:
 PROTECTED_COMPONENTS:
 - Production HQ/Hailo/NanoTracker/CA Kalman/current-target/range/HOROS chain.
 - Flight/actuator/target/mission/command/configuration/IFF/readiness/LoRa-command authority.
-EXECUTION_CLASS: REVIEWER
+EXECUTION_CLASS: HUMAN-RUN CODEX REAL-PI INTEGRATION GATE
 CODEX_ALLOWED: HUMAN_HANDOFF_ONLY_AFTER_REVIEW
 ACCEPTANCE_CRITERIA:
 - Preserve authority=NONE and operational_authority=[].
@@ -50,4 +50,4 @@ EVIDENCE_PATHS:
 - review/TANGRA-COG-BRIDGE-01.md
 
 LIMITATION: CUMULATIVE_REGRESSION = NOT_EXECUTED_ENVIRONMENT_LIMITATION.
-NEXT_GATE: INDEPENDENT_REVIEW.
+REVIEW_VERDICT: PASS_WITH_EXPLICIT_REGRESSION_LIMITATION.\nCHECKPOINT: checkpoints/TANGRA-COG-BRIDGE-01.md.\nCODEX_HANDOFF: handoffs/TANGRA-COG-BRIDGE-01-CODEX-REAL-PI.md.\nNEXT_GATE: HUMAN-RUN REAL_PI_QUALIFICATION.
