@@ -54,3 +54,7 @@ Expose/select the existing platform capability that performs:
 `authenticated submitted repository payload -> isolated temporary exact-content Python mirror`.
 
 Once available, resume this SAME task directly through existing qualification, regression, raw evidence, post-execution identity verification, independent Reviewer and checkpoint. Do not restart implementation and do not add Git checkout as a prerequisite.
+
+
+## 2026-09-20 executed supersession
+`evidence/TANGRA-COG-BRIDGE-01/WORKER_EXECUTION_2026-09-20.md` records identity-verified repository materialization and an executed bridge qualification. Current repaired branch head `bd11d92f396b68de00a0f3636ae49ed8310ce420` passes the bridge integration suite: 17 passed, 0 failed, 0 errors. The former execution-access/materialization blocker is therefore superseded. Cumulative Cognitive regression and final independent review remain pending; no checkpoint exists yet.
