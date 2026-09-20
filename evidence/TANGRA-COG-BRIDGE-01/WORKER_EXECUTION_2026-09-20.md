@@ -107,3 +107,31 @@ The cumulative 317-test payload was not fully materialized/executed in this Work
 - checkpoint: NOT CREATED.
 - Pi: UNTOUCHED.
 - Codex: NOT USED.
+
+
+## Cumulative regression continuation — 2026-09-20
+
+The Worker re-entered the existing isolated execution workspace and directly re-executed the already-materialized bridge suite:
+
+Command:
+```
+cd /tmp/tangra_bridge && python -m pytest -q TAI_COGNITIVE_INTEGRATION_PACKAGE/tests/integration/test_cognitive_bridge.py
+```
+
+stdout:
+```
+.................                                                        [100%]
+17 passed in 0.08s
+```
+
+stderr: empty
+exit code: 0
+
+The authoritative repaired-head tree for `bd11d92f396b68de00a0f3636ae49ed8310ce420` was enumerated for the cumulative regression payload. The required surface is the existing 317-test allowlist across 15 files plus their Cognitive package/fixture dependencies. The execution workspace still contains only the bridge qualification subset; the complete regression dependency payload is not present.
+
+COMPLETE_CUMULATIVE_REGRESSION: NOT RUN
+REGRESSION_PASS_CLAIMED: NO
+REVIEWER_SENT: NO
+CHECKPOINT_CREATED: NO
+
+No regression implementation defect has been established. The incomplete regression gate remains the only outstanding Worker qualification item.
