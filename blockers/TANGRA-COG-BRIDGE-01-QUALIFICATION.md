@@ -1,10 +1,10 @@
 # TANGRA-COG-BRIDGE-01 — Qualification Blocker
 
 DATE: 2026-09-20
-TERMINAL_STATUS: FAIL / BLOCKED
+STATUS: BLOCKED — EXECUTION ACCESS / WORKFLOW ROUTING RECOVERY
 
 ## Exact blocker
-No executable local/CI test route is available through the current WORKSHOP tool surface for nevincho/TANGRA-2.0.
+The currently selected GitHub surface does not provision the private target repository into the available shell/container execution workspace. Historical HOROS evidence proves WORKSHOP previously qualified repository code using an exact local mirror plus shell/Python execution; therefore absence of a GitHub Actions run is not evidence that WORKSHOP itself lacks an execution model.
 
 The target branch contains a GitHub Actions workflow, but querying workflow runs for both:
 - b49b3823b808c6b93ae45230f8d7e1aa39118729
@@ -34,3 +34,4 @@ Rollback checkpoint: nevincho/TANGRA-2.0:tai-cog-32-package@9629a624358b8ae539ac
 Runtime Controller live compatibility after PKG-12 remains NOT VERIFIED.
 
 No production Pi mutation occurred.
+\n\n## Workflow recovery correction\nSee `evidence/TANGRA-COG-BRIDGE-01/WORKFLOW_RECOVERY.md`. The prior terminal FAIL classification is superseded. No Cognitive implementation failure has been established. The remaining execution-access gap is local workspace provisioning/checkout for the existing branch.\n
