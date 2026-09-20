@@ -168,3 +168,46 @@ RESULT: BLOCKED — COMPLETE REGRESSION PAYLOAD RETRIEVAL HIT CURRENT CONNECTOR 
 This is not the superseded repository-to-executor capability blocker and not a missing-local-file blocker. The proven content->filesystem mechanism remains valid. The concrete current boundary occurred while retrieving the complete 317-test dependency payload: the bulk connector loop exceeded its maximum tool-call count, and the bounded multi-file result was truncated before all exact bytes could be relayed and identity-verified.
 
 No regression test executed, so no implementation defect is established. No regression PASS is claimed. Reviewer and checkpoint remain pending.
+
+
+## One-lifecycle direct acquisition investigation — 2026-09-20
+
+Authoritative target: `nevincho/TANGRA-2.0@bd11d92f396b68de00a0f3636ae49ed8310ce420`.
+
+Worker tested direct whole-repository archive acquisition from inside the current executor, specifically to avoid model-visible per-file relay.
+
+Executed:
+```
+curl -L --fail --silent --show-error --max-time 20 -o repo.tar.gz https://github.com/nevincho/TANGRA-2.0/archive/bd11d92f396b68de00a0f3636ae49ed8310ce420.tar.gz
+```
+Result: exit code 6
+stderr:
+```
+curl: (6) Could not resolve host: github.com
+```
+
+Executed fallback:
+```
+curl -L --fail --silent --show-error --max-time 20 -o repo.tar.gz https://api.github.com/repos/nevincho/TANGRA-2.0/tarball/bd11d92f396b68de00a0f3636ae49ed8310ce420
+```
+Result: exit code 6
+stderr:
+```
+curl: (6) Could not resolve host: api.github.com
+```
+
+Worker then inspected the CURRENT authenticated GitHub connector surface for archive/raw/blob/tree/download acquisition methods. Exposed relevant reads are repository `fetch`, `fetch_file`, and `fetch_blob`; there is no repository tarball/zipball/archive download action or reusable repository-file reference that can be passed directly into the executor. The only archive downloader exposed is for GitHub Actions artifacts, which is explicitly out of scope and is not a repository archive route.
+
+ACQUISITION_METHOD: direct executor HTTP archive attempt + authenticated connector capability inspection
+VERIFIED_COMMIT_TREE_IDENTITY: NOT MATERIALIZED; requested immutable commit was bd11d92f396b68de00a0f3636ae49ed8310ce420
+REGRESSION_COMMAND: NOT RUN
+EXIT_CODE: NOT_RUN
+TESTS_COLLECTED: NOT_RUN
+TESTS_PASSED: NOT_RUN
+TESTS_FAILED: NOT_RUN
+TESTS_ERRORED: NOT_RUN
+STDOUT: NONE
+STDERR: direct archive acquisition failed DNS resolution as quoted above
+RESULT: BLOCKED — no exposed one-lifecycle direct repository/archive/subtree byte-transfer route from authenticated repository access into executor
+
+This is the exact tested acquisition boundary. Repository reads remain available through model-visible connector responses, but the previously established connector call/output limits prevent reconstructing the full required payload in one lifecycle that way, and cross-turn temporary workspace persistence has already failed. No regression test executed, so no implementation failure is claimed. Reviewer/checkpoint remain pending.
