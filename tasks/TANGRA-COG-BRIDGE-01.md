@@ -6,7 +6,7 @@ PRIORITY: HIGH
 STATUS: BLOCKED
 OBJECTIVE: Implement and independently qualify the minimal read-only Cognitive bridge between current TANGRA operational evidence and the reviewed Cognitive Layer, stopping at READY FOR REAL PI QUALIFICATION.
 SOURCE_PLAN_OR_REQUEST: Vlad Control Room authorization, 2026-09-20.
-CURRENT_STATE: Bridge implementation and qualification tests exist on nevincho/TANGRA-2.0 branch cognitive-bridge-integration, PR #1. Actual test execution is BLOCKED because no runnable local checkout or start/dispatch CI route is exposed; queried workflow runs are empty. Independent Reviewer PASS is therefore not eligible.
+CURRENT_STATE: Bridge implementation and qualification tests exist on nevincho/TANGRA-2.0 branch cognitive-bridge-integration, PR #1. Qualification is BLOCKED at the platform orchestration boundary that historically transferred authenticated submitted repository payloads into a temporary exact-content Python execution mirror. The earlier Git-checkout/GitHub-network prerequisite is SUPERSEDED. Independent Reviewer PASS is not eligible until real execution evidence exists.
 PREREQUISITES:
 - TANGRA-2.0 reviewed Cognitive integration package at 9629a624358b8ae539ac1af54af72b9828ba5632.
 - TANGRA-CL shadow contract a48fb4889217c7d6b33433a9a4eeeafdefbee000.
@@ -41,5 +41,9 @@ PRE_CHANGE_CHECKPOINT: nevincho/TANGRA-2.0:tai-cog-32-package@9629a624358b8ae539
 ROLLBACK_METHOD: discard cognitive-bridge-integration branch / PR #1; production untouched.
 EVIDENCE_PATHS:
 - evidence/TANGRA-COG-BRIDGE-01/IMPLEMENTATION.md
+- evidence/TANGRA-COG-BRIDGE-01/EXISTING_PYTHON_EXECUTION_ROUTE_FORENSIC.md
+- evidence/TANGRA-COG-BRIDGE-01/EXECUTION_ROUTE_RECOVERY_2026-09-20.md
+- control_room/WORKER_EXECUTION_INCIDENT_2026-09-20.md
 - review/TANGRA-COG-BRIDGE-01.md (pending)
-\nBLOCKER: blockers/TANGRA-COG-BRIDGE-01-QUALIFICATION.md\n
+
+BLOCKER: blockers/TANGRA-COG-BRIDGE-01-QUALIFICATION.md
