@@ -1,37 +1,56 @@
 # TANGRA-COG-BRIDGE-01 — Qualification Blocker
 
 DATE: 2026-09-20
-STATUS: BLOCKED — EXECUTION ACCESS / WORKFLOW ROUTING RECOVERY
+STATUS: BLOCKED — PLATFORM PAYLOAD-TO-EXECUTION-MIRROR TRANSFER NOT EXPOSED
+ROOT_CAUSE: WORKER ORCHESTRATION REGRESSION
 
-## Exact blocker
-The currently selected GitHub surface does not provision the private target repository into the available shell/container execution workspace. Historical HOROS evidence proves WORKSHOP previously qualified repository code using an exact local mirror plus shell/Python execution; therefore absence of a GitHub Actions run is not evidence that WORKSHOP itself lacks an execution model.
+## Current exact blocker
+Historical WORKSHOP evidence proves that repository-side Worker validation did not require outbound GitHub access or authenticated Git checkout inside the Python execution container.
 
-The target branch contains a GitHub Actions workflow, but querying workflow runs for both:
-- b49b3823b808c6b93ae45230f8d7e1aa39118729
-- e2d5cd10b780d87ef5b5ff25b50a2f10c2a9caef
+The proven execution model was:
+`authenticated repository/submitted payload -> temporary exact-content local Python mirror -> tests -> independent repository/blob identity verification -> evidence -> Reviewer`.
 
-returned an empty workflow_runs collection.
+Current capabilities can independently:
+- read the authoritative private repository/ref/blob/tree through the authenticated repository connector;
+- execute shell/Python in an isolated execution environment;
+- obtain authoritative commit/tree/blob identities.
 
-The available GitHub route can read/write repository state and inspect/rerun an existing workflow job/run, but no existing run exists and no workflow-dispatch/start action is exposed. The local execution environment does not contain a checked-out copy of this private repository, so pytest cannot truthfully be executed there without fabricating repository state.
+The currently exposed orchestration surface does not expose the historical platform operation that transfers/materializes the complete authenticated submitted repository payload into that isolated Python workspace while preserving exact paths/content.
 
-## Consequence
-Required Action 1 (actual test execution) cannot be evidenced.
-Therefore Required Action 2 cannot be promoted to local-integration PASS, and the WORKSHOP-required independent Reviewer PASS cannot validly promote the task.
+That payload-to-mirror transfer boundary is the remaining blocker.
 
-TEST EXECUTION: BLOCKED
-BRIDGE TEST COUNT: NOT RUN
+## Superseded diagnoses
+SUPERSEDED AS ROOT CAUSE:
+- no outbound GitHub network from the Python container;
+- no authenticated Git clone/checkout in the Python container;
+- no existing GitHub Actions workflow run/dispatch route;
+- generic local checkout/workspace provisioning requirement.
+
+Those observations remain historically true but are not root cause. HOROS successfully executed with no outbound GitHub route by using a temporary local mirror of submitted payloads.
+
+See:
+- control_room/WORKER_EXECUTION_INCIDENT_2026-09-20.md
+- evidence/TANGRA-COG-BRIDGE-01/EXISTING_PYTHON_EXECUTION_ROUTE_FORENSIC.md
+
+## Current target identity
+Repository: nevincho/TANGRA-2.0
+Branch: cognitive-bridge-integration
+HEAD: e2d5cd10b780d87ef5b5ff25b50a2f10c2a9caef
+Tree: c21fb9e5ac1becb763118692e220e3cbe15cc5ea
+Bridge source blob: 5f4a6346fa70e369452067d9d96f776a84468a64
+Bridge test blob: c67b9fe1ba85c372947b5e14c43cfdb5d3190695
+
+## Qualification consequence
+TEST EXECUTION: NOT RUN in this recovery attempt
 PACKAGE REGRESSION: NOT RUN
-END-TO-END LOCAL QUALIFICATION: NOT RUN
-INDEPENDENT REVIEW: NOT PERFORMED because executable qualification evidence is absent
+INDEPENDENT REVIEW: NOT ELIGIBLE
 REAL PI: NOT RUN / NOT AUTHORIZED / UNTOUCHED
+CODEX: NOT USED
 
-## Repository state preserved
-Implementation branch: cognitive-bridge-integration
-Latest meaningful implementation remains b49b3823b808c6b93ae45230f8d7e1aa39118729.
-Later commit e2d5cd10b780d87ef5b5ff25b50a2f10c2a9caef only documents qualification commands.
-Rollback checkpoint: nevincho/TANGRA-2.0:tai-cog-32-package@9629a624358b8ae539ac1af54af72b9828ba5632
+No Cognitive Bridge implementation failure is established.
 
-Runtime Controller live compatibility after PKG-12 remains NOT VERIFIED.
+## Unblock condition
+Expose/select the existing platform capability that performs:
+`authenticated submitted repository payload -> isolated temporary exact-content Python mirror`.
 
-No production Pi mutation occurred.
-\n\n## Workflow recovery correction\nSee `evidence/TANGRA-COG-BRIDGE-01/WORKFLOW_RECOVERY.md`. The prior terminal FAIL classification is superseded. No Cognitive implementation failure has been established. The remaining execution-access gap is local workspace provisioning/checkout for the existing branch.\n
+Once available, resume this SAME task directly through existing qualification, regression, raw evidence, post-execution identity verification, independent Reviewer and checkpoint. Do not restart implementation and do not add Git checkout as a prerequisite.
