@@ -1,64 +1,56 @@
-# TANGRA-COG-BRIDGE-01 — Independent Review
+# TANGRA-COG-BRIDGE-01 — Independent Review and Real-Pi Closure
 
 DATE: 2026-09-20
-ROLE: INDEPENDENT REVIEWER
-TARGET: nevincho/TANGRA-2.0:cognitive-bridge-integration
-CANDIDATE_HEAD: bd11d92f396b68de00a0f3636ae49ed8310ce420
-VERDICT: PASS_WITH_EXPLICIT_REGRESSION_LIMITATION
-PROGRESSION: READY_FOR_REAL_PI_QUALIFICATION_BY_SEPARATE_HUMAN-RUN_CODEX
+ROLE: INDEPENDENT REVIEWER / POST-QUALIFICATION RECONCILIATION
+TARGET: nevincho/TANGRA-2.0:cognitive-bridge-integration@bd11d92f396b68de00a0f3636ae49ed8310ce420
+REPOSITORY_VERDICT: PASS_WITH_EXPLICIT_REGRESSION_LIMITATION
+REAL_PI_RESULT: PASS
+FINAL_STATE: COMPLETE — REAL_PI_QUALIFICATION_PASS
 PRODUCTION_AUTHORITY: NONE
 
-## Evidence reviewed
+## Repository qualification
 
-Reviewer inspected the current WORKSHOP task/evidence, Reviewer and validation policies, TANGRA engineering-to-promotion policy, current TANGRA project profile, authoritative candidate implementation and repaired qualification test at the candidate head, and current TANGRA-DOCS production baseline.
+Executed repository evidence established:
+- bridge qualification 17/17 PASS;
+- two failures were qualification test-harness/path defects and were repaired only in the test harness;
+- cognitive_bridge.py was not changed by those repairs;
+- no bridge implementation defect was established;
+- bridge blob: 5f4a6346fa70e369452067d9d96f776a84468a64.
 
-Executed evidence establishes:
-- repository -> executor transfer: PASS;
-- Python/shell execution: PASS;
-- bridge qualification after bounded harness repairs: 17/17 PASS, 0 fail, 0 error;
-- two observed failures were qualification harness/path defects and were repaired only in the test file;
-- cognitive_bridge.py itself was not changed by those repairs;
-- no bridge implementation defect was established by executed qualification;
-- Pi/production was not modified;
-- Codex was not used.
+The bridge preserves structured StateEvent provenance/epistemic/realism/evidence/correlation fields, rejects unsupported cognitive self-promotion, keeps operational authority empty, supports bounded lifecycle behavior and persistence, and fails open relative to operational callers.
 
-## Independent implementation inspection
+## Explicit repository regression limitation
 
-At candidate head the bridge:
-- hard-codes AUTHORITY = NONE and empty OPERATIONAL_AUTHORITY;
-- maps producer evidence into the existing COG-00 StateEvent contract while preserving source_component, source_capability, provenance, realism_class, claim_class, freshness, evidence_ref, correlation_id, validity and confidence;
-- rejects cognitively inferred FACT / VERIFIED_CAUSE self-promotion;
-- maps Runtime Controller ACTIVE to record-only MISSION_ACTIVE, STANDBY to bounded cognition, and all other states to UNKNOWN with cognition blocked;
-- fails open relative to operational callers on recorder/backend failures;
-- reserves generic Cognitive Vision ingress without adding camera/model/scheduler workload;
-- provides atomic checkpoint save/load with authority NONE encoded and corrupt-state rejection;
-- does not grant flight, target, mission, command or configuration authority.
-
-The candidate therefore satisfies the bounded repository-side bridge objective measured by the executed 17-test qualification.
-
-## Regression limitation
-
-The cumulative Cognitive regression surface expected 317 tests across 15 allowlisted files.
-
-CUMULATIVE_REGRESSION: NOT EXECUTED.
+CUMULATIVE_317_REGRESSION: NOT EXECUTED.
 317/317 PASS: NOT CLAIMED.
 
-Worker evidence demonstrates that complete exact regression payload acquisition/persistence exceeded the current connector/tool lifecycle: bulk retrieval exceeded tool-call limits; bounded retrieval output was truncated; direct archive acquisition from the executor was unavailable; cross-turn temporary workspace persistence was insufficient. Worker correctly did not execute a knowingly incomplete regression surface.
+The earlier WORKSHOP executor could not reconstruct the complete exact regression environment within its acquisition/persistence limits. This remains an explicit historical qualification limitation and is not converted into PASS by the later Pi result.
 
-Under VALIDATION_POLICY this is an execution-environment limitation, not evidence of an implementation failure.
+## Real-Pi qualification
 
-Reviewer does NOT convert the missing regression into PASS. Repository-side qualification is accepted only with this limitation carried forward into the real-Pi gate.
+The first Pi precheck stopped without mutation after finding that the handoff's expected WIDE detector baseline did not match the actual production WIDE motion-cue path. This was a coordination/baseline mismatch, not a bridge defect.
 
-## Protected scope
+A subsequent authorized real-Pi integration reported:
+- production files changed: main.py, core/config.py, cognitive/bridge_runtime.py, exact cognitive_bridge.py blob, Cognitive substrate contracts, persistence state;
+- py_compile PASS;
+- bridge identity PASS;
+- two controlled restarts PASS;
+- COG-20 COMPLETED;
+- persistence restored=true after restart;
+- service active;
+- Hailo active;
+- CA Kalman primary;
+- HOROS errors=0;
+- observed 41.40 FPS;
+- WIDE unchanged;
+- CONTROL_ENABLED=false;
+- AUTHORITY=NONE;
+- operational_authority=[].
 
-No evidence shows mutation of the production HQ -> Hailo -> NanoTracker -> CA Kalman -> current-target/range -> HOROS -> telemetry chain. Production Pi remained untouched. Cognitive operational authority remains NONE in the reviewed candidate.
+No autonomous Cognitive control was enabled.
 
-## Verdict
+## Final verdict
 
-PASS_WITH_EXPLICIT_REGRESSION_LIMITATION.
+TANGRA-COG-BRIDGE-01 is COMPLETE for the bounded bridge objective and real-Pi qualification.
 
-No bridge defect requiring repository rework is established by the available executed evidence or independent source inspection.
-
-This verdict qualifies the candidate for the next bounded target-environment gate only. It is NOT production validation, NOT 317-test regression PASS, NOT promotion authority, and NOT authorization for autonomous Cognitive control.
-
-The real-Pi integration gate must establish a rollback point, capture a pre-change production baseline, integrate the reviewed candidate without replacing the production pipeline, validate the full Cognitive ingress/COG-20/persistence lifecycle, rerun available bridge/Cognitive tests on the Pi, verify live protected perception/HOROS/telemetry behavior, verify authority NONE, compare regression against baseline, and roll back on degradation/failure.
+This closure does NOT claim the historical 317/317 cumulative regression, does NOT authorize autonomous Cognitive control, and does NOT by itself authorize any later promotion beyond the qualified read-only/authority-NONE integration state.
