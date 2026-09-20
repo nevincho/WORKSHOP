@@ -3,11 +3,10 @@
 TASK_ID: TANGRA-COG-BRIDGE-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: BLOCKED
+STATUS: IN_PROGRESS — WORKER QUALIFICATION
 OBJECTIVE: Implement and independently qualify the minimal read-only Cognitive bridge between current TANGRA operational evidence and the reviewed Cognitive Layer, stopping at READY FOR REAL PI QUALIFICATION.
 SOURCE_PLAN_OR_REQUEST: Vlad Control Room authorization, 2026-09-20.
-CURRENT_STATE: Bridge implementation and qualification tests exist on nevincho/TANGRA-2.0 branch cognitive-bridge-integration, PR #1. Qualification is BLOCKED at the platform orchestration boundary that historically transferred authenticated submitted repository payloads into a temporary exact-content Python execution mirror. The earlier Git-checkout/GitHub-network prerequisite is SUPERSEDED. Independent Reviewer PASS is not eligible until real execution evidence exists.
-PREREQUISITES:
+CURRENT_STATE: Repository-to-executor materialization is proven available. Existing bridge qualification executed against identity-verified payload; two test-harness path defects were repaired on the existing branch and the current repaired head bd11d92f396b68de00a0f3636ae49ed8310ce420 passes 17/17 bridge integration tests. Cumulative Cognitive regression and final independent Reviewer remain pending. Pi remains untouched.\nPREREQUISITES:
 - TANGRA-2.0 reviewed Cognitive integration package at 9629a624358b8ae539ac1af54af72b9828ba5632.
 - TANGRA-CL shadow contract a48fb4889217c7d6b33433a9a4eeeafdefbee000.
 - Current production state from TANGRA-DOCS CURRENT_SYSTEM.md, evidence cutoff 2026-09-20.
@@ -46,4 +45,4 @@ EVIDENCE_PATHS:
 - control_room/WORKER_EXECUTION_INCIDENT_2026-09-20.md
 - review/TANGRA-COG-BRIDGE-01.md (pending)
 
-BLOCKER: blockers/TANGRA-COG-BRIDGE-01-QUALIFICATION.md
+BLOCKER: SUPERSEDED execution-access blocker recorded at blockers/TANGRA-COG-BRIDGE-01-QUALIFICATION.md; remaining gate is cumulative regression + independent Reviewer.
