@@ -3,10 +3,10 @@
 TASK_ID: TANGRA-COG-BRIDGE-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: REVIEW
+STATUS: BLOCKED
 OBJECTIVE: Implement and independently qualify the minimal read-only Cognitive bridge between current TANGRA operational evidence and the reviewed Cognitive Layer, stopping at READY FOR REAL PI QUALIFICATION.
 SOURCE_PLAN_OR_REQUEST: Vlad Control Room authorization, 2026-09-20.
-CURRENT_STATE: Gate-1 bridge implementation and qualification tests exist on nevincho/TANGRA-2.0 branch cognitive-bridge-integration, PR #1. Test execution and independent Reviewer PASS are NOT VERIFIED.
+CURRENT_STATE: Bridge implementation and qualification tests exist on nevincho/TANGRA-2.0 branch cognitive-bridge-integration, PR #1. Actual test execution is BLOCKED because no runnable local checkout or start/dispatch CI route is exposed; queried workflow runs are empty. Independent Reviewer PASS is therefore not eligible.
 PREREQUISITES:
 - TANGRA-2.0 reviewed Cognitive integration package at 9629a624358b8ae539ac1af54af72b9828ba5632.
 - TANGRA-CL shadow contract a48fb4889217c7d6b33433a9a4eeeafdefbee000.
@@ -42,3 +42,4 @@ ROLLBACK_METHOD: discard cognitive-bridge-integration branch / PR #1; production
 EVIDENCE_PATHS:
 - evidence/TANGRA-COG-BRIDGE-01/IMPLEMENTATION.md
 - review/TANGRA-COG-BRIDGE-01.md (pending)
+\nBLOCKER: blockers/TANGRA-COG-BRIDGE-01-QUALIFICATION.md\n
