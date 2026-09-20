@@ -29,3 +29,34 @@ Both files remain in the existing persistent workspace with repository-relative 
 REGRESSION_EXECUTED: NO
 REASON: required payload remains incomplete by design; 78 required files remain.
 BRIDGE_TESTS_RERUN: NO
+
+
+## 2026-09-20 — workspace persistence verification before next batch
+
+Before retrieving any additional repository files, Worker inspected the instructed existing execution workspace:
+
+Command:
+```
+find /tmp/tangra_bridge -type f | sort | sed 's#^/tmp/tangra_bridge/##'
+```
+
+Exit code: 1
+
+stdout: empty
+
+stderr:
+```
+find: '/tmp/tangra_bridge': No such file or directory
+```
+
+ACTUAL_EXECUTION_STATE: the previously materialized `/tmp/tangra_bridge` workspace is not present in the current executor instance.
+
+NEW_FILES_RETRIEVED_THIS_BATCH: 0
+NEW_FILES_MATERIALIZED_THIS_BATCH: 0
+NEW_FILES_IDENTITY_VERIFIED_THIS_BATCH: 0
+REGRESSION_EXECUTED: NO
+
+The repository evidence that 10 files were previously identity-verified remains valid historical evidence, but those local bytes are not present in the current executor and therefore cannot be counted as an executable current 10/88 payload. Continuing while pretending those files still exist would violate the exact-byte/identity requirement.
+
+CURRENT_CONCRETE_BLOCKER: EXECUTION WORKSPACE STATE DID NOT PERSIST ACROSS THIS WORKER TURN.
+This is distinct from the superseded repository-to-executor transfer blocker: transfer is proven; persistence of the specific temporary workspace across turns is disproven by direct filesystem inspection in this turn.
