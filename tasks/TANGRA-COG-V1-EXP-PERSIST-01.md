@@ -3,7 +3,7 @@
 TASK_ID: TANGRA-COG-V1-EXP-PERSIST-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: IN_PROGRESS
+STATUS: REVIEW
 OBJECTIVE: Add the smallest repository-side durable snapshot adapter around the reviewed COG-22 ExperienceStore so WORKSHOP_QUALIFIED EXP-01 RAW_EVIDENCE records survive restart and remain retrievable.
 UPSTREAM_CHECKPOINTS:
 - TANGRA-COG-V1-EXP-01: WORKSHOP_QUALIFIED
