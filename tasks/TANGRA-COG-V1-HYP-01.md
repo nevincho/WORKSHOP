@@ -3,7 +3,7 @@
 TASK_ID: TANGRA-COG-V1-HYP-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: IN_PROGRESS
+STATUS: REVIEW
 OBJECTIVE: Connect WORKSHOP_QUALIFIED DIAG-01 COG-16 outputs and CORR-01 COG-18 correlation results into the existing reviewed COG-19 deterministic hypothesis layer through the smallest repository-side adapter.
 SOURCE_PLAN_OR_REQUEST: Vlad Control Room authorization, 2026-09-26; COG-19 NEXT_DEPENDENCY only.
 UPSTREAM_CHECKPOINTS:
