@@ -3,7 +3,7 @@
 TASK_ID: TANGRA-COG-V1-INT-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: IN_PROGRESS
+STATUS: REVIEW
 OBJECTIVE: Compose an existing validated COG-02 EvidencePacket plus WORKSHOP_QUALIFIED DIAG-01, CORR-01 and HYP-01 outputs into the existing reviewed COG-20 CognitiveDiagnosticInterpretationRequest and execute the existing reviewed CognitiveDiagnosticInterpreter through an injected reviewed backend contract.
 UPSTREAM_CHECKPOINTS:
 - TANGRA-COG-V1-DIAG-01: WORKSHOP_QUALIFIED
