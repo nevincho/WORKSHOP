@@ -3,7 +3,7 @@
 TASK_ID: TANGRA-COG-V1-EXP-LIFE-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: IN_PROGRESS
+STATUS: REVIEW
 OBJECTIVE: Attach the reviewed COG-30 ExperienceLifecyclePolicy to a restart-restored reviewed COG-22 ExperienceStore and qualify only baseline lifecycle semantics for persisted EXP-01 RAW_EVIDENCE records.
 UPSTREAM_CHECKPOINTS:
 - TANGRA-COG-V1-EXP-01: WORKSHOP_QUALIFIED
