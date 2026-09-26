@@ -1,0 +1,17 @@
+# TANGRA-COG-V1-EXP-VALIDATED-01 — Qualified Checkpoint
+
+STATE: WORKSHOP_QUALIFIED
+REVIEW: PASS
+DATE: 2026-09-26
+TARGET: nevincho/TANGRA-2.0:tangra-cog-v1-exp-validated-01@dd3f74b21cf7c2860bd82674867936dbe73c6a82
+TESTS: 200 PASS / 0 FAIL
+COG-22: UNCHANGED
+COG-30: UNCHANGED
+RESULT: CANDIDATE_LESSON -> VALIDATED_EXPERIENCE mechanical transition qualified.
+CANONICAL_PROMOTION: NOT STARTED
+AUTHORITY: NONE
+OPERATIONAL_AUTHORITY: []
+CODEX: NOT USED
+PI_CHANGES: NONE
+HISTORICAL_317_REGRESSION: NOT EXECUTED
+NEXT_DEPENDENCY: Reconcile reviewed COG-30 canonical-promotion gate against the qualified validated-experience chain before any later lifecycle action.
