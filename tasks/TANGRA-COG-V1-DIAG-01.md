@@ -3,7 +3,7 @@
 TASK_ID: TANGRA-COG-V1-DIAG-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: IN_PROGRESS
+STATUS: REVIEW
 OBJECTIVE: Create and independently qualify the smallest repository-side integration adapter that converts structured Cognitive Bridge/post-mission evidence into the existing reviewed COG-16 DiagnosticExecutionRequest contract and executes the existing reviewed COG-15/16 deterministic diagnostic path.
 SOURCE_PLAN_OR_REQUEST: Vlad Control Room authorization, 2026-09-26; bounded task accepted from repository reconciliation.
 CURRENT_STATE:
