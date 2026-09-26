@@ -3,7 +3,7 @@
 TASK_ID: TANGRA-COG-V1-CORR-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: IN_PROGRESS
+STATUS: REVIEW
 OBJECTIVE: Connect qualified DIAG-01 COG-16 DiagnosticExecutionResult outputs to the existing reviewed COG-18 deterministic correlation layer through the smallest repository-side adapter.
 SOURCE_PLAN_OR_REQUEST: Vlad Control Room authorization, 2026-09-26; NEXT_DEPENDENCY after TANGRA-COG-V1-DIAG-01.
 CURRENT_STATE:
