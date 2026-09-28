@@ -56,3 +56,24 @@ Next required bounded validation: repeat coexistence during a real or controlled
 60-second production observation after the split also PASS: stable mission and Cognitive PIDs, zero restarts, one llama-server under Cognitive cgroup, FPS avg 42.130, Hailo avg 21.574 ms, CPU avg 13.853%, RAM avg 11.282%, max temperature 50.7°C, natural active_tracker=1, no errors or IPC failures.
 
 This checkpoint extension supersedes the prior same-service Cognitive lifecycle topology. It does not create a new 317/317 regression claim.
+
+
+## 2026-09-28 checkpoint extension — thin operator controller
+
+- RESULT: PASS
+- FILE: `/home/khan/ai-drone/tangra/services/tangra_control.py`
+- COMMAND: `python3 services/tangra_control.py <command>`
+- COMMANDS: start-all / start-mission / stop-mission / start-cognitive / stop-cognitive / status
+- MISSION_TEST: PASS; Cognitive PID remained independent
+- COGNITIVE_TEST: PASS; Mission PID remained independent
+- START_ALL_TEST: PASS; idempotent
+- LLAMA_COUNT: 0
+- LLAMA_STATE: `IDLE_NOT_SPAWNED`
+- LLAMA_OWNER: `tangra-cognitive-runtime.service`
+- DIRECT_LLAMA_START: NO
+- FINAL_MISSION_STATE: active; PID 133542
+- FINAL_COGNITIVE_STATE: active; PID 138185
+- AUTHORITY: `NONE`; `operational_authority=[]`
+- BLOCKER: NONE
+
+The controller preserves the independent runtime boundary and correctly models the Cognitive backend's lazy llama-server lifecycle. This extension does not create a new 317/317 regression claim.
