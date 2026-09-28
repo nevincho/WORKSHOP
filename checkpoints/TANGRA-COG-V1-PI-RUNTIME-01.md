@@ -36,3 +36,23 @@
 - REVIEW_VERDICT: PASS for typed chain, persistence and server lifecycle; TEMPORARY PASS WITH LIMITATION for mission coexistence; TRACKING COEXISTENCE DEFERRED.
 
 Next required bounded validation: repeat coexistence during a real or controlled active-tracking workload with `active_trackers > 0`.
+
+
+## 2026-09-28 checkpoint extension — independent runtime ownership
+
+- RESULT: PASS
+- MISSION_SERVICE: `tangra-droneguard-1-0.service`, mission-only
+- COGNITIVE_SERVICE: `tangra-cognitive-runtime.service`, active/enabled
+- IPC: `/home/khan/ai-drone/tangra/cognitive_backend/state/mission_telemetry.sock`, V1 JSON+ACK
+- MISSION_END: lossless `mission_active true→false`
+- MISSION_STOP_TEST: PASS; final false accepted; mission inactive
+- COGNITIVE_SURVIVES_TEST: PASS; PID unchanged; operator available
+- DEEP_PIPELINE: PASS; COG-20 COMPLETED; COG-26 COMPLETED; persisted result_count=21863
+- REPORT_ID: `PMR-63d5e930895c323f86ac`
+- LLAMA_OWNER: `tangra-cognitive-runtime.service`; process count 1
+- AUTHORITY: `NONE`; `operational_authority=[]`
+- BLOCKER: NONE
+
+60-second production observation after the split also PASS: stable mission and Cognitive PIDs, zero restarts, one llama-server under Cognitive cgroup, FPS avg 42.130, Hailo avg 21.574 ms, CPU avg 13.853%, RAM avg 11.282%, max temperature 50.7°C, natural active_tracker=1, no errors or IPC failures.
+
+This checkpoint extension supersedes the prior same-service Cognitive lifecycle topology. It does not create a new 317/317 regression claim.
