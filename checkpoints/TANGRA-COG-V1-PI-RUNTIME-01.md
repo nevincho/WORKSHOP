@@ -77,3 +77,22 @@ This checkpoint extension supersedes the prior same-service Cognitive lifecycle 
 - BLOCKER: NONE
 
 The controller preserves the independent runtime boundary and correctly models the Cognitive backend's lazy llama-server lifecycle. This extension does not create a new 317/317 regression claim.
+
+
+## 2026-09-28 checkpoint extension — SYSTEM_AUDIT
+
+- RESULT: PASS
+- FILES_CHANGED: `cognitive/bridge_runtime.py`; `cognitive_backend/package/cognitive_operator_query.py`
+- INTENT: `SYSTEM_AUDIT`
+- ROUTING: English PASS; Bulgarian PASS
+- STANDBY_TEST: PASS; structured audit completed
+- MISSION_ACTIVE_TEST: PASS; `DEFERRED_TO_STANDBY`; no audit execution
+- AUDIT_ID: `AUD-47ef550902d7493ba425`
+- AUDIT_FIELDS: audit_id, timestamp, overall_status, findings, warnings, unknowns, telemetry_snapshot, diagnostic_summary, authority, operational_authority
+- PERSISTENCE: PASS; `cognitive_bridge.json/last_system_audit`
+- SYSTEM_STATUS_REGRESSION: PASS
+- MISSION_REPORT_REGRESSION: PASS
+- AUTHORITY: `NONE`; `operational_authority=[]`
+- BLOCKER: NONE
+
+This extension does not create a new 317/317 regression claim.
