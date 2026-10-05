@@ -3,7 +3,9 @@
 TASK_ID: TANGRA-RESEARCH-LAB-00
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: READY
+STATUS: HOLD
+STAGE: SCOUT_COMPLETE
+ROUTING: READY_FOR_CONTROL_ROOM
 TYPE: SCOUT / PREPARATION / READ-ONLY RESEARCH CAMPAIGN
 OBJECTIVE: Independently reconstruct and qualify the bounded research programme required to test TANGRA full-system architecture, evidence quality, physical-state validity and research priorities before any research Worker job is released. Treat the existing Control Room preliminary report only as hypotheses to challenge, not as accepted conclusions.
 SOURCE_PLAN_OR_REQUEST: Vlad explicit Control Room authorization, 2026-10-05 — mandatory full WORKSHOP research pass and repository-mediated submission.

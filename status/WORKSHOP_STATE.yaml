@@ -1,17 +1,27 @@
 workshop_version: 0.1
-status: HUMAN_GATES_ONLY
-updated: 2026-08-26
+status: ACTIVE_REPOSITORY_SAFE_CAMPAIGN
+updated: 2026-10-05
 active_project_priority:
+  - TANGRA
   - VK
   - HOROSCOPES
 active_independent_tracks:
   - ESP32_MICROBLOG
 hold_projects:
   TANGRA:
-    state: OFFLINE_HOLD
-    reason: Physical rebuild in progress — new chassis and camera integration.
-    since: 2026-08-24
+    state: LIMITED_REACTIVATION
+    reason: Repository-safe TANGRA campaigns are authorized; production/Pi/runtime actions remain prohibited without a separate gate.
+    since: 2026-09-12
     runtime_actions_allowed: false
+    repository_safe_research_allowed: true
+active_campaigns:
+  TANGRA_RESEARCH_LAB:
+    current_task: TANGRA-RESEARCH-LAB-00
+    state: READY_FOR_CONTROL_ROOM
+    scout_evidence: evidence/TANGRA-RESEARCH-LAB-00/SCOUT.md
+    handoff: handoffs/TANGRA-RESEARCH-LAB-00.md
+    next_action: Control Room accepts qualification and issues one bounded JOB-01 Worker task
+    codex_allowed: false
 active_tests: []
 ready_tasks:
   TASK-046:

@@ -1,7 +1,16 @@
 # WORKSHOP Control Room Current Handoff
 
-STATUS: HUMAN_GATES_ONLY
-DATE: 2026-08-26
+STATUS: ACTIVE_REPOSITORY_SAFE_CAMPAIGN / CONTROL_ROOM_ACTION_REQUIRED
+DATE: 2026-10-05
+
+## TANGRA Research Lab campaign
+
+- `TANGRA-RESEARCH-LAB-00` Scout qualification is complete and held at `READY_FOR_CONTROL_ROOM`.
+- Current evidence: `evidence/TANGRA-RESEARCH-LAB-00/SCOUT.md`.
+- Bounded next-task handoff: `handoffs/TANGRA-RESEARCH-LAB-00.md`.
+- Next action: accept or request bounded correction to the Scout result; if accepted, issue only `JOB-01 — Current Architecture and Evidence-Boundary Audit` as a canonical Worker task.
+- Production/Pi/runtime modification and Codex remain unauthorized.
+- The preliminary Control Room report/A01-A16 definitions are not present in WORKSHOP. They are not required for JOB-01, but are required before final campaign difference analysis.
 
 ## Reconciled completed work
 - TASK-008 VK IMOU integration: PASS / independently reviewed. Actual authenticated IMOU RTSP `subtype=1` frame and candidate-only PerceptionIngress were validated at LIVE checkpoint `840f94abb18f10c87798c2e4a54796dd6dab2bc2`.
@@ -18,11 +27,12 @@ DATE: 2026-08-26
 
 ## Protected scope
 - VK Core/canonical personality/memory protections remain in force.
-- TANGRA/Pi5 remains OFFLINE_HOLD and excluded from autonomous runtime actions.
+- TANGRA production/Pi5 runtime remains on hold and excluded from autonomous actions; only the explicitly authorized repository-safe campaigns are active.
 - No live/runtime validation is inferred from repository-only evidence.
 
 ## Next eligible actions
-There is no independent repository-safe READY_FOR_WORKER or REVIEW task remaining. Resume only when one of the explicit blocker/human-gate conditions is satisfied or new canonical evidence makes a task reviewable.
+- TANGRA Research Lab: Control Room acceptance and issuance of the single bounded JOB-01 task described above.
+- Other queues must be reconciled from their canonical task/evidence files; this handoff does not declare unrelated READY work absent.
 
 ## Authority
 Target repositories/runtime evidence remain authoritative for implementation state. `status/WORKSHOP_STATE.yaml` is coordination state and must be reconciled against newer evidence before routing work.
