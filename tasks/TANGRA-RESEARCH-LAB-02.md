@@ -4,7 +4,7 @@ TASK_ID: TANGRA-RESEARCH-LAB-02
 PROJECT: TANGRA
 CAMPAIGN: TANGRA-RESEARCH-LAB
 PRIORITY: HIGH
-STATUS: READY
+STATUS: COMPLETE / INDEPENDENT_REVIEW_PASS
 TYPE: WORKER / READ-ONLY RESEARCH / QUANTITATIVE QUALIFICATION
 OBJECTIVE: Determine which measured parameters presently support TANGRA detection-to-range and detection-to-world-position claims, quantify defensible first-order sensitivity/error bounds across the evidenced operating envelope, identify missing uncertainty terms and circular or cross-domain validation, and specify the smallest physical experiments required to close the material gaps. Do not modify or redesign TANGRA.
 SOURCE_PLAN_OR_REQUEST: Qualified TANGRA-RESEARCH-LAB programme; JOB-01 independent Reviewer PASS and checkpoint.
