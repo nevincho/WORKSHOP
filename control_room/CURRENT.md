@@ -5,10 +5,13 @@ DATE: 2026-10-05
 
 ## TANGRA Research Lab campaign
 
-- `TANGRA-RESEARCH-LAB-00` Scout qualification is complete and held at `READY_FOR_CONTROL_ROOM`.
-- Current evidence: `evidence/TANGRA-RESEARCH-LAB-00/SCOUT.md`.
-- Bounded next-task handoff: `handoffs/TANGRA-RESEARCH-LAB-00.md`.
-- Next action: accept or request bounded correction to the Scout result; if accepted, issue only `JOB-01 — Current Architecture and Evidence-Boundary Audit` as a canonical Worker task.
+- `TANGRA-RESEARCH-LAB-01` Current Architecture and Evidence-Boundary Audit is COMPLETE / independent Reviewer PASS after one bounded evidence-maturity rework loop.
+- Current evidence: `evidence/TANGRA-RESEARCH-LAB-01/WORKER.md`.
+- Independent review: `review/TANGRA-RESEARCH-LAB-01.md`.
+- Read-only research checkpoint: `checkpoints/TANGRA-RESEARCH-LAB-01.md`.
+- JOB-01 establishes the qualified current claim/source and authority baseline; fresh production source/runtime remains NOT VERIFIED.
+- HOROS T1 remains separately `REVIEW / PASS_WITH_CONDITIONS / TASK1_COMPLETE: NO`; it was not promoted by JOB-01. T2-T7 retain their individual review states.
+- Next action: Control Room accepts JOB-01 PASS or requests bounded correction, then stops or defines one next bounded research task.
 - Production/Pi/runtime modification and Codex remain unauthorized.
 - The preliminary Control Room report/A01-A16 definitions are not present in WORKSHOP. They are not required for JOB-01, but are required before final campaign difference analysis.
 
@@ -31,7 +34,7 @@ DATE: 2026-10-05
 - No live/runtime validation is inferred from repository-only evidence.
 
 ## Next eligible actions
-- TANGRA Research Lab: Control Room acceptance and issuance of the single bounded JOB-01 task described above.
+- TANGRA Research Lab: Control Room decision on JOB-01 PASS; no later research task has been created.
 - Other queues must be reconciled from their canonical task/evidence files; this handoff does not declare unrelated READY work absent.
 
 ## Authority
