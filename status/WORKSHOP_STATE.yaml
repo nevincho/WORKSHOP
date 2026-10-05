@@ -16,12 +16,12 @@ hold_projects:
     repository_safe_research_allowed: true
 active_campaigns:
   TANGRA_RESEARCH_LAB:
-    current_task: TANGRA-RESEARCH-LAB-01
+    current_task: TANGRA-RESEARCH-LAB-02
     state: READY_FOR_CONTROL_ROOM
-    worker_evidence: evidence/TANGRA-RESEARCH-LAB-01/WORKER.md
-    review: review/TANGRA-RESEARCH-LAB-01.md
-    checkpoint: checkpoints/TANGRA-RESEARCH-LAB-01.md
-    next_action: Control Room accepts JOB-01 PASS or requests bounded correction, then stops or defines one next bounded research task
+    worker_evidence: evidence/TANGRA-RESEARCH-LAB-02/WORKER.md
+    review: review/TANGRA-RESEARCH-LAB-02.md
+    checkpoint: checkpoints/TANGRA-RESEARCH-LAB-02.md
+    next_action: Control Room recomputes dependencies and issues the single next qualified campaign task
     codex_allowed: false
 active_tests: []
 ready_tasks:
@@ -37,6 +37,7 @@ completed_tests:
     evidence: evidence/TEST-002/INVENTORY.md
     review: review/TEST-002.md
 completed_tasks:
+  TANGRA-RESEARCH-LAB-02: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-02/WORKER.md, review: review/TANGRA-RESEARCH-LAB-02.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-02.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
   TANGRA-RESEARCH-LAB-01: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-01/WORKER.md, review: review/TANGRA-RESEARCH-LAB-01.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-01.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
   TASK-003: {verdict: PASS, evidence: evidence/TASK-003/CAPABILITY_MATRIX.md, review: review/TASK-003.md}
   TASK-004: {verdict: PASS, evidence: evidence/TASK-004/ROUTING_VALIDATION.md, review: review/TASK-004.md}
