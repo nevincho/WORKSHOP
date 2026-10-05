@@ -1,0 +1,230 @@
+{
+  "evidenced_inputs": {
+    "camera_baseline_m": 0.0356,
+    "fpv_profiles_m": [
+      [
+        0.2,
+        0.25
+      ],
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.4,
+        0.4
+      ],
+      [
+        0.5,
+        0.5
+      ],
+      [
+        0.6,
+        0.6
+      ]
+    ],
+    "hq_calibration": {
+      "cx_px": 1014.0,
+      "cy_px": 760.0,
+      "fx_px": 15756.86,
+      "fy_px": 15848.54,
+      "height_px": 1520,
+      "reprojection_rms_px": 1.239,
+      "status": "PROVISIONAL_PASS",
+      "width_px": 2028
+    },
+    "paired_sensor_delta_ms": [
+      4.807,
+      44.751,
+      50.691
+    ],
+    "physical_point": {
+      "estimate_m": 4.366,
+      "focus_m": 4.0,
+      "reported_uncertainty_m": 1.774,
+      "scope": "single near-field point",
+      "truth_m": 4.36
+    }
+  },
+  "fpv_profile_only_sensitivity": {
+    "equal_weight_mean_scale_m": 0.40472136,
+    "geometric_size_scales_m": [
+      0.223606798,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "limitation": "Isolates documented profile hypotheses at fixed bbox/calibration; not a population distribution.",
+    "max_relative_deviation_pct": 48.250144412,
+    "min_relative_deviation_pct": -44.750433237,
+    "range_ratios_to_equal_weight_mean": [
+      0.552495668,
+      0.741250722,
+      0.988334296,
+      1.23541787,
+      1.482501444
+    ],
+    "ranges_if_equal_weight_mean_is_4_366_m": [
+      2.412196085,
+      3.236300653,
+      4.315067537,
+      5.393834421,
+      6.472601305
+    ]
+  },
+  "los_pixel_sensitivity": [
+    {
+      "horizontal_angle_mrad": 0.063464421,
+      "horizontal_cross_range_mm_at_4_366_m": 0.277085663,
+      "offset_px": 1,
+      "vertical_angle_mrad": 0.063097295,
+      "vertical_cross_range_mm_at_4_366_m": 0.275482789
+    },
+    {
+      "horizontal_angle_mrad": 0.126928842,
+      "horizontal_cross_range_mm_at_4_366_m": 0.554171326,
+      "offset_px": 2,
+      "vertical_angle_mrad": 0.126194589,
+      "vertical_cross_range_mm_at_4_366_m": 0.550965578
+    },
+    {
+      "horizontal_angle_mrad": 0.317322095,
+      "horizontal_cross_range_mm_at_4_366_m": 1.385428315,
+      "offset_px": 5,
+      "vertical_angle_mrad": 0.315486463,
+      "vertical_cross_range_mm_at_4_366_m": 1.377413945
+    },
+    {
+      "horizontal_angle_mrad": 0.634644127,
+      "horizontal_cross_range_mm_at_4_366_m": 2.77085663,
+      "offset_px": 10,
+      "vertical_angle_mrad": 0.630972864,
+      "vertical_cross_range_mm_at_4_366_m": 2.75482789
+    }
+  ],
+  "method": "deterministic algebraic sweep; no probability distributions; no Monte Carlo",
+  "monocular_model": {
+    "axis_equations": [
+      "Rw=fx*W/bbox_w",
+      "Rh=fy*H/bbox_h"
+    ],
+    "combined_equation": "R=sqrt(Rw*Rh)",
+    "first_order_relative": "dR/R=0.5*(dfx/fx+dfy/fy+dW/W+dH/H-dpw/pw-dph/ph)",
+    "one_factor_sweep": [
+      {
+        "bbox_delta_at_4_366_m": 0.485111111,
+        "bbox_range_ratio": 1.111111111,
+        "focal_or_size_delta_at_4_366_m": -0.4366,
+        "focal_or_size_range_ratio": 0.9,
+        "perturbation_pct": -10
+      },
+      {
+        "bbox_delta_at_4_366_m": 0.229789474,
+        "bbox_range_ratio": 1.052631579,
+        "focal_or_size_delta_at_4_366_m": -0.2183,
+        "focal_or_size_range_ratio": 0.95,
+        "perturbation_pct": -5
+      },
+      {
+        "bbox_delta_at_4_366_m": 0.089102041,
+        "bbox_range_ratio": 1.020408163,
+        "focal_or_size_delta_at_4_366_m": -0.08732,
+        "focal_or_size_range_ratio": 0.98,
+        "perturbation_pct": -2
+      },
+      {
+        "bbox_delta_at_4_366_m": 0.04410101,
+        "bbox_range_ratio": 1.01010101,
+        "focal_or_size_delta_at_4_366_m": -0.04366,
+        "focal_or_size_range_ratio": 0.99,
+        "perturbation_pct": -1
+      },
+      {
+        "bbox_delta_at_4_366_m": 0.0,
+        "bbox_range_ratio": 1.0,
+        "focal_or_size_delta_at_4_366_m": 0.0,
+        "focal_or_size_range_ratio": 1.0,
+        "perturbation_pct": 0
+      },
+      {
+        "bbox_delta_at_4_366_m": -0.043227723,
+        "bbox_range_ratio": 0.99009901,
+        "focal_or_size_delta_at_4_366_m": 0.04366,
+        "focal_or_size_range_ratio": 1.01,
+        "perturbation_pct": 1
+      },
+      {
+        "bbox_delta_at_4_366_m": -0.085607843,
+        "bbox_range_ratio": 0.980392157,
+        "focal_or_size_delta_at_4_366_m": 0.08732,
+        "focal_or_size_range_ratio": 1.02,
+        "perturbation_pct": 2
+      },
+      {
+        "bbox_delta_at_4_366_m": -0.207904762,
+        "bbox_range_ratio": 0.952380952,
+        "focal_or_size_delta_at_4_366_m": 0.2183,
+        "focal_or_size_range_ratio": 1.05,
+        "perturbation_pct": 5
+      },
+      {
+        "bbox_delta_at_4_366_m": -0.396909091,
+        "bbox_range_ratio": 0.909090909,
+        "focal_or_size_delta_at_4_366_m": 0.4366,
+        "focal_or_size_range_ratio": 1.1,
+        "perturbation_pct": 10
+      }
+    ]
+  },
+  "pair_timing_motion_coefficient": [
+    {
+      "displacement_mm_per_1_mps": 4.807,
+      "sensor_delta_ms": 4.807
+    },
+    {
+      "displacement_mm_per_1_mps": 44.751,
+      "sensor_delta_ms": 44.751
+    },
+    {
+      "displacement_mm_per_1_mps": 50.691,
+      "sensor_delta_ms": 50.691
+    }
+  ],
+  "schema": "TANGRA_RESEARCH_LAB_02_PHYSICAL_SENSITIVITY_V1",
+  "single_point": {
+    "absolute_residual_m": 0.006,
+    "relative_residual_pct": 0.137614679,
+    "reported_uncertainty_relative_pct": 40.632157581,
+    "residual_over_reported_uncertainty": 0.003382187
+  },
+  "synthetic_sensitivity_inputs": {
+    "calibration_plane_pixel_offsets": [
+      1,
+      2,
+      5,
+      10
+    ],
+    "motion_normalization_mps": 1.0,
+    "note": "Sensitivity probes only; not TANGRA uncertainty distributions.",
+    "relative_perturbation_pct": [
+      -10,
+      -5,
+      -2,
+      -1,
+      0,
+      1,
+      2,
+      5,
+      10
+    ]
+  },
+  "unbounded_terms": [
+    "actual calibration-to-AI forward transform",
+    "detector/tracker/range bbox semantic and transform uncertainty",
+    "target physical-size truth/distribution and pose/foreshortening",
+    "HQ-to-WIDE rotation and translation extrinsics",
+    "carrier attitude/position uncertainty and LOCAL_ENU transform",
+    "source timestamp, processing latency, measurement age and correlation"
+  ]
+}
