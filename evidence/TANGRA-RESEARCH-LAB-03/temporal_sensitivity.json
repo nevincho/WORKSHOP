@@ -1,0 +1,622 @@
+{
+  "claim_boundary": "Deterministic elapsed-time/displacement sensitivity only; not a physical-error, probability, tracker-policy, or runtime-validation result.",
+  "derived_from_evidenced_inputs": {
+    "current_period_ms_derived_from_reciprocal_fps": {
+      "no_target_average": 24.224806202,
+      "static_recent_five_sample_maximum": 22.946305645,
+      "static_recent_five_sample_mean": 24.330900243,
+      "static_recent_five_sample_minimum": 27.056277056,
+      "tracking_average": 27.765437583,
+      "tracking_maximum_sample": 25.602293966,
+      "tracking_minimum_sample": 35.250987028
+    },
+    "static_pair_delta_displacement_mm_per_1_mps": [
+      4.807,
+      44.751,
+      50.691
+    ],
+    "wide_threshold_displacement_m_per_1_mps": 0.5
+  },
+  "evidenced_inputs": {
+    "current_fps": {
+      "no_target_average": 41.28,
+      "static_recent_five_sample_maximum": 43.58,
+      "static_recent_five_sample_mean": 41.1,
+      "static_recent_five_sample_minimum": 36.96,
+      "tracking_average": 36.016,
+      "tracking_maximum_sample": 39.059,
+      "tracking_minimum_sample": 28.368
+    },
+    "historical_2026_07_27_frame_period_ms": {
+      "live_mean": 62.687,
+      "live_median": 54.756,
+      "live_p95": 79.528,
+      "replay_mean": 67.097,
+      "replay_median": 60.073,
+      "replay_p95": 84.119
+    },
+    "static_pair_delta_ms": [
+      4.807,
+      44.751,
+      50.691
+    ],
+    "wide_stale_threshold_ms": 500.0
+  },
+  "schema": "tangra-temporal-sensitivity-v1",
+  "synthetic_age_sensitivity": [
+    {
+      "age_ms": 0.0,
+      "uncompensated_displacement_m": 0.0,
+      "velocity_mps": 1.0
+    },
+    {
+      "age_ms": 25.0,
+      "uncompensated_displacement_m": 0.025,
+      "velocity_mps": 1.0
+    },
+    {
+      "age_ms": 50.0,
+      "uncompensated_displacement_m": 0.05,
+      "velocity_mps": 1.0
+    },
+    {
+      "age_ms": 100.0,
+      "uncompensated_displacement_m": 0.1,
+      "velocity_mps": 1.0
+    },
+    {
+      "age_ms": 250.0,
+      "uncompensated_displacement_m": 0.25,
+      "velocity_mps": 1.0
+    },
+    {
+      "age_ms": 500.0,
+      "uncompensated_displacement_m": 0.5,
+      "velocity_mps": 1.0
+    },
+    {
+      "age_ms": 0.0,
+      "uncompensated_displacement_m": 0.0,
+      "velocity_mps": 5.0
+    },
+    {
+      "age_ms": 25.0,
+      "uncompensated_displacement_m": 0.125,
+      "velocity_mps": 5.0
+    },
+    {
+      "age_ms": 50.0,
+      "uncompensated_displacement_m": 0.25,
+      "velocity_mps": 5.0
+    },
+    {
+      "age_ms": 100.0,
+      "uncompensated_displacement_m": 0.5,
+      "velocity_mps": 5.0
+    },
+    {
+      "age_ms": 250.0,
+      "uncompensated_displacement_m": 1.25,
+      "velocity_mps": 5.0
+    },
+    {
+      "age_ms": 500.0,
+      "uncompensated_displacement_m": 2.5,
+      "velocity_mps": 5.0
+    },
+    {
+      "age_ms": 0.0,
+      "uncompensated_displacement_m": 0.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "age_ms": 25.0,
+      "uncompensated_displacement_m": 0.25,
+      "velocity_mps": 10.0
+    },
+    {
+      "age_ms": 50.0,
+      "uncompensated_displacement_m": 0.5,
+      "velocity_mps": 10.0
+    },
+    {
+      "age_ms": 100.0,
+      "uncompensated_displacement_m": 1.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "age_ms": 250.0,
+      "uncompensated_displacement_m": 2.5,
+      "velocity_mps": 10.0
+    },
+    {
+      "age_ms": 500.0,
+      "uncompensated_displacement_m": 5.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "age_ms": 0.0,
+      "uncompensated_displacement_m": 0.0,
+      "velocity_mps": 25.0
+    },
+    {
+      "age_ms": 25.0,
+      "uncompensated_displacement_m": 0.625,
+      "velocity_mps": 25.0
+    },
+    {
+      "age_ms": 50.0,
+      "uncompensated_displacement_m": 1.25,
+      "velocity_mps": 25.0
+    },
+    {
+      "age_ms": 100.0,
+      "uncompensated_displacement_m": 2.5,
+      "velocity_mps": 25.0
+    },
+    {
+      "age_ms": 250.0,
+      "uncompensated_displacement_m": 6.25,
+      "velocity_mps": 25.0
+    },
+    {
+      "age_ms": 500.0,
+      "uncompensated_displacement_m": 12.5,
+      "velocity_mps": 25.0
+    }
+  ],
+  "synthetic_dropout_sensitivity": [
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 24.224806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.024224806,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 24.224806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.121124031,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 24.224806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.242248062,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 24.224806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.605620155,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 48.449612404,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 0.048449612,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 48.449612404,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 0.242248062,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 48.449612404,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 0.484496124,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 48.449612404,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 1.21124031,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 72.674418606,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 0.072674419,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 72.674418606,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 0.363372093,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 72.674418606,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 0.726744186,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 72.674418606,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 1.816860465,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 121.12403101,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 0.121124031,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 121.12403101,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 0.605620155,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 121.12403101,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 1.21124031,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 121.12403101,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 3.028100775,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 242.24806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 0.242248062,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 242.24806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 1.21124031,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 242.24806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 2.42248062,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "no_target_average",
+      "elapsed_ms": 242.24806202,
+      "frame_period_ms": 24.224806202,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 6.05620155,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 27.765437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.027765438,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 27.765437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.138827188,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 27.765437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.277654376,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 27.765437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 1,
+      "unobserved_motion_distance_m": 0.69413594,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 55.530875166,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 0.055530875,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 55.530875166,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 0.277654376,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 55.530875166,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 0.555308752,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 55.530875166,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 2,
+      "unobserved_motion_distance_m": 1.388271879,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 83.296312749,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 0.083296313,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 83.296312749,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 0.416481564,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 83.296312749,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 0.832963127,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 83.296312749,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 3,
+      "unobserved_motion_distance_m": 2.082407819,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 138.827187915,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 0.138827188,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 138.827187915,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 0.69413594,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 138.827187915,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 1.388271879,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 138.827187915,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 5,
+      "unobserved_motion_distance_m": 3.470679698,
+      "velocity_mps": 25.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 277.65437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 0.277654376,
+      "velocity_mps": 1.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 277.65437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 1.388271879,
+      "velocity_mps": 5.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 277.65437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 2.776543758,
+      "velocity_mps": 10.0
+    },
+    {
+      "cadence_basis": "tracking_average",
+      "elapsed_ms": 277.65437583,
+      "frame_period_ms": 27.765437583,
+      "missed_frames": 10,
+      "unobserved_motion_distance_m": 6.941359396,
+      "velocity_mps": 25.0
+    }
+  ],
+  "synthetic_inputs": {
+    "age_ms": [
+      0.0,
+      25.0,
+      50.0,
+      100.0,
+      250.0,
+      500.0
+    ],
+    "jitter_ms": [
+      1.0,
+      5.0,
+      10.0,
+      25.0,
+      50.0
+    ],
+    "missed_frame_count": [
+      1,
+      2,
+      3,
+      5,
+      10
+    ],
+    "velocity_mps": [
+      1.0,
+      5.0,
+      10.0,
+      25.0
+    ]
+  },
+  "synthetic_jitter_sensitivity": [
+    {
+      "incremental_displacement_m": 0.001,
+      "jitter_ms": 1.0,
+      "velocity_mps": 1.0
+    },
+    {
+      "incremental_displacement_m": 0.005,
+      "jitter_ms": 5.0,
+      "velocity_mps": 1.0
+    },
+    {
+      "incremental_displacement_m": 0.01,
+      "jitter_ms": 10.0,
+      "velocity_mps": 1.0
+    },
+    {
+      "incremental_displacement_m": 0.025,
+      "jitter_ms": 25.0,
+      "velocity_mps": 1.0
+    },
+    {
+      "incremental_displacement_m": 0.05,
+      "jitter_ms": 50.0,
+      "velocity_mps": 1.0
+    },
+    {
+      "incremental_displacement_m": 0.005,
+      "jitter_ms": 1.0,
+      "velocity_mps": 5.0
+    },
+    {
+      "incremental_displacement_m": 0.025,
+      "jitter_ms": 5.0,
+      "velocity_mps": 5.0
+    },
+    {
+      "incremental_displacement_m": 0.05,
+      "jitter_ms": 10.0,
+      "velocity_mps": 5.0
+    },
+    {
+      "incremental_displacement_m": 0.125,
+      "jitter_ms": 25.0,
+      "velocity_mps": 5.0
+    },
+    {
+      "incremental_displacement_m": 0.25,
+      "jitter_ms": 50.0,
+      "velocity_mps": 5.0
+    },
+    {
+      "incremental_displacement_m": 0.01,
+      "jitter_ms": 1.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "incremental_displacement_m": 0.05,
+      "jitter_ms": 5.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "incremental_displacement_m": 0.1,
+      "jitter_ms": 10.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "incremental_displacement_m": 0.25,
+      "jitter_ms": 25.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "incremental_displacement_m": 0.5,
+      "jitter_ms": 50.0,
+      "velocity_mps": 10.0
+    },
+    {
+      "incremental_displacement_m": 0.025,
+      "jitter_ms": 1.0,
+      "velocity_mps": 25.0
+    },
+    {
+      "incremental_displacement_m": 0.125,
+      "jitter_ms": 5.0,
+      "velocity_mps": 25.0
+    },
+    {
+      "incremental_displacement_m": 0.25,
+      "jitter_ms": 10.0,
+      "velocity_mps": 25.0
+    },
+    {
+      "incremental_displacement_m": 0.625,
+      "jitter_ms": 25.0,
+      "velocity_mps": 25.0
+    },
+    {
+      "incremental_displacement_m": 1.25,
+      "jitter_ms": 50.0,
+      "velocity_mps": 25.0
+    }
+  ]
+}
