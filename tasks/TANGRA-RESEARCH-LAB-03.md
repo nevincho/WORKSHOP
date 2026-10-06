@@ -4,7 +4,7 @@ TASK_ID: TANGRA-RESEARCH-LAB-03
 PROJECT: TANGRA
 CAMPAIGN: TANGRA-RESEARCH-LAB
 PRIORITY: HIGH
-STATUS: REVIEW
+STATUS: COMPLETE
 TYPE: WORKER / READ-ONLY RESEARCH / QUANTITATIVE QUALIFICATION
 OBJECTIVE: Determine which timing, cadence, latency, jitter, dropout and measurement-age quantities are actually evidenced across the current TANGRA perception-to-output chain; quantify defensible state-freshness sensitivity; identify missing timestamps/clock provenance that prevent measurement; and specify the smallest observations required to close those gaps. Do not optimize or modify TANGRA.
 SOURCE_PLAN_OR_REQUEST: Qualified campaign; JOB-01 and JOB-02 independent PASS/checkpoints.

@@ -1,6 +1,6 @@
 workshop_version: 0.1
 status: ACTIVE_REPOSITORY_SAFE_CAMPAIGN
-updated: 2026-10-05
+updated: 2026-10-06
 active_project_priority:
   - TANGRA
   - VK
@@ -16,12 +16,12 @@ hold_projects:
     repository_safe_research_allowed: true
 active_campaigns:
   TANGRA_RESEARCH_LAB:
-    current_task: TANGRA-RESEARCH-LAB-02
-    state: READY_FOR_CONTROL_ROOM
-    worker_evidence: evidence/TANGRA-RESEARCH-LAB-02/WORKER.md
-    review: review/TANGRA-RESEARCH-LAB-02.md
-    checkpoint: checkpoints/TANGRA-RESEARCH-LAB-02.md
-    next_action: Control Room recomputes dependencies and issues the single next qualified campaign task
+    current_task: TANGRA-RESEARCH-LAB-03
+    state: WAITING_FOR_CONTROL_ROOM_NEXT_TASK
+    worker_evidence: evidence/TANGRA-RESEARCH-LAB-03/WORKER.md
+    review: review/TANGRA-RESEARCH-LAB-03.md
+    checkpoint: checkpoints/TANGRA-RESEARCH-LAB-03.md
+    next_action: No later canonical campaign task exists; Control Room may authorize one next bounded task without duplicating IDs
     codex_allowed: false
 active_tests: []
 ready_tasks:
@@ -37,6 +37,7 @@ completed_tests:
     evidence: evidence/TEST-002/INVENTORY.md
     review: review/TEST-002.md
 completed_tasks:
+  TANGRA-RESEARCH-LAB-03: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-03/WORKER.md, review: review/TANGRA-RESEARCH-LAB-03.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-03.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
   TANGRA-RESEARCH-LAB-02: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-02/WORKER.md, review: review/TANGRA-RESEARCH-LAB-02.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-02.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
   TANGRA-RESEARCH-LAB-01: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-01/WORKER.md, review: review/TANGRA-RESEARCH-LAB-01.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-01.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
   TASK-003: {verdict: PASS, evidence: evidence/TASK-003/CAPABILITY_MATRIX.md, review: review/TASK-003.md}
@@ -164,6 +165,7 @@ connections:
   esp32_docs_ref: esp32-microblog-agent32
   esp32_runtime: HUMAN_LOCAL_WINDOWS; CODEX_OR_HUMAN_EXECUTION_REQUIRED_FOR_LOCAL_BUILD_OR_FLASH
 notes:
+  - TANGRA Research Lab JOB-03 is PASS/reviewed for temporal evidence qualification only; synchronized end-to-end measurement age and current airborne/full-load headroom remain NOT VERIFIED, and optimization remains HOLD.
   - TANGRA/Pi5 remains excluded from autonomous work.
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed unless separately identified.
   - TASK-014 through TASK-020 remain repository-side PASS/reviewed on `agent/mysticarium`; exact artifacts at `c088aa064f468e4b6c2ce074bba3a91647330b4f` are deployed and 43/43 tested on Pi4 by direct TASK-011 evidence.

@@ -1,17 +1,17 @@
 # WORKSHOP Control Room Current Handoff
 
-STATUS: ACTIVE_REPOSITORY_SAFE_CAMPAIGN / CONTROL_ROOM_ACTION_REQUIRED
-DATE: 2026-10-05
+STATUS: ACTIVE_REPOSITORY_SAFE_CAMPAIGN / WAITING_FOR_NEXT_CANONICAL_TASK
+DATE: 2026-10-06
 
 ## TANGRA Research Lab campaign
 
-- `TANGRA-RESEARCH-LAB-01` Current Architecture and Evidence-Boundary Audit is COMPLETE / independent Reviewer PASS after one bounded evidence-maturity rework loop.
-- Current evidence: `evidence/TANGRA-RESEARCH-LAB-01/WORKER.md`.
-- Independent review: `review/TANGRA-RESEARCH-LAB-01.md`.
-- Read-only research checkpoint: `checkpoints/TANGRA-RESEARCH-LAB-01.md`.
-- JOB-01 establishes the qualified current claim/source and authority baseline; fresh production source/runtime remains NOT VERIFIED.
+- `TANGRA-RESEARCH-LAB-01`, `-02` and `-03` are COMPLETE / independent Reviewer PASS.
+- Current evidence: `evidence/TANGRA-RESEARCH-LAB-03/WORKER.md`.
+- Independent review: `review/TANGRA-RESEARCH-LAB-03.md`.
+- Read-only research checkpoint: `checkpoints/TANGRA-RESEARCH-LAB-03.md`.
+- JOB-03 establishes bounded throughput/component timing evidence and exact JOB-04 fair-replay prerequisites; synchronized end-to-end measurement age and fresh runtime remain NOT VERIFIED.
 - HOROS T1 remains separately `REVIEW / PASS_WITH_CONDITIONS / TASK1_COMPLETE: NO`; it was not promoted by JOB-01. T2-T7 retain their individual review states.
-- Next action: Control Room accepts JOB-01 PASS or requests bounded correction, then stops or defines one next bounded research task.
+- Next action: no later canonical Research Lab task exists. Control Room may separately authorize one next bounded unit; do not synthesize or duplicate JOB-04.
 - Production/Pi/runtime modification and Codex remain unauthorized.
 - The preliminary Control Room report/A01-A16 definitions are not present in WORKSHOP. They are not required for JOB-01, but are required before final campaign difference analysis.
 
@@ -34,7 +34,7 @@ DATE: 2026-10-05
 - No live/runtime validation is inferred from repository-only evidence.
 
 ## Next eligible actions
-- TANGRA Research Lab: Control Room decision on JOB-01 PASS; no later research task has been created.
+- TANGRA Research Lab: no eligible/reviewable canonical task remains after JOB-03 PASS/checkpoint.
 - Other queues must be reconciled from their canonical task/evidence files; this handoff does not declare unrelated READY work absent.
 
 ## Authority

@@ -6,6 +6,11 @@ PROJECT_STATE: LIMITED_REACTIVATION
 ACTIVE_CAMPAIGNS:
 - WIDE-EW
 - TAI
+- TANGRA_RESEARCH_LAB
+
+## TANGRA Research Lab campaign
+
+Repository-safe read-only research is authorized one canonical bounded task at a time. JOB-01 through JOB-03 are COMPLETE / independent Reviewer PASS. Production/Pi5/runtime access and Codex remain unauthorized; fresh runtime claims remain `NOT VERIFIED`. No later canonical Research Lab task currently exists.
 REACTIVATED: 2026-09-12
 REACTIVATION_AUTHORITY: Vlad explicit Control Room authorization
 
