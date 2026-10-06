@@ -1,44 +1,63 @@
 # TASK-TANGRA-HOROS-SPARSE-TARGET-GEOMETRY-T1-20260908 — Independent Review
 
-REVIEW_RESULT: PASS_WITH_CONDITIONS
-COMMIT_REVIEWED: 6e3ee9b288d0c7129baba979062736d304886014
+DATE: 2026-10-06
 
-## Scope reviewed
-Standalone passive ROI-only sparse geometry package in WORKSHOP handoff. No Task 2, no production integration, no architecture expansion.
+ROLE: INDEPENDENT REVIEWER
 
-## Findings
-- Extractor reads only the supplied bbox ROI from the provided frame, aside from frame shape/bounds. No full-frame processing loop, detector, tracker, range logic, calibrated transform, HOROS authority write, guidance/dashboard/command path exists.
-- Input frame and frozen metadata are not mutated by implementation; test includes frame hash + metadata equality.
-- Fixed sparse point count is 5 when segmentation succeeds: CENTER, LEFT_SILHOUETTE, RIGHT_SILHOUETTE, NOSE, TAIL. Invalid extraction returns zero points.
-- CENTER is contour centroid. LEFT/RIGHT are explicitly image-space x-extrema near centroid y; these semantics are deterministic and defensible as screen-space silhouette extrema, but are not target-relative wing-side landmarks.
-- Nose/tail uses PCA major-axis endpoints and a narrower-end width-ratio heuristic. Symmetric/insufficiently anisotropic silhouettes degrade and mark axial semantics invalid rather than forcing validity.
-- Architecture is lightweight and suitable for later same-frame SHADOW insertion without redesign, subject to local source compatibility verification before integration.
-- No historical Geometry Observer state machine, temporal loop, tracker, metric observer, or duplicated runtime authority has been reintroduced.
+INITIAL_REVIEW_COMMIT: `7a090a2016d7af21414f279c23a2ebcf4f48ce16`
 
-## Concrete issue 1 — weak-contrast confidence is not fail-safe
-Segmentation confidence is derived from connected-component geometry (centrality, component area, border contact) and detector confidence. It does not measure foreground/background photometric separation or Otsu separability. Therefore a very low-contrast but still threshold-separable silhouette can receive essentially the same segmentation confidence as a high-contrast silhouette. The existing 9-case suite checks blank ROI but not weak/near-uniform contrast. This does not satisfy the requested confidence-fails-safely criterion for weak silhouettes.
+CORRECTION_COMMIT_REVIEWED: `c7b378841979f82b037c47be3571fa72a7b70e51`
 
-Smallest required correction: add a bounded photometric/separation quality gate or confidence factor (for example foreground/background intensity separation or an equivalent threshold-separability statistic) and add one deterministic weak-contrast/near-uniform silhouette test that must degrade or invalidate.
+REVIEW_RESULT: PASS
 
-## Concrete issue 2 — invalid axial semantics retain coordinates
-When polarity is selected geometrically but `semantic_conf < 0.25`, NOSE/TAIL are emitted with `valid=False` and reason `ambiguous_axial_polarity`, but their x/y fields can still contain the selected axial endpoint coordinates. This is internally marked invalid, but is weaker fail-closed behavior than clearing semantic coordinates and creates avoidable downstream misuse risk.
+TASK1_COMPLETE: YES
 
-Smallest required correction: when `nt_valid` is false, emit NOSE/TAIL coordinates as `None` (or otherwise ensure the contract explicitly guarantees invalid semantic coordinates are unusable). Add an assertion covering this case.
+CODEX_USED: NO
 
-## Tests
-The repository test file contains 9 unittest cases matching the reported categories: near top-down; 23-degree in-plane rotation proxy; point ordering/repeatability; detection-confidence response; symmetric nose/tail ambiguity; bbox boundary clipping; repeated unchanged input; upstream immutability; blank ROI invalidation. Assertions are meaningful for those exact synthetic claims. The mild-oblique case is correctly described as an in-plane synthetic proxy, not perspective validation.
+PRODUCTION_OR_RUNTIME_CHANGED: NO
 
-## Benchmark
-Benchmark performs 20 warmups then 300 extractor calls at each of three ROI sizes (900 total) and reports extractor-internal `perf_counter_ns` elapsed time. Methodology is adequate to support the stated x86_64 synthetic micro-latency snapshot only. It does not support Pi5, end-to-end FPS, real-image, or production scheduling claims, and the evidence explicitly avoids those claims.
+## Review boundary
 
-## Dependencies
-Implementation imports only Python standard library, NumPy and OpenCV. No production object, runtime singleton, detector/tracker/HOROS object, network, file, model, or hardware dependency exists in the package.
+The re-review was limited to the two conditions from the initial `PASS_WITH_CONDITIONS`: weak-contrast fail-closed behavior and unusable coordinates for invalid NOSE/TAIL semantics. The complete standalone candidate and protected-boundary evidence were also checked for regression. No TASK 2+, target repository, production integration or runtime work was performed.
 
-## Top-down suitability
-For the intended envelope — near top-down, mild oblique top-down, mostly complete and separable silhouette — Otsu + connected-component selection + contour centroid/PCA is technically plausible and appropriately lightweight. Physical silhouette quality, true 3D obliquity, clutter/low-contrast robustness and Pi5 performance remain NOT VERIFIED and are correctly classified as such.
+## Independent verification
+
+The Reviewer inspected the corrected source/test/evidence at the frozen correction commit and ran the complete suite with Python 3.12.14, NumPy 2.3.5 and an isolated temporary OpenCV 4.13.0 dependency:
+
+`PYTHONDONTWRITEBYTECODE=1 python3 -m unittest -v test_sparse_target_geometry.py`
+
+Result: **10/10 PASS**.
+
+Independent probes additionally verified:
+
+- the measured median foreground/background separation is compared deterministically against `min_photometric_separation=12.0`;
+- weak separation returns `GeometryValidity.INVALID`, zero geometry confidence and explicit `weak_photometric_separation` provenance;
+- when axial semantic validity is false, both NOSE and TAIL coordinates are `(None, None)` and cannot expose a guessed endpoint;
+- all original point-order, repeatability, boundary, confidence, blank-ROI and input-immutability tests remain PASS.
+
+The exact configured boundary was challenged around the threshold using additional synthetic intensity gaps. The result followed the implementation's measured separation without an off-by-one promotion.
+
+## Performance and claim scope
+
+The same 900-call, three-ROI host benchmark was re-run. Reviewer observation: mean 0.791 ms, median 0.802 ms, p95 1.028 ms, max 5.913 ms. This is consistent with the retained corrected host evidence for the bounded microbenchmark purpose. It is not Pi5, end-to-end, physical-target or production-scheduling evidence.
+
+All fixtures remain synthetic. Physical silhouette quality, true 3D obliquity, live HQ metadata compatibility, production AI-to-calibrated transform, metric range and Pi5 performance remain `NOT VERIFIED` or out of scope.
+
+## Protected scope and hygiene
+
+- Candidate remains one-frame, ROI-only and shadow/passive.
+- No second detector/capture/tracker, range, calibrated transform, HOROS authority write, Guidance, Dashboard, command or actuation path was added.
+- No target repository, Pi/runtime, service, model or configuration changed.
+- The correction commit is bounded to the two reviewed conditions and associated tests/evidence.
+- Repository inspection found only the canonical source, test, benchmark, concise evidence, handoff and review-request trail. No tracked cache, temporary output, failed duplicate or superseded implementation copy was found.
+- The Reviewer-created benchmark output and temporary dependency directory remained outside the repository.
 
 ## Decision
-PASS_WITH_CONDITIONS. The package is architecturally bounded and technically coherent, but Task 1 should not be frozen COMPLETE until the two bounded fail-closed corrections above are made and re-tested. No redesign is required.
 
-TASK1_COMPLETE: NO
-BLOCKER: weak-silhouette confidence does not currently fail safely; invalid axial semantics can retain coordinates despite `valid=False`.
+Both bounded defects are corrected without architecture expansion. The complete standalone candidate satisfies the canonical acceptance criteria.
+
+FINAL_VERDICT: PASS
+
+FROZEN_REVIEWED_COMMIT: `c7b378841979f82b037c47be3571fa72a7b70e51`
+
+BLOCKER: NONE for standalone TASK 1 completion. Future production integration remains separately human/Codex-gated and must verify exact current local source compatibility and the same-frame HQ+bbox contract.

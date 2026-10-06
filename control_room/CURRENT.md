@@ -10,7 +10,7 @@ DATE: 2026-10-06
 - Independent review: `review/TANGRA-RESEARCH-LAB-03.md`.
 - Read-only research checkpoint: `checkpoints/TANGRA-RESEARCH-LAB-03.md`.
 - JOB-03 establishes bounded throughput/component timing evidence and exact JOB-04 fair-replay prerequisites; synchronized end-to-end measurement age and fresh runtime remain NOT VERIFIED.
-- HOROS T1 remains separately `REVIEW / PASS_WITH_CONDITIONS / TASK1_COMPLETE: NO`; it was not promoted by JOB-01. T2-T7 retain their individual review states.
+- HOROS sparse target geometry T1 is now COMPLETE / independent Reviewer PASS at frozen correction commit `c7b3788`; T2-T7 were already COMPLETE / PASS and were not rerun. All remain standalone/non-production, with live compatibility and runtime NOT VERIFIED.
 - Next action: no later canonical Research Lab task exists. Control Room may separately authorize one next bounded unit; do not synthesize or duplicate JOB-04.
 - Production/Pi/runtime modification and Codex remain unauthorized.
 - The preliminary Control Room report/A01-A16 definitions are not present in WORKSHOP. They are not required for JOB-01, but are required before final campaign difference analysis.

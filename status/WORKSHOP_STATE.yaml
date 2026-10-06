@@ -37,6 +37,7 @@ completed_tests:
     evidence: evidence/TEST-002/INVENTORY.md
     review: review/TEST-002.md
 completed_tasks:
+  TASK-TANGRA-HOROS-SPARSE-TARGET-GEOMETRY-T1-20260908: {verdict: PASS, evidence: evidence/TASK-TANGRA-HOROS-SPARSE-TARGET-GEOMETRY-T1-20260908/CORRECTION_20260908.md, review: review/TASK-TANGRA-HOROS-SPARSE-TARGET-GEOMETRY-T1-20260908.md, checkpoint: control_room/checkpoints/TANGRA_HOROS_TARGET_GEOMETRY_TASK1_20260908.md, frozen_commit: c7b378841979f82b037c47be3571fa72a7b70e51, runtime: NOT_VERIFIED_STANDALONE_SYNTHETIC}
   TANGRA-RESEARCH-LAB-03: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-03/WORKER.md, review: review/TANGRA-RESEARCH-LAB-03.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-03.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
   TANGRA-RESEARCH-LAB-02: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-02/WORKER.md, review: review/TANGRA-RESEARCH-LAB-02.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-02.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
   TANGRA-RESEARCH-LAB-01: {verdict: PASS, evidence: evidence/TANGRA-RESEARCH-LAB-01/WORKER.md, review: review/TANGRA-RESEARCH-LAB-01.md, checkpoint: checkpoints/TANGRA-RESEARCH-LAB-01.md, runtime: NOT_VERIFIED_READ_ONLY_RESEARCH}
@@ -165,6 +166,7 @@ connections:
   esp32_docs_ref: esp32-microblog-agent32
   esp32_runtime: HUMAN_LOCAL_WINDOWS; CODEX_OR_HUMAN_EXECUTION_REQUIRED_FOR_LOCAL_BUILD_OR_FLASH
 notes:
+  - HOROS sparse target geometry T1 is COMPLETE/PASS at frozen correction commit c7b378841979f82b037c47be3571fa72a7b70e51; standalone synthetic evidence only, with production compatibility/runtime still NOT VERIFIED. T2-T7 were already independently PASS/COMPLETE and were not rerun.
   - TANGRA Research Lab JOB-03 is PASS/reviewed for temporal evidence qualification only; synchronized end-to-end measurement age and current airborne/full-load headroom remain NOT VERIFIED, and optimization remains HOLD.
   - TANGRA/Pi5 remains excluded from autonomous work.
   - TASK-035 through TASK-044 are repository/simulation preparation and are PASS/reviewed; no live Windows/Pi4 validation is claimed unless separately identified.
