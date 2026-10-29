@@ -199,4 +199,3 @@ def create_workspace(dest, bundle):
         except OSError:
             pass
         raise
-
