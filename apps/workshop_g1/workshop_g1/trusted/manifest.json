@@ -3,8 +3,18 @@
   "profile": "workshop-markdown-v1",
   "repository": "nevincho/WORKSHOP",
   "commit": "a2ec5b3c16c4b21548ce1570bcac20d6276b2b7a",
+  "application": {
+    "id": "workshop-desktop-g1",
+    "workspace_versions": [1]
+  },
   "files": {
-    "TASK_SCHEMA.md": "d0333fdf46f3b9cec92af69c266ddca75999d7a0ac496033069bc86c21cd9610",
-    "STATE_MACHINE.md": "c2153030619b91678b7c48bcfb21fbcf9f5a9584dd9a2e9ea93f824bf5d4f358"
+    "TASK_SCHEMA.md": {
+      "source_path": "schemas/TASK_SCHEMA.md",
+      "sha256": "d0333fdf46f3b9cec92af69c266ddca75999d7a0ac496033069bc86c21cd9610"
+    },
+    "STATE_MACHINE.md": {
+      "source_path": "schemas/STATE_MACHINE.md",
+      "sha256": "c2153030619b91678b7c48bcfb21fbcf9f5a9584dd9a2e9ea93f824bf5d4f358"
+    }
   }
 }

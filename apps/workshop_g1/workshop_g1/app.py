@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
-from .core import create_workspace, inspect_workspace, verified_trust, G1Error
+from .core import create_workspace, inspect_import, inspect_workspace, safe_display, verified_trust, G1Error
 
 
 def main():
@@ -28,10 +28,10 @@ def main():
             for item in view.get_children():
                 view.delete(item)
             for filename, fields in tasks:
-                view.insert('', 'end', values=(fields['TASK_ID'], fields['PROJECT'], fields['STATUS']))
+                view.insert('', 'end', values=tuple(safe_display(fields[key]) for key in ('TASK_ID','PROJECT','DISPLAY_STATUS')))
             info.configure(state='normal')
             info.delete('1.0', 'end')
-            info.insert('end', '\n'.join(f'{name}: {msg}' for name, msg in errors) or 'No diagnostics')
+            info.insert('end', '\n'.join(f'{safe_display(name)}: {safe_display(msg)}' for name, msg in errors) or 'No diagnostics')
             info.configure(state='disabled')
             status.set(f'READ-ONLY: {directory} | tasks: {len(tasks)}, diagnostics: {len(errors)}')
         except (G1Error, OSError, ValueError) as e:
@@ -52,9 +52,27 @@ def main():
             inspect(destination)
         except (G1Error, OSError, ValueError) as e:
             messagebox.showerror('CREATE failed', str(e), parent=root)
+    def import_file():
+        selected = filedialog.askopenfilename(title='Inspect one external file', filetypes=(('Markdown', '*.md'), ('All files', '*.*')))
+        if not selected:
+            return
+        try:
+            tasks, errors = inspect_import(selected, bundle)
+            for item in view.get_children():
+                view.delete(item)
+            for filename, fields in tasks:
+                view.insert('', 'end', values=tuple(safe_display(fields[key]) for key in ('TASK_ID','PROJECT','DISPLAY_STATUS')))
+            info.configure(state='normal')
+            info.delete('1.0', 'end')
+            info.insert('end', '\n'.join(f'{safe_display(name)}: {safe_display(msg)}' for name, msg in errors) or 'No diagnostics')
+            info.configure(state='disabled')
+            status.set(f'READ-ONLY IMPORT: {selected} | tasks: {len(tasks)}, diagnostics: {len(errors)}')
+        except (G1Error, OSError, ValueError) as e:
+            messagebox.showerror('IMPORT failed', str(e), parent=root)
     ttk.Button(bar, text='CREATE (new only)', command=create).pack(side='left', padx=5)
     ttk.Button(bar, text='OPEN (read-only)', command=lambda: inspect(filedialog.askdirectory(title='Open existing workspace'))).pack(side='left', padx=5)
-    ttk.Button(bar, text='IMPORT / inspect (read-only)', command=lambda: inspect(filedialog.askdirectory(title='Inspect external directory'))).pack(side='left', padx=5)
+    ttk.Button(bar, text='IMPORT FOLDER (read-only)', command=lambda: inspect(filedialog.askdirectory(title='Inspect external directory'))).pack(side='left', padx=5)
+    ttk.Button(bar, text='IMPORT FILE (read-only)', command=import_file).pack(side='left', padx=5)
     try: verified_trust(bundle)
     except Exception as e: status.set(f'TRUST ERROR: {e}; no task interpretation allowed')
     root.mainloop()
