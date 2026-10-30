@@ -191,7 +191,7 @@ def read_limited(path, max_bytes=MAX_FILE, raw=False):
         text = data.decode('utf-8')
     except UnicodeDecodeError as exc:
         raise G1Error('MALFORMED_UTF8') from exc
-    if any(len(line) > MAX_LINE for line in text.splitlines()):
+    if any(len(line.encode('utf-8')) > MAX_LINE for line in text.splitlines()):
         raise G1Error('OVERSIZED_LINE')
     return text
 
@@ -394,12 +394,22 @@ def create_workspace(dest, bundle):
         payload = {'workspace_version': WORKSPACE_VERSION, 'workspace_id': str(uuid.uuid4()), 'trusted_commit': manifest['commit']}
         workspace = path / 'workspace.json'
         fd = os.open(workspace, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_BINARY', 0), 0o600)
+        # Track the file immediately after exclusive creation so write/fsync errors
+        # cannot strand a partially initialized workspace.
+        try:
+            created.append((workspace, _path_identity(workspace), True))
+        except Exception:
+            os.close(fd)
+            try:
+                workspace.unlink()
+            except OSError:
+                pass
+            raise
         with os.fdopen(fd, 'wb') as stream:
             stream.write(json.dumps(payload, indent=2).encode('utf-8'))
             stream.flush()
             os.fsync(stream.fileno())
         safe_path(workspace)
-        created.append((workspace, _path_identity(workspace), True))
         if _path_identity(path) != root_identity:
             raise G1Error('CHANGED_DURING_CREATE')
         return path
