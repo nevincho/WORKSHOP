@@ -15,8 +15,6 @@ jobs:
     timeout-minutes: 10
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      TMP: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     defaults:
       run:
         shell: pwsh
@@ -43,6 +41,8 @@ jobs:
           Get-ChildItem -File -Recurse .\workshop_g1, .\tests, .\windows_validation.py, .\main.py | ForEach-Object { Write-Host ("SOURCE_SHA256 " + $_.FullName + " " + (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash) }
       - name: Diagnose Windows temp path identity (read-only)
         run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
           @'
           import os, pathlib, tempfile
           from workshop_g1 import core
@@ -59,12 +59,16 @@ jobs:
           '@ | python -
       - name: Run G1 unit and negative fixtures
         run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
           Write-Host "COMMAND=python -B -m unittest discover -s tests -v"
           python -B -m unittest discover -s tests -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Run actual Windows NTFS qualification fixtures
         if: always()
         run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
           Write-Host "COMMAND=python -B windows_validation.py"
           python -B windows_validation.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
