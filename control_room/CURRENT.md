@@ -1,7 +1,15 @@
 # WORKSHOP Control Room Current Handoff
 
 STATUS: ACTIVE_REPOSITORY_SAFE_CAMPAIGN / WAITING_FOR_NEXT_CANONICAL_TASK
-DATE: 2026-10-06
+DATE: 2026-10-30
+
+## WORKSHOP Desktop V1 commercial campaign — 2026-10-30
+
+- Canonical current task: tasks/WORKSHOP-COMM-G1-QUALIFICATION-01.md, STATUS REVIEW. This task supersedes older G1 coordination summaries; no G1 COMPLETE promotion.
+- WORKER executed actual GitHub-hosted Windows Server 2022/NTFS qualification, not merely task registration. Current source repair checkpoint 2f715308448eb5af70c5c350933574bd5491130f, Windows CI https://github.com/nevincho/WORKSHOP/actions/runs/41136583397: 28/28 unit PASS, 6/6 Windows fixtures PASS, fenced Markdown negative PASS, Tkinter process smoke PASS, no SKIP. Raw evidence: evidence/WORKSHOP-COMM-G1-WINDOWS-QUALIFICATION-01/WORKER.md.
+- Proven parser defect: Markdown fenced TASK_ID example was classified as task_candidate at CI run 41136200148. Bounded Worker patch excludes fenced code from document_kind/parse_task; no unrelated G1 implementation or protected paths changed.
+- Independent Reviewer of current repaired source and Windows evidence: NOT VERIFIED. Windows 10/11 client interactive UI and owner-local ZIP identity: NOT VERIFIED; GitHub Actions Windows Server is not a client acceptance substitute.
+- NEXT: independent read-only review against planning/WORKSHOP_COMM_G1_READINESS_CONTRACT.md and exact updated code/CI. No G2 implementation or G1 COMPLETE until PASS/checkpoint; use Codex only after gate. Preserve main and unrelated campaigns.
 
 ## TANGRA Research Lab campaign
 
