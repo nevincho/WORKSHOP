@@ -178,17 +178,17 @@ class G1Tests(unittest.TestCase):
     def test_fenced_markdown_task_examples_are_not_task_candidates(self):
         for fence in ('```', '~~~', '````'):
             with self.subTest(fence=fence):
-                sample = '# Documentation\\n' + fence + 'text\\nTASK_ID: EXAMPLE\\n' + fence + '\\n'
+                sample = '# Documentation\n' + fence + 'text\nTASK_ID: EXAMPLE\n' + fence + '\n'
                 self.assertEqual(core.document_kind('README.md', sample), 'document')
 
     def test_fenced_task_fields_do_not_override_real_task_fields(self):
-        sample = task() + '\\n```text\\nTASK_ID: WRONG\\nSTATUS: BLOCKED\\n```\\n'
+        sample = task() + '\n```text\nTASK_ID: WRONG\nSTATUS: BLOCKED\n```\n'
         fields = parse_task(sample)
         self.assertEqual(fields['TASK_ID'], 'TASK-01')
         self.assertEqual(fields['STATUS'], 'READY')
 
     def test_unclosed_fence_does_not_parse_embedded_fields(self):
-        sample = '# Notes\\n~~~text\\nTASK_ID: FALSE\\nSTATUS: READY'
+        sample = '# Notes\n~~~text\nTASK_ID: FALSE\nSTATUS: READY'
         self.assertEqual(core.document_kind('README.md', sample), 'document')
 
     def test_document_with_command_is_inert(self):
