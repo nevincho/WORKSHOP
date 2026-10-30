@@ -1,0 +1,21 @@
+# WORKSHOP-COMM-V1-INTEGRATED-BUILD-01 — Unified Desktop V1 implementation candidate
+
+TASK_ID: WORKSHOP-COMM-V1-INTEGRATED-BUILD-01
+PROJECT: WORKSHOP Commercial Edition
+PRIORITY: HIGH
+STATUS: READY
+OBJECTIVE: Produce ONE integrated Windows Desktop V1 candidate covering G2 Controller, G3 bounded local Worker, G4 independent Reviewer/checkpoints, G5 GitHub scoped integration, G6 GUI/installable build, and G7 customer-ready integration/installation workflow, using existing G1 as baseline. Owner explicitly requests combined implementation first, consolidated testing afterward rather than acceptance cycles after every feature.
+SOURCE_PLAN_OR_REQUEST: Explicit owner directive in WORKSHOP Control Room conversation, 2026-10-30: implement G2-G7 together, then test the whole program.
+CURRENT_STATE: G1 source exists and has been launched by owner. G1 independent qualification remains NOT VERIFIED/REWORK, and original G1 protected behavior must be preserved. No independently validated G2-G7 implementation exists as of task issue. Verify repository HEAD and prior candidate review before coding. Do not confuse this task issue with execution.
+PREREQUISITES: Read AGENTS.md, current WORKSHOP policies, planning/WORKSHOP_COMM_DESKTOP_V1_SPEC.md, G1 readiness contract, current G1 implementation, task/review status. Reconcile any G1 source defects and current candidate without destructive changes. Confirm actual execution route and permissions. Stage changes in a separate branch or isolated candidate path; never overwrite approved source unreviewed.
+DEPENDENCIES: G1 implemented baseline; final combined product acceptance remains conditional on all G1-G7 acceptance, without incorrectly claiming G1 COMPLETE.
+AFFECTED_COMPONENTS: New Desktop V1 integrated implementation under apps/, accompanying build packaging scripts and minimal tests/evidence; G1 only for verified compatibility fixes.
+PROTECTED_COMPONENTS: main, policy/schema authority, existing G1 validated behavior and trust files, unrelated WORKSHOP/TANGRA/VK projects, user workspaces, credentials, production systems.
+EXECUTION_CLASS: CODEX_CANDIDATE
+CODEX_ALLOWED: GATE_REQUIRED
+ACCEPTANCE_CRITERIA: Candidate implements UI -> deterministic controller with proper approval and state transition enforcement -> safely bounded supervised worker -> separate reviewer identity -> immutable evidence and checkpoint/rollback -> scoped GitHub read/approved write path -> Windows installer/startup and clean removal. No requirement for an AI model without a verified permitted provider adapter. No arbitrary shell execution advertised as sandboxed. All attempted operations logged, protected path permissions enforced, credential safety and rollback behavior evidenced. Complete final customer Windows E2E scenario, negative/security tests and independent review before any COMPLETE/release declaration. Owner requests consolidation of implementation and end-to-end testing, not omission of essential safety gates.
+VALIDATION_METHOD: One consolidated Windows client and CI regression/security/integration run after integrated candidate delivery; stage-level smoke checks permitted where needed to prevent irrecoverable breakage. Reviewer independently verifies actual evidence; release acceptance is separate from successful build.
+PRE_CHANGE_CHECKPOINT: windows branch current head verified immediately before integration. G1 original frozen implementation d5369ec0300fe836dc673dbe9e8f5ea1ccdb5c23 and later bounded G1 candidate commits retained.
+ROLLBACK_METHOD: Isolated candidate branch or directory. Revert only integrated candidate commits; keep original G1 and main intact.
+EVIDENCE_PATHS: evidence/WORKSHOP-COMM-V1-INTEGRATED-BUILD-01/; review/WORKSHOP-COMM-V1-INTEGRATED-BUILD-01.md; checkpoints/WORKSHOP-COMM-V1-INTEGRATED-BUILD-01.md (only after acceptance).
+STOP: Deliver a runnable Windows candidate with exact source and packaging; run the consolidated end-to-end qualification and independent Review; return PASS or precise externally unavoidable blocker. Do not stop at a newly created task file, and do not present an untested feature as complete.
