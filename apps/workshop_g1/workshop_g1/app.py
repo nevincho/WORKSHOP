@@ -20,11 +20,11 @@ def main():
     info = tk.Text(root, height=6, state='disabled', wrap='word')
     info.pack(fill='x', padx=12, pady=4)
     ttk.Label(root, textvariable=status, padding=12).pack(fill='x')
-    def inspect(directory):
+    def inspect(directory, require_metadata=False):
         if not directory:
             return
         try:
-            tasks, errors = inspect_workspace(directory, bundle)
+            tasks, errors = inspect_workspace(directory, bundle, require_metadata=require_metadata)
             for item in view.get_children():
                 view.delete(item)
             for filename, fields in tasks:
@@ -49,7 +49,7 @@ def main():
         if not messagebox.askyesno('Create workspace', f'Create exactly:\n{destination}\n  workspace.json\n  tasks/\n\nNo Git or network operations.', parent=root): return
         try:
             create_workspace(destination, bundle)
-            inspect(destination)
+            inspect(destination, require_metadata=True)
         except (G1Error, OSError, ValueError) as e:
             messagebox.showerror('CREATE failed', str(e), parent=root)
     def import_file():
@@ -70,11 +70,17 @@ def main():
         except (G1Error, OSError, ValueError) as e:
             messagebox.showerror('IMPORT failed', str(e), parent=root)
     ttk.Button(bar, text='CREATE (new only)', command=create).pack(side='left', padx=5)
-    ttk.Button(bar, text='OPEN (read-only)', command=lambda: inspect(filedialog.askdirectory(title='Open existing workspace'))).pack(side='left', padx=5)
+    ttk.Button(bar, text='OPEN (read-only)', command=lambda: inspect(filedialog.askdirectory(title='Open existing workspace'), require_metadata=True)).pack(side='left', padx=5)
     ttk.Button(bar, text='IMPORT FOLDER (read-only)', command=lambda: inspect(filedialog.askdirectory(title='Inspect external directory'))).pack(side='left', padx=5)
     ttk.Button(bar, text='IMPORT FILE (read-only)', command=import_file).pack(side='left', padx=5)
-    try: verified_trust(bundle)
-    except Exception as e: status.set(f'TRUST ERROR: {e}; no task interpretation allowed')
+    try:
+        manifest = verified_trust(bundle)
+        provenance = f"Verified trust: {manifest['repository']} @ {manifest['commit']} | " + ', '.join(
+            f"{name} SHA256={entry['sha256']}" for name, entry in sorted(manifest['files'].items())
+        )
+        ttk.Label(root, text=provenance, padding=(12, 0), wraplength=860).pack(fill='x')
+    except Exception as e:
+        status.set(f'TRUST ERROR: {e}; no task interpretation allowed')
     root.mainloop()
 
 if __name__ == '__main__':
