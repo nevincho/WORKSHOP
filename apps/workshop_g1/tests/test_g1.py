@@ -142,6 +142,22 @@ class G1Tests(unittest.TestCase):
                 create_workspace(destination,BUNDLE)
         self.assertFalse(destination.exists())
 
+    def test_create_fsync_failure_removes_partial_workspace(self):
+        destination = self.root / 'workspace'
+        real_fsync = os.fsync
+        def injected_fsync(fd):
+            raise OSError('injected fsync failure')
+        with mock.patch('workshop_g1.core.os.fsync', side_effect=injected_fsync):
+            with self.assertRaisesRegex(OSError, 'injected fsync failure'):
+                create_workspace(destination, BUNDLE)
+        self.assertFalse(destination.exists())
+
+    def test_utf8_byte_limit_rejects_multibyte_line(self):
+        selected = self.root / 'unicode.md'
+        selected.write_text('é' * 9000, encoding='utf-8')
+        with self.assertRaisesRegex(G1Error, 'OVERSIZED_LINE'):
+            read_limited(selected)
+
     def test_create_failure_never_deletes_foreign_object(self):
         destination=self.root/'workspace';real_open=os.open
         def inject_foreign(path,flags,mode=0o777):
