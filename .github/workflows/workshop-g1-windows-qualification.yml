@@ -37,7 +37,7 @@ jobs:
           python --version
           python -c "import platform,sys; print('PLATFORM='+platform.platform()); print('PYTHON='+sys.executable)"
           git status --porcelain
-          git diff --name-only d5369ec0300fe836dc673dbe9e8f5ea1ccdb5c23 HEAD
+          git rev-parse HEAD
           Get-ChildItem -File -Recurse .\workshop_g1, .\tests, .\windows_validation.py, .\main.py | ForEach-Object { Write-Host ("SOURCE_SHA256 " + $_.FullName + " " + (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash) }
       - name: Run G1 unit and negative fixtures
         run: |
