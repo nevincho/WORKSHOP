@@ -72,6 +72,24 @@ jobs:
           Write-Host "COMMAND=python -B windows_validation.py"
           python -B windows_validation.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Launch actual Tkinter entrypoint (process smoke only)
+        if: always()
+        run: |
+          @'
+          import subprocess,sys,time
+          p=subprocess.Popen([sys.executable,'-B','main.py'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+          try:
+              time.sleep(2)
+              if p.poll() is not None:
+                  out,err=p.communicate(timeout=5)
+                  raise SystemExit(f'GUI_EXITED_EARLY rc={p.returncode} stdout={out!r} stderr={err!r}')
+              print('GUI_ENTRYPOINT_ALIVE_AFTER_2S=True; UI interaction NOT VERIFIED')
+          finally:
+              if p.poll() is None:
+                  p.terminate()
+                  try: p.wait(timeout=8)
+                  except subprocess.TimeoutExpired: p.kill();p.wait(timeout=8)
+          '@ | python -
       - name: Verify source tree unchanged by tests
         if: always()
         run: |
