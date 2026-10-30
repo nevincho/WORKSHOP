@@ -3,10 +3,10 @@
 TASK_ID: WORKSHOP-COMM-G1-QUALIFICATION-01
 PROJECT: WORKSHOP Commercial Edition Desktop V1
 PRIORITY: HIGH
-STATUS: REWORK
+STATUS: IN_PROGRESS
 OBJECTIVE: Qualify the existing G1 implementation at exact frozen commit d5369ec0300fe836dc673dbe9e8f5ea1ccdb5c23 by obtaining independently auditable genuine Windows filesystem and GUI execution evidence; change no G1 implementation unless testing proves a specific defect.
 SOURCE_PLAN_OR_REQUEST: Owner-directed end-to-end WORKSHOP Desktop V1 campaign, with WORKSHOP internal role routing and minimum human involvement; planning/WORKSHOP_COMM_DESKTOP_V1_SPEC.md and planning/WORKSHOP_COMM_G1_READINESS_CONTRACT.md.
-CURRENT_STATE: WORKER actual Windows Server 2022 NTFS CI completed 31/31 PASS and Tkinter entrypoint process smoke PASS at run 41135365108; G1 frozen source d5369ec unchanged. Independent Reviewer and customer Windows GUI acceptance remain NOT VERIFIED. Older review 99723c findings require re-evaluation against d5369ec. G1 COMPLETE NOT VERIFIED.
+CURRENT_STATE: Bounded fenced-Markdown parser contract defect demonstrated by run 41136200148 and repaired in core.py/tests only; current Windows Server 2022 CI run 41136583397 shows 28/28 unit PASS + 6/6 NTFS fixtures PASS, fenced negative PASS, GUI entrypoint smoke PASS, no skips. Independent Reviewer and customer Windows GUI acceptance remain NOT VERIFIED. G1 COMPLETE NOT VERIFIED.
 PREREQUISITES: Verify exact frozen repository state, code and G1 contract; check Windows host, Python, filesystem, test/harness availability and safe temporary fixture paths before execution; read prior G1 review and evidence.
 DEPENDENCIES: NONE — G1 implementation already available; this task is the immediate acceptance prerequisite of G2.
 AFFECTED_COMPONENTS: apps/workshop_g1/ Windows G1 test and qualification artifacts; bounded source repair in apps/workshop_g1/workshop_g1/core.py and regression tests in apps/workshop_g1/tests/test_g1.py only, authorized by demonstrated contract failure at Actions run 41136200148.
