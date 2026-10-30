@@ -346,14 +346,37 @@ def _inspect_entries(root, entries):
         tasks.append((filename, fields))
     return tasks, diagnostics
 
-def inspect_workspace(root, bundle):
-    verified_trust(bundle)
+def _workspace_metadata_diagnostics(root, manifest):
+    """OPEN checks workspace metadata; IMPORT remains untrusted folder inspection."""
+    metadata_path = contained(root, 'workspace.json')
+    if not metadata_path.is_file():
+        return [('workspace.json', 'MISSING_WORKSPACE_METADATA')]
+    try:
+        metadata = json.loads(read_limited(metadata_path, max_bytes=65536))
+    except (G1Error, OSError, ValueError, TypeError):
+        return [('workspace.json', 'INVALID_WORKSPACE_METADATA')]
+    if not isinstance(metadata, dict) or set(metadata) != {'workspace_version', 'workspace_id', 'trusted_commit'}:
+        return [('workspace.json', 'INVALID_WORKSPACE_METADATA')]
+    if type(metadata['workspace_version']) is not int or metadata['workspace_version'] != WORKSPACE_VERSION:
+        return [('workspace.json', 'UNSUPPORTED_WORKSPACE_VERSION')]
+    try:
+        uuid.UUID(metadata['workspace_id'])
+    except (ValueError, TypeError, AttributeError):
+        return [('workspace.json', 'INVALID_WORKSPACE_METADATA')]
+    if metadata['trusted_commit'] != manifest['commit']:
+        return [('workspace.json', 'INCOMPATIBLE_TRUST_VERSION')]
+    return []
+
+
+def inspect_workspace(root, bundle, require_metadata=False):
+    manifest = verified_trust(bundle)
     root = safe_path(root)
     if not root.is_dir():
         raise G1Error('NOT_A_DIRECTORY')
+    metadata_diagnostics = _workspace_metadata_diagnostics(root, manifest) if require_metadata else []
     task_root = contained(root, 'tasks')
     if not task_root.exists():
-        return [], [('tasks', 'MISSING_REFERENCE')]
+        return [], metadata_diagnostics + [('tasks', 'MISSING_REFERENCE')]
     if not task_root.is_dir():
         raise G1Error('INVALID_PATH')
     before = task_root.stat()
@@ -363,7 +386,8 @@ def inspect_workspace(root, bundle):
         raise G1Error('CHANGED_DURING_READ')
     if len(entries) > MAX_TASKS:
         raise G1Error('TOO_MANY_TASKS')
-    return _inspect_entries(root, entries)
+    tasks, diagnostics = _inspect_entries(root, entries)
+    return tasks, metadata_diagnostics + diagnostics
 
 def inspect_import(path, bundle):
     verified_trust(bundle)
