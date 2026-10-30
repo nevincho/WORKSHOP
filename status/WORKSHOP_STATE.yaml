@@ -1,6 +1,6 @@
 workshop_version: 0.1
 status: ACTIVE_REPOSITORY_SAFE_CAMPAIGN
-updated: 2026-10-06
+updated: 2026-10-30
 active_project_priority:
   - TANGRA
   - VK
@@ -23,6 +23,17 @@ active_campaigns:
     checkpoint: checkpoints/TANGRA-RESEARCH-LAB-03.md
     next_action: No later canonical campaign task exists; Control Room may authorize one next bounded task without duplicating IDs
     codex_allowed: false
+  WORKSHOP_DESKTOP_V1:
+    current_task: WORKSHOP-COMM-G1-QUALIFICATION-01
+    state: REVIEW
+    worker_evidence: evidence/WORKSHOP-COMM-G1-WINDOWS-QUALIFICATION-01/WORKER.md
+    current_source_repair: 2f715308448eb5af70c5c350933574bd5491130f
+    windows_ci_run: 41136583397
+    windows_ci_result: 28_UNIT_PASS_6_NTFS_PASS_GUI_PROCESS_SMOKE_PASS
+    independent_reviewer: NOT_VERIFIED
+    g1_complete: false
+    next_action: Independent review of updated G1 source, contract and raw Windows CI; no G2 implementation before G1 acceptance
+    codex: GATE_REQUIRED
 active_tests: []
 ready_tasks:
   TASK-046:
