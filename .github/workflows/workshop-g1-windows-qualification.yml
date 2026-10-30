@@ -1,0 +1,57 @@
+name: WORKSHOP G1 Windows qualification (repository-safe)
+on:
+  push:
+    branches: [windows]
+    paths:
+      - '.github/workflows/workshop-g1-windows-qualification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g1-windows-tests:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: apps/workshop_g1
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Record runtime and source identity
+        run: |
+          Write-Host "SOURCE_COMMIT=$env:GITHUB_SHA"
+          Write-Host "RUNNER_OS=$env:RUNNER_OS"
+          Write-Host "RUNNER_NAME=$env:RUNNER_NAME"
+          Write-Host "RUNNER_IMAGE=$env:ImageOS $env:ImageVersion"
+          python --version
+          python -c "import platform,sys; print('PLATFORM='+platform.platform()); print('PYTHON='+sys.executable)"
+          git status --porcelain
+          git diff --name-only d5369ec0300fe836dc673dbe9e8f5ea1ccdb5c23 HEAD
+          Get-ChildItem -File -Recurse .\workshop_g1, .\tests, .\windows_validation.py, .\main.py | ForEach-Object { Write-Host ("SOURCE_SHA256 " + $_.FullName + " " + (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash) }
+      - name: Run G1 unit and negative fixtures
+        run: |
+          Write-Host "COMMAND=python -B -m unittest discover -s tests -v"
+          python -B -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run actual Windows NTFS qualification fixtures
+        run: |
+          Write-Host "COMMAND=python -B windows_validation.py"
+          python -B windows_validation.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify source tree unchanged by tests
+        if: always()
+        run: |
+          Write-Host "POST_TEST_GIT_STATUS_BEGIN"
+          git status --porcelain
+          Write-Host "POST_TEST_GIT_STATUS_END"
