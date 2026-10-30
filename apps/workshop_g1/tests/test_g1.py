@@ -74,22 +74,22 @@ class G1Tests(unittest.TestCase):
         self.assertEqual(rows,[])
         self.assertEqual([e[1] for e in errs].count('DUPLICATE_TASK_ID'),2)
 
-    def test_references_and_safe_readiness(self):
+    def test_references_are_diagnostics_not_status_transitions(self):
         p=self.root/'tasks';p.mkdir()
         (p/'one.md').write_text(task(DEPENDENCIES='TASK-MISSING',EVIDENCE_PATHS='evidence/missing.md'))
         rows,errs=inspect_workspace(self.root,BUNDLE)
-        self.assertEqual(rows[0][1]['DISPLAY_STATUS'],'NOT_READY')
+        self.assertEqual(rows[0][1]['STATUS'],'READY')
         self.assertEqual([code for _,code in errs].count('MISSING_REFERENCE'),2)
         evidence=self.root/'evidence';evidence.mkdir();(evidence/'ok.md').write_text('proof')
         (p/'two.md').write_text(task(TASK_ID='TASK-02',DEPENDENCIES='TASK-01',EVIDENCE_PATHS='evidence/ok.md'))
         rows,errs=inspect_workspace(self.root,BUNDLE)
         two=next(fields for name,fields in rows if name=='two.md')
-        self.assertEqual(two['DISPLAY_STATUS'],'READY')
+        self.assertEqual(two['STATUS'],'READY')
 
     def test_invalid_reference_path(self):
         p=self.root/'tasks';p.mkdir();(p/'one.md').write_text(task(EVIDENCE_PATHS='../escape.md'))
         rows,errs=inspect_workspace(self.root,BUNDLE)
-        self.assertEqual(rows[0][1]['DISPLAY_STATUS'],'NOT_READY')
+        self.assertEqual(rows[0][1]['STATUS'],'READY')
         self.assertIn(('one.md','INVALID_PATH'),errs)
 
     def test_invalid_paths(self):
@@ -99,7 +99,8 @@ class G1Tests(unittest.TestCase):
     def test_symlinks(self):
         p=self.root/'tasks';p.mkdir(); target=self.root/'elsewhere';target.write_text(task())
         try: (p/'link.md').symlink_to(target)
-        except (OSError,NotImplementedError):self.skipTest('symlinks unavailable')
+        except OSError as exc:self.skipTest(f'symlinks unavailable: winerror={getattr(exc,"winerror",None)}')
+        except NotImplementedError:self.skipTest('symlink API unavailable')
         _,errs=inspect_workspace(self.root,BUNDLE)
         self.assertIn(('link.md','UNSAFE_LINK'),errs)
 

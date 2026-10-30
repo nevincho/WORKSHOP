@@ -28,7 +28,7 @@ def main():
             for item in view.get_children():
                 view.delete(item)
             for filename, fields in tasks:
-                view.insert('', 'end', values=tuple(safe_display(fields[key]) for key in ('TASK_ID','PROJECT','DISPLAY_STATUS')))
+                view.insert('', 'end', values=tuple(safe_display(fields[key]) for key in ('TASK_ID','PROJECT','STATUS')))
             info.configure(state='normal')
             info.delete('1.0', 'end')
             info.insert('end', '\n'.join(f'{safe_display(name)}: {safe_display(msg)}' for name, msg in errors) or 'No diagnostics')
@@ -61,7 +61,7 @@ def main():
             for item in view.get_children():
                 view.delete(item)
             for filename, fields in tasks:
-                view.insert('', 'end', values=tuple(safe_display(fields[key]) for key in ('TASK_ID','PROJECT','DISPLAY_STATUS')))
+                view.insert('', 'end', values=tuple(safe_display(fields[key]) for key in ('TASK_ID','PROJECT','STATUS')))
             info.configure(state='normal')
             info.delete('1.0', 'end')
             info.insert('end', '\n'.join(f'{safe_display(name)}: {safe_display(msg)}' for name, msg in errors) or 'No diagnostics')

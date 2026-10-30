@@ -1,7 +1,10 @@
 """Windows-only G1 qualification using disposable temporary directories."""
 import hashlib
+import json
 import os
+import platform
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -18,31 +21,48 @@ def snapshot(root):
             path = Path(base) / name
             info = path.lstat()
             result[str(path.relative_to(root))] = (
-                info.st_mode, info.st_size, info.st_mtime_ns, info.st_file_attributes,
+                info.st_mode, info.st_size, info.st_mtime_ns, info.st_ctime_ns, info.st_file_attributes,
                 hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() and not path.is_symlink() else None,
             )
     return result
+
+def snapshot_digest(value):
+    encoded = json.dumps(value, sort_keys=True, separators=(',', ':')).encode('utf-8')
+    return hashlib.sha256(encoded).hexdigest()
+
+def snapshot_json(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'))
 
 class WindowsQualification(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if os.name != 'nt':
             raise unittest.SkipTest('Real Windows required')
+        print(f'ENV PYTHON={sys.version.split()[0]} EXECUTABLE={sys.executable}')
+        print(f'ENV OS={platform.platform()}')
+        print('COMMAND=' + subprocess.list2cmdline([sys.executable, *sys.argv]))
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='WORKSHOP_G1_WIN_TEST_')
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
+        print(f'FIXTURE={self.root}')
 
     def test_create_exact_files_repeat_and_failure_rollback(self):
         workspace = self.root / 'new'
+        parent_before = snapshot(self.root)
         create_workspace(workspace, BUNDLE)
+        parent_after = snapshot(self.root)
         self.assertEqual({path.name for path in workspace.iterdir()}, {'workspace.json','tasks'})
+        self.assertEqual(set(parent_after) - set(parent_before), {'new','new\\tasks','new\\workspace.json'})
+        print(f'EVIDENCE CREATE BEFORE={snapshot_digest(parent_before)} AFTER={snapshot_digest(parent_after)}')
+        print(f'EVIDENCE CREATE_METADATA BEFORE={snapshot_json(parent_before)} AFTER={snapshot_json(parent_after)}')
         before = snapshot(workspace)
         with self.assertRaisesRegex(G1Error, 'DESTINATION_EXISTS'):
             create_workspace(workspace, BUNDLE)
         self.assertEqual(before, snapshot(workspace))
         failed = self.root / 'failed'
+        failure_before = snapshot(self.root)
         real_open = os.open
         def injected(path, flags, mode=0o777):
             if str(path).endswith('workspace.json'):
@@ -52,6 +72,10 @@ class WindowsQualification(unittest.TestCase):
             with self.assertRaisesRegex(OSError, 'injected failure'):
                 create_workspace(failed, BUNDLE)
         self.assertFalse(failed.exists())
+        failure_after = snapshot(self.root)
+        self.assertEqual(failure_before, failure_after)
+        print(f'EVIDENCE CREATE_FAILURE BEFORE={snapshot_digest(failure_before)} AFTER={snapshot_digest(failure_after)}')
+        print(f'EVIDENCE CREATE_FAILURE_METADATA BEFORE={snapshot_json(failure_before)} AFTER={snapshot_json(failure_after)}')
 
     def test_open_and_file_import_no_mutation(self):
         selected = self.root / 'selected'
@@ -63,7 +87,11 @@ class WindowsQualification(unittest.TestCase):
         before = snapshot(selected)
         inspect_workspace(selected, BUNDLE)
         inspect_import(document, BUNDLE)
-        self.assertEqual(before, snapshot(selected))
+        after = snapshot(selected)
+        self.assertEqual(before, after)
+        self.assertIn('.git\\config', before)
+        print(f'EVIDENCE OPEN_IMPORT BEFORE={snapshot_digest(before)} AFTER={snapshot_digest(after)}')
+        print(f'EVIDENCE OPEN_IMPORT_METADATA BEFORE={snapshot_json(before)} AFTER={snapshot_json(after)}')
 
     def test_junction_escape_denied_without_outside_mutation(self):
         outside = self.root / 'outside';outside.mkdir()
@@ -75,7 +103,10 @@ class WindowsQualification(unittest.TestCase):
         try:
             with self.assertRaisesRegex(G1Error,'UNSAFE_LINK'):
                 inspect_workspace(selected,BUNDLE)
-            self.assertEqual(before,snapshot(outside))
+            after = snapshot(outside)
+            self.assertEqual(before,after)
+            print(f'EVIDENCE JUNCTION_OUTSIDE BEFORE={snapshot_digest(before)} AFTER={snapshot_digest(after)}')
+            print(f'EVIDENCE JUNCTION_OUTSIDE_METADATA BEFORE={snapshot_json(before)} AFTER={snapshot_json(after)}')
         finally:
             junction.rmdir()
 
@@ -85,8 +116,10 @@ class WindowsQualification(unittest.TestCase):
         link = task_root / 'linked.md'
         try:
             link.symlink_to(outside)
-        except (OSError,NotImplementedError):
-            self.skipTest('Windows file symlinks unavailable without privileges/Developer Mode')
+        except OSError as exc:
+            self.skipTest(f'Windows file symlink unavailable: winerror={exc.winerror}; Developer Mode/privilege required')
+        except NotImplementedError:
+            self.skipTest('Windows file symlink API unavailable')
         rows,errors = inspect_workspace(selected,BUNDLE)
         self.assertEqual(rows,[])
         self.assertIn(('linked.md','UNSAFE_LINK'),errors)
@@ -108,6 +141,7 @@ class WindowsQualification(unittest.TestCase):
         with mock.patch.object(Path,'iterdir',swap):
             with self.assertRaisesRegex(G1Error,'CHANGED_DURING_READ'):
                 inspect_workspace(selected,BUNDLE)
+        print('EVIDENCE ROOT_SWAP=REFUSED:CHANGED_DURING_READ')
 
     def test_unc_and_device_paths_denied(self):
         for path in (r'\\server\share\x',r'\\?\C:\Windows',r'\\.\C:\Windows'):

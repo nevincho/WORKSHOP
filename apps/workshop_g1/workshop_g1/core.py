@@ -323,9 +323,7 @@ def _inspect_entries(root, entries):
             continue
         errors = _reference_diagnostics(root, filename, fields, valid_ids)
         diagnostics.extend(errors)
-        display = dict(fields)
-        display['DISPLAY_STATUS'] = 'NOT_READY' if fields['STATUS'] == 'READY' and errors else fields['STATUS']
-        tasks.append((filename, display))
+        tasks.append((filename, fields))
     return tasks, diagnostics
 
 def inspect_workspace(root, bundle):
