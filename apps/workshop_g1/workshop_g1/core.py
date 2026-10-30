@@ -374,6 +374,8 @@ def inspect_workspace(root, bundle, require_metadata=False):
     if not root.is_dir():
         raise G1Error('NOT_A_DIRECTORY')
     metadata_diagnostics = _workspace_metadata_diagnostics(root, manifest) if require_metadata else []
+    if metadata_diagnostics:
+        return [], metadata_diagnostics
     task_root = contained(root, 'tasks')
     if not task_root.exists():
         return [], metadata_diagnostics + [('tasks', 'MISSING_REFERENCE')]
