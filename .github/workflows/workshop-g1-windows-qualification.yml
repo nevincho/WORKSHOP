@@ -64,6 +64,15 @@ jobs:
           Write-Host "COMMAND=python -B -m unittest discover -s tests -v"
           python -B -m unittest discover -s tests -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Contract negative fixture - fenced task field remains inert
+        run: |
+          @'
+          from workshop_g1.core import document_kind
+          sample = '# Documentation\\n```text\\nTASK_ID: DEMO\\n```\\n'
+          actual = document_kind('README.md', sample)
+          print('FENCED_TASK_FIELD_CLASSIFICATION=' + actual)
+          assert actual == 'document', 'G1 contract violation: fenced Markdown example classified as task candidate'
+          '@ | python -
       - name: Run actual Windows NTFS qualification fixtures
         if: always()
         run: |
