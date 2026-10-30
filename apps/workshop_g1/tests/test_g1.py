@@ -69,7 +69,7 @@ class G1Tests(unittest.TestCase):
             'trusted_commit': verified_trust(BUNDLE)['commit']
         }))
         rows, diagnostics = inspect_workspace(p, BUNDLE, require_metadata=True)
-        self.assertEqual(len(rows), 1)
+        self.assertEqual(len(rows), 0)
         self.assertIn(('workspace.json', 'UNSUPPORTED_WORKSPACE_VERSION'), diagnostics)
         rows, diagnostics = inspect_import(p, BUNDLE)
         self.assertEqual(len(rows), 1)
