@@ -221,9 +221,29 @@ def verified_trust(bundle):
             raise G1Error('TRUST_MODIFIED')
     return manifest
 
+def _task_machine_lines(text):
+    """Ignore fenced Markdown code examples when extracting task fields."""
+    fence_char = None
+    fence_length = 0
+    for line in text.splitlines():
+        candidate = line.lstrip(' ')
+        if len(line) - len(candidate) <= 3:
+            match = re.match(r'^(`{3,}|~{3,})', candidate)
+            if match:
+                token = match.group(1)
+                if fence_char is None:
+                    fence_char, fence_length = token[0], len(token)
+                    continue
+                if token[0] == fence_char and len(token) >= fence_length and not candidate[len(token):].strip():
+                    fence_char, fence_length = None, 0
+                    continue
+        if fence_char is None:
+            yield line
+
+
 def parse_task(text):
     fields = {}
-    for line in text.splitlines():
+    for line in _task_machine_lines(text):
         match = FIELD.match(line)
         if match:
             if match[1] in fields:
@@ -240,7 +260,7 @@ def parse_task(text):
     return fields
 
 def document_kind(filename, text):
-    if TASK_ID_LINE.search(text):
+    if TASK_ID_LINE.search('\n'.join(_task_machine_lines(text))):
         return 'task_candidate'
     if TASK_NAME.match(filename):
         return 'legacy_candidate'
