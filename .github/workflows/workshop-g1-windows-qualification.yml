@@ -68,7 +68,7 @@ jobs:
         run: |
           @'
           from workshop_g1.core import document_kind
-          sample = '# Documentation\\n```text\\nTASK_ID: DEMO\\n```\\n'
+          sample = '# Documentation\n```text\nTASK_ID: DEMO\n```\n'
           actual = document_kind('README.md', sample)
           print('FENCED_TASK_FIELD_CLASSIFICATION=' + actual)
           assert actual == 'document', 'G1 contract violation: fenced Markdown example classified as task candidate'
