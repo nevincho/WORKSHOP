@@ -4,6 +4,9 @@ on:
     branches: [windows]
     paths:
       - '.github/workflows/workshop-g1-windows-qualification.yml'
+      - 'apps/workshop_g1/workshop_g1/core.py'
+      - 'apps/workshop_g1/tests/test_g1.py'
+      - 'apps/workshop_g1/windows_validation.py'
   workflow_dispatch:
 
 permissions:
