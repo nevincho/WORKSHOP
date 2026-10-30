@@ -3,19 +3,19 @@
 DATE: 2026-10-30
 ROLE: WORKER / repository-safe Windows qualification
 TASK: tasks/WORKSHOP-COMM-G1-QUALIFICATION-01.md
-STATE: WINDOWS_BASELINE_31_PASS / ADDITIONAL_CONTRACT_NEGATIVE_FAIL / G1_REWORK_REQUIRED
+STATE: WINDOWS_REWORK_34_PASS / CONTRACT_NEGATIVE_CLOSED / INDEPENDENT_REVIEW_PENDING
 REPOSITORY: nevincho/WORKSHOP
 BRANCH: windows
 FROZEN_G1_IMPLEMENTATION: d5369ec0300fe836dc673dbe9e8f5ea1ccdb5c23
 QUALIFICATION_WORKFLOW: .github/workflows/workshop-g1-windows-qualification.yml
-FINAL_RUN: https://github.com/nevincho/WORKSHOP/actions/runs/41135365108
-FINAL_RUN_ID: 41135365108
-FINAL_JOB_ID: 124336369519
-FINAL_RUN_HEAD: 02b572aca57300afa9638570ffb281373728a529
-FINAL_RESULT: Baseline run 41135365108 GitHub Actions SUCCESS; 25/25 G1 unit tests PASS; 6/6 Windows qualification fixtures PASS; 0 SKIP/FAIL; GUI process smoke PASS. New adversarial contract test at run 41136200148 FAILED, while both original suites remained PASS.
+FINAL_RUN: https://github.com/nevincho/WORKSHOP/actions/runs/41136583397
+FINAL_RUN_ID: 41136583397
+FINAL_JOB_ID: 124340423071
+FINAL_RUN_HEAD: 7f207c92316eea501f2be12885f0a95150ce067f
+FINAL_RESULT: Current repair run 41136583397 SUCCESS: 28/28 G1 unit tests PASS, 6/6 actual Windows NTFS fixtures PASS, fenced-Markdown contract negative PASS, Tkinter entrypoint smoke PASS, 0 SKIP/FAIL/ERROR. Earlier baseline 31 PASS at run 41135365108; adversarial regression FAIL before fix at run 41136200148.
 EXECUTION_PLATFORM: GitHub-hosted Windows Server 2022 (win22, image 20261026.347.1), Windows NT 10.0 build 20348; CPython 3.11.9. Actual Windows NTFS runner; NOT a Windows 10 client workstation.
 SOURCE_TREE_MUTATION: Git status before/after tests empty; PYTHONDONTWRITEBYTECODE=1; fixture writes confined to disposable temporary paths.
-SOURCE_PROVENANCE: GitHub compare frozen G1 d5369ec... to final run 02b572ac... includes only CI workflow and the registered task; no apps/workshop_g1/ changes. CI logs list exact per-file SHA-256 including trusted TASK_SCHEMA.md d0333fdf...9610 and STATE_MACHINE.md c2153030...f358.
+SOURCE_PROVENANCE: GitHub compare original frozen G1 d5369ec... to current 7f207c... includes exactly two bounded G1 repair source paths (core.py and tests/test_g1.py), one isolated CI workflow and coordination artifacts; no other application or protected code changes. CI logs list exact per-file SHA-256 including trusted TASK_SCHEMA.md d0333fdf...9610 and STATE_MACHINE.md c2153030...f358.
 COMMANDS: python -B -m unittest discover -s tests -v; python -B windows_validation.py; python -B main.py launched for two-second smoke. Full commands, output, exit codes and source hashes in raw linked Actions job logs.
 WINDOWS_NEGATIVE_COVERAGE: real directory junction denial, file symlink denial (not skipped), UNC/device path denial, simulated root-swap denial, CREATE failure rollback and repeat-denial, OPEN and individual-file IMPORT before/after file-content and metadata snapshots including hidden .git/config fixture; trust tamper, schema mismatch, duplicate IDs, malformed text and inert injection. Fixture-specific, not a general adversarial security proof.
 GUI_SCOPE: Tkinter entrypoint alive after two seconds; no real GUI interaction/visual correctness assertion or customer installer test.
@@ -27,7 +27,7 @@ Run 41134947286 reached 25 tests and failed 3 assertions + 14 errors because run
 
 ## New confirmed contract failure (2026-10-30)
 
-A further read-only Windows CI negative fixture tested a Markdown document with a fenced code example containing a line TASK_ID: DEMO. Expected: inert documentation. Actual from frozen G1 code: FENCED_TASK_FIELD_CLASSIFICATION=task_candidate. Run https://github.com/nevincho/WORKSHOP/actions/runs/41136200148 (job 124339154766), assertion failed with explicit G1 contract violation; 25 original tests and 6 Windows fixtures still passed. The preceding run 41136059404 used incorrectly escaped newline literals and was not a valid negative test; corrected fixture in run 41136200148 is authoritative. This is an IMPLEMENTATION/PARSER contract defect, not a Windows environment failure. Frozen source has not been changed. Repair must ignore fenced Markdown code blocks in task classification and field extraction, with bounded regression tests and a new source checkpoint.
+A read-only Windows CI negative fixture initially tested a Markdown document with a fenced code example containing a line TASK_ID: DEMO. Expected: inert documentation. Actual from frozen G1 code: FENCED_TASK_FIELD_CLASSIFICATION=task_candidate. Run https://github.com/nevincho/WORKSHOP/actions/runs/41136200148 (job 124339154766), assertion failed with explicit G1 contract violation; 25 original tests and 6 Windows fixtures still passed. The preceding run 41136059404 used incorrectly escaped newline literals and was not a valid negative test; corrected fixture in run 41136200148 is authoritative. This is an IMPLEMENTATION/PARSER contract defect, not a Windows environment failure. Bounded Worker repair changed core.py document_kind and parse_task to skip backtick/tilde fenced code blocks, plus three regression tests in tests/test_g1.py; repair source commit 2f715308448eb5af70c5c350933574bd5491130f. The identical negative fixture then passed at run 41136583397 (FENCED_TASK_FIELD_CLASSIFICATION=document), with 28/28 unit + 6/6 Windows PASS and no skips. This repairs the specific demonstrated defect; independent code/security review remains required.
 
 ## Unresolved acceptance / next role
 
@@ -38,5 +38,5 @@ A further read-only Windows CI negative fixture tested a Markdown document with 
 5. No independent G1 PASS or validated checkpoint; do not promote G1 to COMPLETE or authorize G2 implementation on this record alone.
 
 ROUTING: Actual WORKER qualification executed using GitHub-hosted Windows runner without Codex. Forward to independent Reviewer. Any local Windows customer acceptance must use a verified host/Codex Gate, not inferred from Actions.
-ROLLBACK: Isolated CI workflow can be reverted; frozen G1 source intact.
+ROLLBACK: Revert bounded parser source commits b05bad8e..., 13e48dc6..., 2f715308... (or restore core.py and tests/test_g1.py from d5369ec...) to restore original G1 source; CI workflow separately revertible. No main/production changes.
 HYGIENE: One reusable CI workflow and this concise evidence; no generated caches or log dumps committed.
