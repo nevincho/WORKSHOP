@@ -39,12 +39,29 @@ jobs:
           git status --porcelain
           git rev-parse HEAD
           Get-ChildItem -File -Recurse .\workshop_g1, .\tests, .\windows_validation.py, .\main.py | ForEach-Object { Write-Host ("SOURCE_SHA256 " + $_.FullName + " " + (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash) }
+      - name: Diagnose Windows temp path identity (read-only)
+        run: |
+          @'
+          import os, pathlib, tempfile
+          from workshop_g1 import core
+          root=pathlib.Path(tempfile.gettempdir())
+          print('TEMP_ROOT='+str(root))
+          for p in (root,*root.parents):
+              try:
+                  h=core._windows_handle(p,directory=p.is_dir())
+                  try:
+                      attr, ident, final=core._windows_handle_info(h)
+                      print('PATH',repr(str(p)),'FINAL',repr(str(final)),'ATTR',hex(attr),'EQUAL',os.path.normcase(str(p))==os.path.normcase(str(final)))
+                  finally: core._close_windows_handle(h)
+              except Exception as e: print('ERROR',repr(str(p)),repr(e))
+          '@ | python -
       - name: Run G1 unit and negative fixtures
         run: |
           Write-Host "COMMAND=python -B -m unittest discover -s tests -v"
           python -B -m unittest discover -s tests -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Run actual Windows NTFS qualification fixtures
+        if: always()
         run: |
           Write-Host "COMMAND=python -B windows_validation.py"
           python -B windows_validation.py
