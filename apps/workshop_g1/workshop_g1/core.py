@@ -409,9 +409,11 @@ def create_workspace(dest, bundle):
     created = []
     try:
         os.mkdir(path)
-        safe_path(path)
+        # Capture ownership before any later path validation can fail.  If
+        # identity itself is unavailable, do not delete an unproven path.
         root_identity = _path_identity(path)
         created.append((path, root_identity, False))
+        safe_path(path)
         tasks = path / 'tasks'
         os.mkdir(tasks)
         created.append((tasks, _path_identity(tasks), False))
@@ -426,10 +428,9 @@ def create_workspace(dest, bundle):
             created.append((workspace, _path_identity(workspace), True))
         except Exception:
             os.close(fd)
-            try:
-                workspace.unlink()
-            except OSError:
-                pass
+            # Identity acquisition failed.  A pathname unlink here can delete
+            # a foreign object swapped into place after our exclusive open.
+            # Leave unverifiable cleanup to the outer identity-guarded rollback.
             raise
         with os.fdopen(fd, 'wb') as stream:
             stream.write(json.dumps(payload, indent=2).encode('utf-8'))

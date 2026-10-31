@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/workshop-desktop-v1-integrated-20261030
+      - integration/desktop-v1-g1-f2ab-20261031
     paths:
       - 'apps/workshop_desktop_v1/**'
       - 'apps/workshop_g1/**'
@@ -44,6 +45,21 @@ jobs:
           $env:TEMP = $env:RUNNER_TEMP
           Write-Output "WINDOWS_TEST_TEMP=$env:TEMP"
           python -B -m unittest discover -s tests -v
+      - name: G1 real Windows NTFS and F2A F2B regression qualification
+        shell: pwsh
+        working-directory: apps/workshop_g1
+        run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
+          Write-Output "G1_QUALIFICATION_SOURCE=$env:GITHUB_SHA"
+          Get-FileHash workshop_g1/core.py -Algorithm SHA256
+          Get-FileHash qualification_g1_20261031.py -Algorithm SHA256
+          python -B -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -B windows_validation.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -B qualification_g1_20261031.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build Windows onedir and optional installer
         shell: pwsh
         run: .\build_windows.ps1
