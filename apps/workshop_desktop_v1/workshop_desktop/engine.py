@@ -288,6 +288,8 @@ class Controller:
                 "worker_exit": run.get("worker_exit"),
                 "artifact_sha256": run.get("artifact_sha256"),
                 "time": run.get("time"),
+                "stdout": str(run.get("stdout") or "")[:MAX_LOG],
+                "stderr": str(run.get("stderr") or "")[:MAX_LOG],
             }
         if task.get("review"):
             report = self.store.read("reviews/" + task["review"] + ".json")
@@ -303,6 +305,8 @@ class Controller:
                 "verdict": report.get("verdict"),
                 "review_kind": report.get("review_kind"),
                 "evidence_sha256": report.get("evidence_sha256"),
+                "reviewer_stdout": str(report.get("reviewer_stdout") or "")[:MAX_LOG],
+                "reviewer_stderr": str(report.get("reviewer_stderr") or "")[:MAX_LOG],
             }
         if task.get("draft_pr_submitted"):
             proposal = self.store.read("proposals/" + identifier + ".json")
