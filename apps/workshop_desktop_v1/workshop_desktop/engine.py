@@ -337,7 +337,7 @@ class Controller:
         """Explicit human rejection; never mutate or close a remote draft PR."""
         if not isinstance(reason, str) or not reason.strip() or len(reason) > 500:
             raise ControllerError("REJECTION_REASON_REQUIRED")
-        if any(ord(ch) < 32 and ch not in "\\n\\t" for ch in reason):
+        if any(ord(ch) < 32 for ch in reason):
             raise ControllerError("INVALID_REJECTION_REASON")
         state, plan, expected_head = self._plan(identifier)
         task = state["tasks"][identifier]
