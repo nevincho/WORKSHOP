@@ -459,6 +459,15 @@ class IntegratedTests(unittest.TestCase):
         with self.assertRaisesRegex(ControllerError, "RUN_EVIDENCE_IDENTITY_MISMATCH"):
             self.controller.task_detail(identifier)
 
+    def test_approval_queue_selection_only_updates_task_detail(self):
+        desktop = object.__new__(gui.Desktop)
+        desktop.approval_tree = mock.Mock()
+        desktop.approval_tree.selection.return_value = ("queued123",)
+        desktop.show_task_detail = mock.Mock()
+        desktop._select_approval()
+        self.assertEqual(desktop.selected, "queued123")
+        desktop.show_task_detail.assert_called_once_with()
+
     def test_task_selection_updates_detail_without_executing(self):
         desktop = object.__new__(gui.Desktop)
         desktop.task_tree = mock.Mock()
