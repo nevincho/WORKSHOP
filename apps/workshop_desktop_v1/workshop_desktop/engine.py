@@ -293,6 +293,11 @@ class Controller:
             report = self.store.read("reviews/" + task["review"] + ".json")
             if report.get("task") != identifier or report.get("id") != task["review"]:
                 raise ControllerError("REVIEW_EVIDENCE_IDENTITY_MISMATCH")
+            if (report.get("run_id") != task.get("run") or
+                    report.get("plan_hash") != detail["plan_sha256"] or
+                    not detail["run"] or
+                    report.get("evidence_sha256") != detail["run"]["artifact_sha256"]):
+                raise ControllerError("REVIEW_EVIDENCE_BINDING_MISMATCH")
             detail["review"] = {
                 "id": report["id"],
                 "verdict": report.get("verdict"),
@@ -303,6 +308,9 @@ class Controller:
             proposal = self.store.read("proposals/" + identifier + ".json")
             if proposal.get("id") != identifier:
                 raise ControllerError("PROPOSAL_EVIDENCE_IDENTITY_MISMATCH")
+            if (proposal.get("preflight_review") != task.get("review") or
+                    proposal.get("baseline") != plan["target_sha"]):
+                raise ControllerError("PROPOSAL_EVIDENCE_BINDING_MISMATCH")
             detail["proposal"] = {
                 "kind": proposal.get("kind"),
                 "pr_url": proposal.get("proposal", {}).get("pr_url"),
@@ -324,6 +332,26 @@ class Controller:
             if task["status"] not in ("COMPLETE", "BLOCKED", "HOLD"):
                 entry["active"] += 1
         return sorted(projects.values(), key=lambda row: row["project"].casefold())
+
+    def reject_review(self, identifier, reason):
+        """Explicit human rejection; never mutate or close a remote draft PR."""
+        if not isinstance(reason, str) or not reason.strip() or len(reason) > 500:
+            raise ControllerError("REJECTION_REASON_REQUIRED")
+        if any(ord(ch) < 32 and ch not in "\\n\\t" for ch in reason):
+            raise ControllerError("INVALID_REJECTION_REASON")
+        state, plan, expected_head = self._plan(identifier)
+        task = state["tasks"][identifier]
+        if task["status"] != "REVIEW" or not task.get("review"):
+            raise ControllerError("REVIEW_STATE_REQUIRED")
+        remote = bool(task.get("draft_pr_submitted"))
+        task["status"] = "BLOCKED" if remote else "REWORK"
+        task["rejection"] = {"actor": self.actor, "reason": reason.strip(),
+                             "time": now(), "remote_cleanup_required": remote}
+        self.store.transaction(state, {"kind": "HUMAN_REJECTED",
+                                       "id": identifier, "actor": self.actor,
+                                       "remote_cleanup_required": remote},
+                               expected_head=expected_head)
+        return task["rejection"]
 
     def _snapshot(self):
         head = self.store.head()
