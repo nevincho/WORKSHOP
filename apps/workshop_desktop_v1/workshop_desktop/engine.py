@@ -401,8 +401,8 @@ class Controller:
         if type(worker_timeout_seconds) is not int or not 5 <= worker_timeout_seconds <= 20:
             raise ControllerError("INVALID_TIMEOUT")
         state, expected_head = self._snapshot()
-        if any(t["status"] == "IN_PROGRESS" for t in state["tasks"].values()):
-            raise ControllerError("SETTINGS_CHANGE_DURING_RUN")
+        if any(t["status"] not in ("COMPLETE", "BLOCKED", "HOLD") for t in state["tasks"].values()):
+            raise ControllerError("SETTINGS_CHANGE_WITH_ACTIVE_TASK")
         updated = dict(current, worker_timeout_seconds=worker_timeout_seconds)
         self.store.transaction(state, {"kind": "SETTINGS_UPDATED", "actor": self.actor,
                                        "timeout": worker_timeout_seconds},
@@ -489,7 +489,8 @@ class Controller:
         plan = {"id": identifier, "task_id": task_id, "project": project, "repo": repo,
                 "ref": ref, "path": path, "content": content, "target_sha": sha,
                 "executor": "markdown-writer-v1", "operation": "CREATE_MARKDOWN",
-                "max_cost": settings["max_cost"], "created_by": self.actor, "created_at": now()}
+                "max_cost": settings["max_cost"], "timeout_seconds": settings["worker_timeout_seconds"],
+                "created_by": self.actor, "created_at": now()}
         plan_hash = digest(canonical(plan))
         state["tasks"][identifier] = {"task_id": task_id, "status": "READY", "plan_hash": plan_hash,
                                       "approval": None, "run": None, "review": None}
@@ -557,7 +558,9 @@ class Controller:
         self._approval(identifier, state, plan)
         if self.github.head(plan["repo"], plan["ref"]) != plan["target_sha"]:
             raise ControllerError("TARGET_HEAD_CHANGED")
-        timeout_seconds = self.settings()["worker_timeout_seconds"]
+        timeout_seconds = plan.get("timeout_seconds", 20)
+        if type(timeout_seconds) is not int or not 5 <= timeout_seconds <= 20:
+            raise ControllerError("UNSAFE_PLAN_TIMEOUT")
         run_id = uuid.uuid4().hex
         stage = self.store.staging / run_id
         stage.mkdir()
