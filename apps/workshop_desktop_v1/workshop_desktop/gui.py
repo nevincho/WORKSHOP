@@ -298,9 +298,12 @@ class Desktop:
             ctrl = self._require()
             if not self.selected:
                 raise ControllerError("SELECT_TASK_FIRST")
-            _, plan, _ = ctrl._plan(self.selected)
+            identifier = self.selected
+            _, plan, _ = ctrl._plan(identifier)
+            displayed_plan_hash = digest(canonical(plan))
             if self._approval_dialog(approval_scope(plan)):
-                self._log("Approval stored: " + ctrl.approve(self.selected))
+                self._log("Approval stored: " + ctrl.approve(
+                    identifier, expected_plan_hash=displayed_plan_hash))
                 self.refresh()
         except Exception as exc:
             self._error(exc)

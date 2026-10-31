@@ -9,7 +9,7 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from workshop_desktop.engine import Controller, ControllerError, CoordinationRepo
+from workshop_desktop.engine import Controller, ControllerError, CoordinationRepo, canonical, digest
 from workshop_desktop import gui, reviewer
 from workshop_desktop.g1_adapter import create_workspace, inspect_workspace, trusted_bundle
 from workshop_desktop.github_api import GitHubClient, GitHubError, PartialProposal, validate_target
@@ -51,12 +51,75 @@ class IntegratedTests(unittest.TestCase):
         return self.controller.plan("TASK-01", "Demo", "example/demo", "main",
                                     "docs/workshop-demo.md", "# Verified demo\n")
 
+    def approve_plan(self, identifier, controller=None):
+        ctrl = controller or self.controller
+        _, plan, _ = ctrl._plan(identifier)
+        return ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+
+    def test_approval_requires_exact_displayed_plan_hash(self):
+        identifier = self.make_plan()
+        with self.assertRaises(TypeError):
+            self.controller.approve(identifier)
+        with self.assertRaisesRegex(ControllerError, "PLAN_CHANGED_REVIEW_AGAIN"):
+            self.controller.approve(identifier, expected_plan_hash="0" * 64)
+        self.assertIsNone(self.controller.status()["tasks"][identifier]["approval"])
+        self.assertIsNone(self.vault.get(SIGNING))
+        self.assertTrue(self.approve_plan(identifier))
+
+    def test_approval_dialog_rejects_replan_during_display(self):
+        identifier = self.make_plan()
+        second = Controller(self.root, github=self.github, vault=self.vault)
+        desktop = object.__new__(gui.Desktop)
+        desktop.controller = self.controller
+        desktop.selected = identifier
+        desktop._log = mock.Mock()
+        desktop.refresh = mock.Mock()
+        desktop._error = mock.Mock()
+        after_replan = {}
+
+        def concurrent_replan(displayed_text):
+            self.assertIn("# Verified demo", displayed_text)
+            self.approve_plan(identifier, controller=second)
+            run = second.run(identifier)
+            self.assertIsNone(run["error"])
+
+            def reject(role, arguments, cwd, timeout=20, cancel=None):
+                Path(arguments[2]).write_text(json.dumps({
+                    "verdict": "REWORK", "sha256": run["artifact_sha256"],
+                    "reviewer_pid": -1}), encoding="utf-8")
+                return 1, "", ""
+
+            with mock.patch("workshop_desktop.engine._launch", side_effect=reject):
+                self.assertEqual(second.review(identifier)["verdict"], "REWORK")
+            second.rework(identifier, "# Changed while dialog open\n")
+            after_replan["head"] = self.controller.store.head()
+            after_replan["state"] = self.controller.status()
+            return True
+
+        desktop._approval_dialog = mock.Mock(side_effect=concurrent_replan)
+        desktop.approve()
+        desktop._error.assert_called_once()
+        self.assertEqual(str(desktop._error.call_args.args[0]), "PLAN_CHANGED_REVIEW_AGAIN")
+        self.assertEqual(self.controller.store.head(), after_replan["head"])
+        self.assertEqual(self.controller.status(), after_replan["state"])
+        self.assertIsNone(self.controller.status()["tasks"][identifier]["approval"])
+        with self.assertRaisesRegex(ControllerError, "APPROVAL_REQUIRED"):
+            self.controller.run(identifier)
+        self.assertEqual(self.github.proposals, [])
+
+        desktop._error.reset_mock()
+        desktop._approval_dialog = mock.Mock(return_value=True)
+        desktop.approve()
+        desktop._error.assert_not_called()
+        self.assertTrue(self.controller.status()["tasks"][identifier]["approval"])
+        self.assertIn("# Changed while dialog open", desktop._approval_dialog.call_args.args[0])
+
     def test_full_g1_to_g7_candidate_draft_pr(self):
         rows, errors = inspect_workspace(self.root, trusted_bundle(), require_metadata=True)
         self.assertEqual((rows, errors), ([], []))
         identifier = self.make_plan()
         self.assertEqual(self.controller.status()["tasks"][identifier]["status"], "READY")
-        approval = self.controller.approve(identifier)
+        approval = self.approve_plan(identifier)
         run = self.controller.run(identifier)
         self.assertEqual(run["worker_exit"], 0, run)
         self.assertIsNone(run["error"])
@@ -87,13 +150,13 @@ class IntegratedTests(unittest.TestCase):
 
     def test_review_required_for_publish(self):
         identifier = self.make_plan()
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         with self.assertRaisesRegex(ControllerError, "REVIEW_REQUIRED"):
             self.controller.publish(identifier)
 
     def test_head_change_invalidates_approval(self):
         identifier = self.make_plan()
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         self.github.sha = "c" * 40
         with self.assertRaisesRegex(ControllerError, "TARGET_HEAD_CHANGED"):
             self.controller.run(identifier)
@@ -117,7 +180,7 @@ class IntegratedTests(unittest.TestCase):
 
     def test_approval_hmac_tamper(self):
         identifier = self.make_plan()
-        approval_id = self.controller.approve(identifier)
+        approval_id = self.approve_plan(identifier)
         approval = self.controller.store.read("approvals/" + approval_id + ".json")
         approval["target_sha"] = "b" * 40
         path = self.controller.store.repo / "approvals" / (approval_id + ".json")
@@ -130,7 +193,7 @@ class IntegratedTests(unittest.TestCase):
 
     def test_missing_signing_secret_blocks_run(self):
         identifier = self.make_plan()
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         self.vault.delete(SIGNING)
         with self.assertRaisesRegex(ControllerError, "APPROVAL_KEY_MISSING"):
             self.controller.run(identifier)
@@ -156,7 +219,7 @@ class IntegratedTests(unittest.TestCase):
 
     def test_staged_artifact_tamper_refused(self):
         identifier = self.make_plan()
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         run = self.controller.run(identifier)
         output = self.controller.store.staging / run["id"] / "artifact.md"
         output.write_text("tampered", encoding="utf-8")
@@ -165,7 +228,7 @@ class IntegratedTests(unittest.TestCase):
 
     def test_no_automatic_remote_write(self):
         identifier = self.make_plan()
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         self.controller.run(identifier)
         self.controller.review(identifier)
         self.assertEqual(self.github.proposals, [])
@@ -199,7 +262,7 @@ class IntegratedTests(unittest.TestCase):
 
     def test_rework_replan_requires_new_approval_and_completes_preflight(self):
         identifier = self.make_plan()
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         run = self.controller.run(identifier)
         def reject(role, arguments, cwd, timeout=20, cancel=None):
             Path(arguments[2]).write_text(json.dumps({
@@ -213,7 +276,7 @@ class IntegratedTests(unittest.TestCase):
         self.assertNotEqual(new_hash, review["plan_hash"])
         with self.assertRaisesRegex(ControllerError, "APPROVAL_REQUIRED"):
             self.controller.run(identifier)
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         retry = self.controller.run(identifier)
         self.assertIsNone(retry["error"])
         passed = self.controller.review(identifier)
@@ -222,7 +285,7 @@ class IntegratedTests(unittest.TestCase):
 
     def test_remote_intent_persisted_before_ambiguous_write(self):
         identifier = self.make_plan()
-        self.controller.approve(identifier)
+        self.approve_plan(identifier)
         self.controller.run(identifier)
         self.controller.review(identifier)
         def ambiguous(plan, data, approval):

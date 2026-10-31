@@ -332,8 +332,13 @@ class Controller:
             raise ControllerError("APPROVAL_STALE_OR_INVALID")
         return approval
 
-    def approve(self, identifier):
+    def approve(self, identifier, *, expected_plan_hash):
         state, plan, expected_head = self._plan(identifier)
+        actual_plan_hash = digest(canonical(plan))
+        if (not isinstance(expected_plan_hash, str) or
+                not re.fullmatch(r"[a-f0-9]{64}", expected_plan_hash) or
+                not hmac.compare_digest(expected_plan_hash, actual_plan_hash)):
+            raise ControllerError("PLAN_CHANGED_REVIEW_AGAIN")
         if state["tasks"][identifier]["status"] != "READY":
             raise ControllerError("INVALID_APPROVAL_STATE")
         if self.github.head(plan["repo"], plan["ref"]) != plan["target_sha"]:
@@ -343,7 +348,7 @@ class Controller:
             secret = secrets.token_hex(32)
             self.vault.put(SIGNING, secret)
         approval_id = uuid.uuid4().hex
-        approval = {"id": approval_id, "plan_hash": digest(canonical(plan)), "actor": self.actor,
+        approval = {"id": approval_id, "plan_hash": actual_plan_hash, "actor": self.actor,
                     "target_sha": plan["target_sha"], "executor": plan["executor"],
                     "max_cost": 0, "expires": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()}
         approval["signature"] = hmac.new(secret.encode(), canonical(approval), hashlib.sha256).hexdigest()
