@@ -60,11 +60,14 @@ class Desktop:
         self.tabs = ttk.Notebook(self.root)
         self.tabs.pack(fill="both", expand=True, padx=8, pady=5)
         self.board = ttk.Frame(self.tabs, padding=12)
+        self.projects_page = ttk.Frame(self.tabs, padding=12)
+        self.detail_page = ttk.Frame(self.tabs, padding=12)
         self.plan_page = ttk.Frame(self.tabs, padding=12)
         self.run_page = ttk.Frame(self.tabs, padding=12)
         self.github_page = ttk.Frame(self.tabs, padding=12)
         self.audit_page = ttk.Frame(self.tabs, padding=12)
-        for name, page in [("G1 / Task Board", self.board), ("G2 / Plan & Approval", self.plan_page),
+        for name, page in [("G1 / Task Board", self.board), ("Projects", self.projects_page),
+                           ("Task Detail & Scope", self.detail_page), ("G2 / Plan & Approval", self.plan_page),
                            ("G3–G4 / Run & Review", self.run_page), ("G5 / GitHub", self.github_page),
                            ("G6–G7 / Evidence & Build", self.audit_page)]:
             self.tabs.add(page, text=name)
@@ -79,6 +82,19 @@ class Desktop:
             self.task_tree.heading(col, text=col.upper())
         self.task_tree.pack(fill="both", expand=True)
         self.task_tree.bind("<<TreeviewSelect>>", self._select_task)
+        ttk.Button(self.board, text="VIEW SELECTED TASK SCOPE & EVIDENCE",
+                   command=self.open_task_detail).pack(anchor="w", pady=4)
+        ttk.Label(self.projects_page, text="Verified local project inventory (read-only)",
+                  font=("Segoe UI", 11, "bold")).pack(anchor="w")
+        self.project_tree = ttk.Treeview(self.projects_page, columns=("project", "tasks", "active"),
+                                         show="headings", height=15)
+        for col in ("project", "tasks", "active"):
+            self.project_tree.heading(col, text=col.upper())
+        self.project_tree.pack(fill="both", expand=True, pady=8)
+        ttk.Label(self.detail_page, text="Immutable task scope, execution and review evidence (read-only)",
+                  font=("Segoe UI", 11, "bold")).pack(anchor="w")
+        self.task_detail_text = tk.Text(self.detail_page, wrap="word", state="disabled")
+        self.task_detail_text.pack(fill="both", expand=True, pady=8)
         self.diagnostics = tk.Text(self.board, height=4, wrap="word")
         self.diagnostics.pack(fill="x", pady=5)
         form = ttk.Frame(self.plan_page)
@@ -154,6 +170,7 @@ class Desktop:
         # requires the separate, explicitly confirmed INITIALIZE action.
         # OPEN never repairs or initializes coordination; recovery is a separate action.
         self.controller = ctrl
+        self.selected = None
         self.path_var.set(str(path))
         self.refresh()
 
@@ -238,6 +255,14 @@ class Desktop:
             for identifier, entry in state["tasks"].items():
                 self.task_tree.insert("", "end", iid=identifier,
                                       values=(entry["task_id"], entry["status"], identifier))
+            for item in self.project_tree.get_children():
+                self.project_tree.delete(item)
+            if ctrl.store.repo.exists():
+                for row in ctrl.project_summary():
+                    self.project_tree.insert("", "end",
+                                             values=(row["project"], row["tasks"], row["active"]))
+            if self.selected in state["tasks"]:
+                self.show_task_detail()
             self.diagnostics.delete("1.0", "end")
             self.diagnostics.insert("end", "\n".join(str(e) for e in errors) or "No G1 diagnostics")
             self.status_var.set("Coordination Git HEAD " + ctrl.store.head()[:12] if ctrl.store.repo.exists()
@@ -249,6 +274,28 @@ class Desktop:
         selection = self.task_tree.selection()
         if selection:
             self.selected = selection[0]
+            self.show_task_detail()
+
+    def show_task_detail(self):
+        try:
+            ctrl = self._require()
+            if not self.selected:
+                raise ControllerError("SELECT_TASK_FIRST")
+            detail = ctrl.task_detail(self.selected)
+            self.task_detail_text.configure(state="normal")
+            self.task_detail_text.delete("1.0", "end")
+            self.task_detail_text.insert("end", json.dumps(detail, indent=2, sort_keys=True,
+                                                             ensure_ascii=False))
+            self.task_detail_text.configure(state="disabled")
+        except Exception as exc:
+            self._error(exc)
+
+    def open_task_detail(self):
+        if not self.selected:
+            self._error(ControllerError("SELECT_TASK_FIRST"))
+            return
+        self.show_task_detail()
+        self.tabs.select(self.detail_page)
 
     def create_plan(self):
         try:
