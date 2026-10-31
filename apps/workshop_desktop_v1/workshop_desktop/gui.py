@@ -62,12 +62,14 @@ class Desktop:
         self.board = ttk.Frame(self.tabs, padding=12)
         self.projects_page = ttk.Frame(self.tabs, padding=12)
         self.detail_page = ttk.Frame(self.tabs, padding=12)
+        self.approval_page = ttk.Frame(self.tabs, padding=12)
         self.plan_page = ttk.Frame(self.tabs, padding=12)
         self.run_page = ttk.Frame(self.tabs, padding=12)
         self.github_page = ttk.Frame(self.tabs, padding=12)
         self.audit_page = ttk.Frame(self.tabs, padding=12)
         for name, page in [("G1 / Task Board", self.board), ("Projects", self.projects_page),
-                           ("Task Detail & Scope", self.detail_page), ("G2 / Plan & Approval", self.plan_page),
+                           ("Task Detail & Scope", self.detail_page), ("Approval Queue", self.approval_page),
+                           ("G2 / Plan & Approval", self.plan_page),
                            ("G3–G4 / Run & Review", self.run_page), ("G5 / GitHub", self.github_page),
                            ("G6–G7 / Evidence & Build", self.audit_page)]:
             self.tabs.add(page, text=name)
@@ -95,6 +97,17 @@ class Desktop:
                   font=("Segoe UI", 11, "bold")).pack(anchor="w")
         self.task_detail_text = tk.Text(self.detail_page, wrap="word", state="disabled")
         self.task_detail_text.pack(fill="both", expand=True, pady=8)
+        ttk.Label(self.approval_page, text="Pending human approvals — no automatic execution",
+                  font=("Segoe UI", 11, "bold")).pack(anchor="w")
+        self.approval_tree = ttk.Treeview(self.approval_page,
+                                         columns=("task", "project", "plan_hash"),
+                                         show="headings", height=12)
+        for col in ("task", "project", "plan_hash"):
+            self.approval_tree.heading(col, text=col.upper())
+        self.approval_tree.pack(fill="both", expand=True, pady=8)
+        self.approval_tree.bind("<<TreeviewSelect>>", self._select_approval)
+        ttk.Button(self.approval_page, text="REVIEW EXACT PLAN & APPROVE",
+                   command=self.approve).pack(anchor="w", pady=6)
         self.diagnostics = tk.Text(self.board, height=4, wrap="word")
         self.diagnostics.pack(fill="x", pady=5)
         form = ttk.Frame(self.plan_page)
@@ -262,6 +275,14 @@ class Desktop:
                 for row in ctrl.project_summary():
                     self.project_tree.insert("", "end",
                                              values=(row["project"], row["tasks"], row["active"]))
+            for item in self.approval_tree.get_children():
+                self.approval_tree.delete(item)
+            for identifier, entry in state["tasks"].items():
+                if entry["status"] == "READY" and not entry.get("approval"):
+                    detail = ctrl.task_detail(identifier)
+                    self.approval_tree.insert("", "end", iid=identifier,
+                                              values=(entry["task_id"], detail["plan"]["project"],
+                                                      detail["plan_sha256"]))
             if self.selected in state["tasks"]:
                 self.show_task_detail()
             self.diagnostics.delete("1.0", "end")
@@ -273,6 +294,12 @@ class Desktop:
 
     def _select_task(self, event=None):
         selection = self.task_tree.selection()
+        if selection:
+            self.selected = selection[0]
+            self.show_task_detail()
+
+    def _select_approval(self, event=None):
+        selection = self.approval_tree.selection()
         if selection:
             self.selected = selection[0]
             self.show_task_detail()
