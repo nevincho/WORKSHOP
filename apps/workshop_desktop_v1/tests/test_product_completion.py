@@ -115,6 +115,14 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertEqual(self.ctrl.status()["tasks"], {})
         self.assertEqual(self.ctrl.executor_capabilities()[0]["arbitrary_commands"], False)
 
+    def test_g1_discovery_is_read_only_and_never_grants_execution(self):
+        head = self.ctrl.store.head()
+        inventory = self.ctrl.discover_g1_tasks()
+        self.assertEqual(inventory["authority"], "G1_READ_ONLY_DISCOVERY_NOT_EXECUTION")
+        self.assertEqual(inventory["tasks"], [])
+        self.assertEqual(inventory["diagnostics"], [])
+        self.assertEqual(self.ctrl.store.head(), head)
+
     def test_task_eligibility_is_read_only(self):
         identifier = self.plan()
         head = self.ctrl.store.head()
