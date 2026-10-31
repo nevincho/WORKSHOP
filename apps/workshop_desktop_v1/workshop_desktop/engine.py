@@ -337,6 +337,34 @@ class Controller:
             detail["checkpoint"] = checkpoint
         return detail
 
+    def discover_g1_tasks(self):
+        """Read-only G1 canonical task inventory with conservative prerequisite hints.
+
+        This does NOT authorize running a G1 task as an arbitrary code worker.
+        """
+        from .g1_adapter import inspect_workspace, trusted_bundle
+        tasks, errors = inspect_workspace(self.store.workspace, trusted_bundle(),
+                                          require_metadata=True)
+        if any(filename == "workspace.json" for filename, _ in errors):
+            raise ControllerError("G1_WORKSPACE_METADATA_INVALID")
+        by_id = {fields["TASK_ID"].casefold(): fields for _, fields in tasks}
+        rows = []
+        for filename, fields in tasks:
+            blockers = [code for name, code in errors if name == filename]
+            for dependency in [v.strip() for v in re.split(r"[,;]", fields.get("DEPENDENCIES", ""))
+                               if v.strip() and v.strip().upper() not in ("NONE", "N/A", "NA", "-")]:
+                target = by_id.get(dependency.casefold())
+                if target is None or target.get("STATUS") != "COMPLETE":
+                    blockers.append("DEPENDENCY_NOT_COMPLETE:" + dependency)
+            if fields["STATUS"] != "READY":
+                blockers.append("STATUS_NOT_READY")
+            rows.append({"filename": filename, "task_id": fields["TASK_ID"],
+                         "project": fields["PROJECT"], "status": fields["STATUS"],
+                         "fields": dict(fields), "read_only_candidate": not blockers,
+                         "blockers": blockers})
+        return {"tasks": rows, "diagnostics": [list(e) for e in errors],
+                "authority": "G1_READ_ONLY_DISCOVERY_NOT_EXECUTION"}
+
     def project_summary(self):
         """Read-only project inventory derived from verified Git coordination."""
         state, _ = self._snapshot()
