@@ -119,6 +119,7 @@ class Desktop:
         runbar.pack(fill="x")
         ttk.Button(runbar, text="3. RUN & DETERMINISTIC PREFLIGHT", command=self.run_and_review).pack(side="left", padx=4)
         ttk.Button(runbar, text="REWORK: RESET PLAN / REAPPROVE", command=self.rework).pack(side="left", padx=4)
+        ttk.Button(runbar, text="REJECT REVIEW", command=self.reject_review).pack(side="left", padx=4)
         ttk.Button(runbar, text="CANCEL RUN", command=self.cancel_run).pack(side="left", padx=4)
         ttk.Button(runbar, text="4. SUBMIT DRAFT PR (NOT ACCEPTANCE)", command=self.publish).pack(side="left", padx=4)
         self.runlog = tk.Text(self.run_page, wrap="word", state="disabled")
@@ -403,6 +404,31 @@ class Desktop:
                 return
             content = self.content.get("1.0", "end-1c")
             self._log("REWORK plan SHA-256: " + ctrl.rework(self.selected, content))
+            self.refresh()
+        except Exception as exc:
+            self._error(exc)
+
+    def reject_review(self):
+        try:
+            ctrl = self._require()
+            if not self.selected:
+                raise ControllerError("SELECT_TASK_FIRST")
+            detail = ctrl.task_detail(self.selected)
+            if detail["status"] != "REVIEW" or not detail["review"]:
+                raise ControllerError("REVIEW_STATE_REQUIRED")
+            remote = detail["proposal"] is not None
+            reason = simpledialog.askstring(
+                "Reject review", "Reason for rejection (required, maximum 500 characters):",
+                parent=self.root)
+            if reason is None:
+                return
+            warning = ("A remote draft PR already exists. It will NOT be closed or deleted; "
+                       "manual GitHub cleanup is required. Task becomes BLOCKED."
+                       if remote else "Task will become REWORK and require a new plan and approval.")
+            if not messagebox.askyesno("Confirm human rejection", warning, parent=self.root):
+                return
+            result = ctrl.reject_review(self.selected, reason)
+            self._log("Human review rejected: " + json.dumps(result, sort_keys=True))
             self.refresh()
         except Exception as exc:
             self._error(exc)
