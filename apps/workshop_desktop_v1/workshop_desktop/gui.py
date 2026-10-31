@@ -67,14 +67,18 @@ class Desktop:
         self.approval_page = ttk.Frame(self.tabs, padding=12)
         self.plan_page = ttk.Frame(self.tabs, padding=12)
         self.run_page = ttk.Frame(self.tabs, padding=12)
+        self.review_page = ttk.Frame(self.tabs, padding=12)
+        self.checkpoint_page = ttk.Frame(self.tabs, padding=12)
         self.github_page = ttk.Frame(self.tabs, padding=12)
         self.audit_page = ttk.Frame(self.tabs, padding=12)
         self.settings_page = ttk.Frame(self.tabs, padding=12)
-        for name, page in [("Welcome", self.welcome_page), ("G1 / Task Board", self.board), ("Projects", self.projects_page),
-                           ("Task Detail & Scope", self.detail_page), ("Approval Queue", self.approval_page),
-                           ("G2 / Plan & Approval", self.plan_page),
-                           ("G3–G4 / Run & Review", self.run_page), ("G5 / GitHub", self.github_page),
-                           ("G6–G7 / Evidence & Build", self.audit_page), ("Settings", self.settings_page)]:
+        for name, page in [("Welcome & Workspace", self.welcome_page), ("Task Board", self.board),
+                           ("Projects", self.projects_page), ("Task Detail & Scope", self.detail_page),
+                           ("Approval Queue", self.approval_page), ("Plan & Approval", self.plan_page),
+                           ("Execution Monitor", self.run_page), ("Review", self.review_page),
+                           ("Checkpoints / Recovery", self.checkpoint_page),
+                           ("Connections", self.github_page), ("Evidence", self.audit_page),
+                           ("Settings", self.settings_page)]:
             self.tabs.add(page, text=name)
         ttk.Label(self.welcome_page, text="WORKSHOP Desktop V1 — guided first launch",
                   font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=10)
@@ -126,8 +130,14 @@ class Desktop:
         self.project_tree.pack(fill="both", expand=True, pady=8)
         ttk.Label(self.detail_page, text="Immutable task scope, execution and review evidence (read-only)",
                   font=("Segoe UI", 11, "bold")).pack(anchor="w")
-        self.task_detail_text = tk.Text(self.detail_page, wrap="word", state="disabled")
-        self.task_detail_text.pack(fill="both", expand=True, pady=8)
+        detail_frame = ttk.Frame(self.detail_page)
+        detail_frame.pack(fill="both", expand=True, pady=8)
+        detail_scroll = ttk.Scrollbar(detail_frame)
+        detail_scroll.pack(side="right", fill="y")
+        self.task_detail_text = tk.Text(detail_frame, wrap="word", state="disabled",
+                                        yscrollcommand=detail_scroll.set)
+        self.task_detail_text.pack(side="left", fill="both", expand=True)
+        detail_scroll.config(command=self.task_detail_text.yview)
         ttk.Label(self.approval_page, text="Pending human approvals — no automatic execution",
                   font=("Segoe UI", 11, "bold")).pack(anchor="w")
         self.approval_tree = ttk.Treeview(self.approval_page,
@@ -174,6 +184,33 @@ class Desktop:
                   wraplength=450).pack(side="left", padx=10)
         self.runlog = tk.Text(self.run_page, wrap="word", state="disabled")
         self.runlog.pack(fill="both", expand=True, pady=12)
+        ttk.Label(self.review_page, text="Independent GitHub review and explicit local human acceptance",
+                  font=("Segoe UI", 11, "bold")).pack(anchor="w", pady=8)
+        ttk.Label(self.review_page, text="Deterministic subprocess preflight is not independent acceptance. "
+                  "A distinct GitHub account must APPROVE the exact proposal commit. "
+                  "COMPLETE records a local checkpoint; the draft PR remains unmerged.",
+                  wraplength=900).pack(anchor="w", pady=8)
+        ttk.Button(self.review_page, text="INSPECT SELECTED TASK / REVIEW EVIDENCE",
+                   command=self.open_task_detail).pack(anchor="w", pady=5)
+        ttk.Button(self.review_page, text="ACCEPT EXTERNALLY REVIEWED PROPOSAL",
+                   command=self.accept_review).pack(anchor="w", pady=5)
+        ttk.Button(self.review_page, text="REJECT SELECTED REVIEW",
+                   command=self.reject_review).pack(anchor="w", pady=5)
+        ttk.Label(self.checkpoint_page, text="Git-backed accepted checkpoints and explicit recovery",
+                  font=("Segoe UI", 11, "bold")).pack(anchor="w", pady=8)
+        self.checkpoint_tree = ttk.Treeview(self.checkpoint_page,
+                   columns=("task", "checkpoint", "status"), show="headings", height=10)
+        for col in ("task", "checkpoint", "status"):
+            self.checkpoint_tree.heading(col, text=col.upper())
+        self.checkpoint_tree.pack(fill="both", expand=True, pady=6)
+        self.checkpoint_tree.bind("<<TreeviewSelect>>", self._select_checkpoint)
+        ttk.Button(self.checkpoint_page, text="VIEW SELECTED CHECKPOINT",
+                   command=self.show_checkpoint).pack(anchor="w", pady=5)
+        ttk.Button(self.checkpoint_page, text="EXPLICIT INTERRUPTED-RUN RECOVERY",
+                   command=self.recover_coordination).pack(anchor="w", pady=5)
+        ttk.Label(self.checkpoint_page, text="No automatic remote rollback: close a draft PR and "
+                  "delete its isolated branch manually if recovery requires it.",
+                  wraplength=900).pack(anchor="w", pady=8)
         ttk.Label(self.github_page, text="GitHub access: public read-only by default. Scoped PAT stays in Windows Credential Manager.",
                   wraplength=900).pack(anchor="w", pady=12)
         ghbar = ttk.Frame(self.github_page)
@@ -335,6 +372,13 @@ class Desktop:
                                              values=(row["project"], row["tasks"], row["active"]))
             for item in self.approval_tree.get_children():
                 self.approval_tree.delete(item)
+            for item in self.checkpoint_tree.get_children():
+                self.checkpoint_tree.delete(item)
+            for identifier, entry in state["tasks"].items():
+                if entry["status"] == "COMPLETE" and entry.get("checkpoint"):
+                    self.checkpoint_tree.insert("", "end", iid=identifier,
+                                                values=(entry["task_id"], entry["checkpoint"],
+                                                        entry["status"]))
             for identifier, entry in state["tasks"].items():
                 if entry["status"] == "READY" and not entry.get("approval"):
                     detail = ctrl.task_detail(identifier)
@@ -354,6 +398,12 @@ class Desktop:
 
     def _select_task(self, event=None):
         selection = self.task_tree.selection()
+        if selection:
+            self.selected = selection[0]
+            self.show_task_detail()
+
+    def _select_checkpoint(self, event=None):
+        selection = self.checkpoint_tree.selection()
         if selection:
             self.selected = selection[0]
             self.show_task_detail()
