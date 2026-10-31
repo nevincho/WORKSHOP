@@ -303,6 +303,19 @@ class IntegratedTests(unittest.TestCase):
         with self.assertRaisesRegex(ControllerError, "REVIEW_REQUIRED"):
             self.controller.publish(identifier)
 
+    def test_create_g1_never_initializes_git_coordination_implicitly(self):
+        separate = Path(self.tmp.name) / "create_only"
+        desktop = object.__new__(gui.Desktop)
+        desktop.path_var = mock.Mock()
+        desktop.refresh = mock.Mock()
+        with mock.patch.object(gui, "Controller",
+                side_effect=lambda p: Controller(p, github=self.github, vault=self.vault)):
+            desktop._attach(separate, initialize=True)
+        self.assertTrue((separate / "workspace.json").is_file())
+        self.assertTrue((separate / "tasks").is_dir())
+        self.assertFalse((separate / ".workshop_v1").exists(),
+                         "G1 CREATE must not silently git init coordination")
+
     def test_open_g1_is_read_only_and_rejects_bad_metadata(self):
         separate = Path(self.tmp.name) / "open_only"
         create_workspace(separate, trusted_bundle())

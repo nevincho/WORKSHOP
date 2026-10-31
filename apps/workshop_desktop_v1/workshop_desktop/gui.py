@@ -150,8 +150,8 @@ class Desktop:
         if any(item[0] == "workspace.json" for item in errors):
             raise ControllerError("G1_WORKSPACE_METADATA_INVALID")
         ctrl = Controller(path)
-        if initialize:
-            ctrl.initialize()
+        # G1 CREATE writes only its previewed bootstrap.  Git coordination
+        # requires the separate, explicitly confirmed INITIALIZE action.
         # OPEN never repairs or initializes coordination; recovery is a separate action.
         self.controller = ctrl
         self.path_var.set(str(path))
