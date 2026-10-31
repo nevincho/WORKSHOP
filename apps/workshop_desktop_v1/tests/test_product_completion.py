@@ -116,6 +116,16 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertEqual(self.ctrl.status()["tasks"], {})
         self.assertEqual(self.ctrl.executor_capabilities()[0]["arbitrary_commands"], False)
 
+    def test_timeout_is_immutable_plan_scope_and_settings_cannot_drift(self):
+        self.ctrl.update_settings(worker_timeout_seconds=10)
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.assertEqual(plan["timeout_seconds"], 10)
+        with self.assertRaisesRegex(ControllerError, "SETTINGS_CHANGE_WITH_ACTIVE_TASK"):
+            self.ctrl.update_settings(worker_timeout_seconds=20)
+        self.assertEqual(self.ctrl.settings()["worker_timeout_seconds"], 10)
+        self.assertEqual(self.ctrl.store.read("plans/" + identifier + ".json")["timeout_seconds"], 10)
+
     def test_g1_discovery_is_read_only_and_never_grants_execution(self):
         head = self.ctrl.store.head()
         inventory = self.ctrl.discover_g1_tasks()
