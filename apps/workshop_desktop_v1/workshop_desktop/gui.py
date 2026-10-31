@@ -28,7 +28,7 @@ class Desktop:
     def __init__(self, root):
         self.root = root
         self.root.title("WORKSHOP Desktop V1 — Integrated Candidate")
-        self.root.geometry("1060x720")
+        self.root.geometry("1200x760")
         self.controller = None
         self.selected = None
         self.cancel_event = threading.Event()
@@ -72,13 +72,12 @@ class Desktop:
         self.github_page = ttk.Frame(self.tabs, padding=12)
         self.audit_page = ttk.Frame(self.tabs, padding=12)
         self.settings_page = ttk.Frame(self.tabs, padding=12)
-        for name, page in [("Welcome & Workspace", self.welcome_page), ("Task Board", self.board),
-                           ("Projects", self.projects_page), ("Task Detail & Scope", self.detail_page),
-                           ("Approval Queue", self.approval_page), ("Plan & Approval", self.plan_page),
-                           ("Execution Monitor", self.run_page), ("Review", self.review_page),
-                           ("Checkpoints / Recovery", self.checkpoint_page),
-                           ("Connections", self.github_page), ("Evidence", self.audit_page),
-                           ("Settings", self.settings_page)]:
+        for name, page in [("Welcome", self.welcome_page), ("Tasks", self.board),
+                           ("Projects", self.projects_page), ("Detail", self.detail_page),
+                           ("Approvals", self.approval_page), ("Plan", self.plan_page),
+                           ("Run", self.run_page), ("Review", self.review_page),
+                           ("Recovery", self.checkpoint_page), ("GitHub", self.github_page),
+                           ("Evidence", self.audit_page), ("Settings", self.settings_page)]:
             self.tabs.add(page, text=name)
         ttk.Label(self.welcome_page, text="WORKSHOP Desktop V1 — guided first launch",
                   font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=10)
