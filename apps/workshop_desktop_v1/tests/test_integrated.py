@@ -431,6 +431,9 @@ class IntegratedTests(unittest.TestCase):
         self.assertEqual(detail["status"], "REVIEW")
         self.assertTrue(detail["approval_recorded"])
         self.assertEqual(detail["run"]["id"], run["id"])
+        self.assertIn("stdout", detail["run"])
+        self.assertIn("stderr", detail["run"])
+        self.assertIn("reviewer_stdout", detail["review"])
         self.assertEqual(detail["review"]["id"], review["id"])
         self.assertEqual(detail["review"]["review_kind"],
                          "DETERMINISTIC_PREFLIGHT_NOT_INDEPENDENT_ACCEPTANCE")
