@@ -1,0 +1,70 @@
+name: WORKSHOP G1 isolated F2-F5 qualification (no promotion)
+on:
+  push:
+    branches:
+      - 'qualification/g1-windows-f2-f5-20261031'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g1-isolated-windows-ntfs:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: apps/workshop_g1
+    steps:
+      - name: Checkout exact isolated candidate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Record source and Windows Server identity
+        run: |
+          Write-Host "SOURCE_COMMIT=$env:GITHUB_SHA"
+          Write-Host "RUNNER_IMAGE=$env:ImageOS $env:ImageVersion"
+          python --version
+          python -c "import platform; print('HOST='+platform.platform()); print('WINDOWS_CLIENT_10_11_NOT_TESTED=True')"
+          git status --porcelain
+          git rev-parse HEAD
+          Get-FileHash -Algorithm SHA256 .\qualification_g1_20261031.py
+          Get-FileHash -Algorithm SHA256 .\workshop_g1\core.py
+          Get-FileHash -Algorithm SHA256 .\workshop_g1\app.py
+      - name: Existing G1 unit suite
+        run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
+          Write-Host "COMMAND=python -B -m unittest discover -s tests -v"
+          python -B -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Existing actual Windows NTFS fixtures
+        if: always()
+        run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
+          Write-Host "COMMAND=python -B windows_validation.py"
+          python -B windows_validation.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Strict OPEN GUI ACL and adversarial CREATE acceptance probes
+        if: always()
+        run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
+          Write-Host "COMMAND=python -B qualification_g1_20261031.py"
+          Write-Host "EXPECTED: SOURCE_DEFECT failures MUST make this qualification RED until separately authorized repair"
+          python -B qualification_g1_20261031.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Record post-test source status
+        if: always()
+        run: |
+          Write-Host "POST_TEST_GIT_STATUS_BEGIN"
+          git status --porcelain
+          Write-Host "POST_TEST_GIT_STATUS_END"
