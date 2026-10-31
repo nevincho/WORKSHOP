@@ -3,10 +3,10 @@
 TASK_ID: WORKSHOP-COMM-V1-INTEGRATED-BUILD-01
 PROJECT: WORKSHOP Commercial Edition
 PRIORITY: HIGH
-STATUS: READY
+STATUS: REVIEW
 OBJECTIVE: Produce ONE integrated Windows Desktop V1 candidate covering G2 Controller, G3 bounded local Worker, G4 independent Reviewer/checkpoints, G5 GitHub scoped integration, G6 GUI/installable build, and G7 customer-ready integration/installation workflow, using existing G1 as baseline. Owner explicitly requests combined implementation first, consolidated testing afterward rather than acceptance cycles after every feature.
 SOURCE_PLAN_OR_REQUEST: Explicit owner directive in WORKSHOP Control Room conversation, 2026-10-30: implement G2-G7 together, then test the whole program.
-CURRENT_STATE: G1 source exists and has been launched by owner. G1 independent qualification remains NOT VERIFIED/REWORK, and original G1 protected behavior must be preserved. No independently validated G2-G7 implementation exists as of task issue. Verify repository HEAD and prior candidate review before coding. Do not confuse this task issue with execution.
+CURRENT_STATE: Integrated G2-G7 candidate source committed at 01ae7a73254566b05a03d428ac16e673f7a4e9e8 on isolated feature branch; Windows Server 2022 consolidated CI run 41140820256 PASS (19/19 tests, frozen GUI/trust/worker/reviewer, real installer/uninstall credential cleanup). G1 original independent acceptance remains REWORK; live GitHub draft PR, clean Windows 10/11 client GUI, independent product/security review and commercial release remain NOT VERIFIED. Worker evidence: evidence/WORKSHOP-COMM-V1-INTEGRATED-BUILD-01/WORKER.md.
 PREREQUISITES: Read AGENTS.md, current WORKSHOP policies, planning/WORKSHOP_COMM_DESKTOP_V1_SPEC.md, G1 readiness contract, current G1 implementation, task/review status. Reconcile any G1 source defects and current candidate without destructive changes. Confirm actual execution route and permissions. Stage changes in a separate branch or isolated candidate path; never overwrite approved source unreviewed.
 DEPENDENCIES: G1 implemented baseline; final combined product acceptance remains conditional on all G1-G7 acceptance, without incorrectly claiming G1 COMPLETE.
 AFFECTED_COMPONENTS: New Desktop V1 integrated implementation under apps/, accompanying build packaging scripts and minimal tests/evidence; G1 only for verified compatibility fixes.

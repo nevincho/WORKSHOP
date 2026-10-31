@@ -1,0 +1,116 @@
+name: WORKSHOP Desktop V1 Integrated Candidate
+
+on:
+  push:
+    branches:
+      - feature/workshop-desktop-v1-integrated-20261030
+    paths:
+      - 'apps/workshop_desktop_v1/**'
+      - 'apps/workshop_g1/**'
+      - '.github/workflows/workshop-v1-integrated-candidate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integrated-windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: apps/workshop_desktop_v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Execution identity
+        shell: pwsh
+        run: |
+          Write-Output "SOURCE_COMMIT=$env:GITHUB_SHA"
+          Write-Output "RUNNER_OS=$env:RUNNER_OS"
+          Write-Output "RUNNER_IMAGE=$env:ImageVersion"
+          python --version
+          git --version
+          Get-FileHash workshop_desktop/engine.py -Algorithm SHA256
+          Get-FileHash workshop_desktop/github_api.py -Algorithm SHA256
+          Get-FileHash tests/test_integrated.py -Algorithm SHA256
+      - name: Python compile
+        run: python -B -m compileall -q workshop_desktop main.py tests
+      - name: Consolidated integration and negative tests
+        shell: pwsh
+        run: |
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
+          Write-Output "WINDOWS_TEST_TEMP=$env:TEMP"
+          python -B -m unittest discover -s tests -v
+      - name: Build Windows onedir and optional installer
+        shell: pwsh
+        run: .\build_windows.ps1
+      - name: Frozen executable GUI process smoke (not GUI interaction)
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path .\dist\WORKSHOPDesktopV1\WORKSHOPDesktopV1.exe
+          $proc = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 3
+          $proc.Refresh()
+          $alive = -not $proc.HasExited
+          Write-Output "FROZEN_GUI_PROCESS_ALIVE_AFTER_3S=$alive"
+          if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force }
+          if (-not $alive) { throw "Frozen executable exited unexpectedly" }
+      - name: Frozen G1 trusted manifest verification
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path .\dist\WORKSHOPDesktopV1\WORKSHOPDesktopV1.exe
+          $p = Start-Process -FilePath $exe -ArgumentList "--selftest-g1" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Frozen G1 trust verification failed exit=$($p.ExitCode)" }
+          Write-Output "FROZEN_G1_TRUST_SELFTEST=PASS"
+      - name: Frozen worker/reviewer integration smoke
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path .\dist\WORKSHOPDesktopV1\WORKSHOPDesktopV1.exe
+          $stage = Join-Path $env:RUNNER_TEMP "WORKSHOP_V1_FROZEN_SMOKE"
+          New-Item -ItemType Directory -Path $stage -Force | Out-Null
+          $plan = Join-Path $stage "plan.json"
+          $output = Join-Path $stage "artifact.md"
+          $review = Join-Path $stage "review.json"
+          '{"repo":"example/demo","ref":"main","path":"docs/smoke.md","content":"# Smoke","executor":"markdown-writer-v1","operation":"CREATE_MARKDOWN"}' | Set-Content -Path $plan -Encoding utf8
+          $w = Start-Process -FilePath $exe -ArgumentList "--worker", $plan, $output -Wait -PassThru
+          if ($w.ExitCode -ne 0 -or -not (Test-Path $output)) { throw "Frozen worker failed exit=$($w.ExitCode)" }
+          $r = Start-Process -FilePath $exe -ArgumentList "--reviewer", $plan, $output, $review -Wait -PassThru
+          if ($r.ExitCode -ne 0 -or -not (Test-Path $review)) { throw "Frozen reviewer failed exit=$($r.ExitCode)" }
+          $result = Get-Content $review -Raw | ConvertFrom-Json
+          Write-Output "FROZEN_REVIEW_VERDICT=$($result.verdict)"
+          if ($result.verdict -ne "PASS") { throw "Frozen reviewer verdict not PASS" }
+      - name: Installer silent install and uninstall smoke (Windows Server)
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem .\installer-output\*.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $setup) { Write-Output "INSTALLER_NOT_AVAILABLE"; exit 0 }
+          $dest = Join-Path $env:RUNNER_TEMP "WORKSHOP_V1_INSTALL_TEST"
+          python -c "from workshop_desktop.vault import WindowsVault,TARGET,SIGNING; v=WindowsVault(); v.put(TARGET,'CI_TEST_TOKEN'); v.put(SIGNING,'CI_TEST_KEY')"
+          $p = Start-Process -FilePath $setup.FullName -ArgumentList "/VERYSILENT", "/NORESTART", "/SUPPRESSMSGBOXES", "/DIR=$dest" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Installer exit $($p.ExitCode)" }
+          $exe = Join-Path $dest "WORKSHOPDesktopV1.exe"
+          if (-not (Test-Path $exe)) { throw "Installed exe missing" }
+          $trust = Start-Process -FilePath $exe -ArgumentList "--selftest-g1" -Wait -PassThru
+          if ($trust.ExitCode -ne 0) { throw "Installed G1 trust verification failed" }
+          $uninstall = Join-Path $dest "unins000.exe"
+          if (-not (Test-Path $uninstall)) { throw "Uninstaller missing" }
+          $u = Start-Process -FilePath $uninstall -ArgumentList "/VERYSILENT", "/NORESTART" -Wait -PassThru
+          if ($u.ExitCode -ne 0) { throw "Uninstaller exit $($u.ExitCode)" }
+          if (Test-Path $exe) { throw "Uninstall left installed executable" }
+          python -c "from workshop_desktop.vault import WindowsVault,TARGET,SIGNING; v=WindowsVault(); assert v.get(TARGET) is None; assert v.get(SIGNING) is None"
+          Write-Output "WINDOWS_SERVER_INSTALL_UNINSTALL_CREDENTIAL_CLEANUP=PASS"
+      - name: Upload candidate onedir
+        uses: actions/upload-artifact@v4
+        with:
+          name: WORKSHOPDesktopV1-Windows-onedir
+          path: apps/workshop_desktop_v1/dist/WORKSHOPDesktopV1/
+          if-no-files-found: error
+      - name: Upload installer if built
+        uses: actions/upload-artifact@v4
+        with:
+          name: WORKSHOPDesktopV1-Installer
+          path: apps/workshop_desktop_v1/installer-output/*.exe
+          if-no-files-found: ignore
