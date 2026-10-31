@@ -40,6 +40,7 @@ class Desktop:
         self.task_var = tk.StringVar(value="TASK-DEMO-01")
         self.project_var = tk.StringVar(value="Customer project")
         self.file_var = tk.StringVar(value="docs/workshop-demo.md")
+        self.timeout_var = tk.StringVar(value="20")
         self._build()
         try:
             trust = verified_trust(trusted_bundle())
@@ -59,6 +60,7 @@ class Desktop:
         ttk.Label(bar, textvariable=self.path_var).pack(side="left", padx=10)
         self.tabs = ttk.Notebook(self.root)
         self.tabs.pack(fill="both", expand=True, padx=8, pady=5)
+        self.welcome_page = ttk.Frame(self.tabs, padding=12)
         self.board = ttk.Frame(self.tabs, padding=12)
         self.projects_page = ttk.Frame(self.tabs, padding=12)
         self.detail_page = ttk.Frame(self.tabs, padding=12)
@@ -67,12 +69,37 @@ class Desktop:
         self.run_page = ttk.Frame(self.tabs, padding=12)
         self.github_page = ttk.Frame(self.tabs, padding=12)
         self.audit_page = ttk.Frame(self.tabs, padding=12)
-        for name, page in [("G1 / Task Board", self.board), ("Projects", self.projects_page),
+        self.settings_page = ttk.Frame(self.tabs, padding=12)
+        for name, page in [("Welcome", self.welcome_page), ("G1 / Task Board", self.board), ("Projects", self.projects_page),
                            ("Task Detail & Scope", self.detail_page), ("Approval Queue", self.approval_page),
                            ("G2 / Plan & Approval", self.plan_page),
                            ("G3–G4 / Run & Review", self.run_page), ("G5 / GitHub", self.github_page),
-                           ("G6–G7 / Evidence & Build", self.audit_page)]:
+                           ("G6–G7 / Evidence & Build", self.audit_page), ("Settings", self.settings_page)]:
             self.tabs.add(page, text=name)
+        ttk.Label(self.welcome_page, text="WORKSHOP Desktop V1 — guided first launch",
+                  font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=10)
+        ttk.Label(self.welcome_page, text="1. CREATE a trusted G1 workspace, or OPEN an existing one. "
+                  "OPEN never repairs or writes to the workspace.", wraplength=860).pack(anchor="w", pady=8)
+        ttk.Button(self.welcome_page, text="1A. CREATE WORKSPACE",
+                   command=self.create_workspace).pack(anchor="w", pady=3)
+        ttk.Button(self.welcome_page, text="1B. OPEN EXISTING",
+                   command=self.open_workspace).pack(anchor="w", pady=3)
+        ttk.Label(self.welcome_page, text="2. Review G1 trust diagnostics, then explicitly initialize "
+                  "the separate local coordination Git. This is never automatic.",
+                  wraplength=860).pack(anchor="w", pady=8)
+        ttk.Button(self.welcome_page, text="2. INITIALIZE COORDINATION",
+                   command=self.initialize_coordination).pack(anchor="w", pady=3)
+        ttk.Label(self.welcome_page, text="3. Configure the safe executor and scoped GitHub access. "
+                  "No paid AI, arbitrary commands, or background execution.",
+                  wraplength=860).pack(anchor="w", pady=8)
+        ttk.Button(self.welcome_page, text="3A. SAFE SETTINGS",
+                   command=lambda: self.tabs.select(self.settings_page)).pack(anchor="w", pady=3)
+        ttk.Button(self.welcome_page, text="3B. GITHUB CONNECTIONS",
+                   command=lambda: self.tabs.select(self.github_page)).pack(anchor="w", pady=3)
+        ttk.Button(self.welcome_page, text="4. Create a bounded Markdown proposal, approve the exact "
+                  "plan, run preflight, submit a draft PR, obtain a distinct GitHub reviewer approval, "
+                  "then explicitly accept the local proposal. COMPLETE never means merged/deployed.",
+                  command=lambda: self.tabs.select(self.plan_page)).pack(anchor="w", pady=12)
         ttk.Label(self.board, text="G1 trusted read-only workspace browser", font=("Segoe UI", 11, "bold")).pack(anchor="w")
         self.g1_tree = ttk.Treeview(self.board, columns=("id", "status", "project"), show="headings", height=8)
         for col in ("id", "status", "project"):
@@ -84,6 +111,8 @@ class Desktop:
             self.task_tree.heading(col, text=col.upper())
         self.task_tree.pack(fill="both", expand=True)
         self.task_tree.bind("<<TreeviewSelect>>", self._select_task)
+        ttk.Button(self.board, text="CHECK SELECTED TASK ELIGIBILITY (READ ONLY)",
+                   command=self.check_eligibility).pack(anchor="w", pady=4)
         ttk.Button(self.board, text="VIEW SELECTED TASK SCOPE & EVIDENCE",
                    command=self.open_task_detail).pack(anchor="w", pady=4)
         ttk.Label(self.projects_page, text="Verified local project inventory (read-only)",
@@ -135,6 +164,8 @@ class Desktop:
         ttk.Button(runbar, text="REJECT REVIEW", command=self.reject_review).pack(side="left", padx=4)
         ttk.Button(runbar, text="CANCEL RUN", command=self.cancel_run).pack(side="left", padx=4)
         ttk.Button(runbar, text="4. SUBMIT DRAFT PR (NOT ACCEPTANCE)", command=self.publish).pack(side="left", padx=4)
+        ttk.Button(runbar, text="5. ACCEPT INDEPENDENTLY REVIEWED PR",
+                   command=self.accept_review).pack(side="left", padx=4)
         self.runlog = tk.Text(self.run_page, wrap="word", state="disabled")
         self.runlog.pack(fill="both", expand=True, pady=12)
         ttk.Label(self.github_page, text="GitHub access: public read-only by default. Scoped PAT stays in Windows Credential Manager.",
@@ -152,6 +183,27 @@ class Desktop:
         ttk.Button(self.audit_page, text="REFRESH EVIDENCE", command=self.show_evidence).pack(anchor="w", pady=6)
         self.evidence = tk.Text(self.audit_page, wrap="word")
         self.evidence.pack(fill="both", expand=True)
+        ttk.Label(self.settings_page, text="Safe local settings — no provider credentials in Git",
+                  font=("Segoe UI", 11, "bold")).pack(anchor="w", pady=10)
+        ttk.Label(self.settings_page, text="Executor: markdown-writer-v1 only | CREATE_MARKDOWN | "
+                  "docs/*.md | zero paid API cost | no arbitrary commands.",
+                  wraplength=900).pack(anchor="w", pady=8)
+        ttk.Label(self.settings_page, text="Independent review: GitHub-authenticated approval by "
+                  "a different account on the exact draft PR commit. Local preflight alone cannot COMPLETE.",
+                  wraplength=900).pack(anchor="w", pady=8)
+        timeout_row = ttk.Frame(self.settings_page)
+        timeout_row.pack(anchor="w", pady=8)
+        ttk.Label(timeout_row, text="Worker timeout (seconds):").pack(side="left", padx=4)
+        ttk.Combobox(timeout_row, textvariable=self.timeout_var, values=("5", "10", "15", "20"),
+                     width=7, state="readonly").pack(side="left", padx=4)
+        ttk.Button(timeout_row, text="SAVE VERIFIED SETTINGS",
+                   command=self.save_settings).pack(side="left", padx=8)
+        ttk.Label(self.settings_page, text="Checkpoint / recovery: COMPLETE records a Git-backed "
+                  "immutable local acceptance reference. No remote PR merge, close, or rollback is automatic. "
+                  "Interrupted runs must be explicitly marked BLOCKED.",
+                  wraplength=900).pack(anchor="w", pady=15)
+        ttk.Button(self.settings_page, text="VIEW SELECTED CHECKPOINT / RECOVERY",
+                   command=self.show_checkpoint).pack(anchor="w", pady=4)
         self.trust_var = tk.StringVar(value="Checking G1 trust…")
         ttk.Label(self.root, textvariable=self.trust_var, padding=(8, 4), wraplength=1000).pack(fill="x")
         ttk.Label(self.root, textvariable=self.status_var, padding=8).pack(fill="x")
@@ -285,6 +337,8 @@ class Desktop:
                                                       detail["plan_sha256"]))
             if self.selected in state["tasks"]:
                 self.show_task_detail()
+            if ctrl.store.repo.exists():
+                self.timeout_var.set(str(ctrl.settings()["worker_timeout_seconds"]))
             self.diagnostics.delete("1.0", "end")
             self.diagnostics.insert("end", "\n".join(str(e) for e in errors) or "No G1 diagnostics")
             self.status_var.set("Coordination Git HEAD " + ctrl.store.head()[:12] if ctrl.store.repo.exists()
@@ -324,6 +378,44 @@ class Desktop:
             return
         self.show_task_detail()
         self.tabs.select(self.detail_page)
+
+    def check_eligibility(self):
+        try:
+            ctrl = self._require()
+            if not self.selected:
+                raise ControllerError("SELECT_TASK_FIRST")
+            result = ctrl.evaluate_task(self.selected)
+            self._log(json.dumps(result, sort_keys=True))
+        except Exception as exc:
+            self._error(exc)
+
+    def save_settings(self):
+        try:
+            ctrl = self._require()
+            timeout = int(self.timeout_var.get())
+            if not messagebox.askyesno("Save safe settings",
+                    "Persist timeout " + str(timeout) + " seconds to local Git coordination? "
+                    "Executor, cost, protection and review policy cannot be weakened.",
+                    parent=self.root):
+                return
+            result = ctrl.update_settings(worker_timeout_seconds=timeout)
+            self._log("Settings saved: " + json.dumps(result, sort_keys=True))
+            self.refresh()
+        except Exception as exc:
+            self._error(exc)
+
+    def show_checkpoint(self):
+        try:
+            ctrl = self._require()
+            if not self.selected:
+                raise ControllerError("SELECT_TASK_FIRST")
+            detail = ctrl.task_detail(self.selected)
+            if not detail.get("checkpoint"):
+                raise ControllerError("NO_ACCEPTED_CHECKPOINT")
+            self.tabs.select(self.detail_page)
+            self.show_task_detail()
+        except Exception as exc:
+            self._error(exc)
 
     def create_plan(self):
         try:
@@ -476,6 +568,33 @@ class Desktop:
                 return
             identifier = self.selected
             self._background(lambda: ctrl.publish(identifier))
+        except Exception as exc:
+            self._error(exc)
+
+    def accept_review(self):
+        try:
+            ctrl = self._require()
+            if not self.selected:
+                raise ControllerError("SELECT_TASK_FIRST")
+            identifier = self.selected
+            detail = ctrl.task_detail(identifier)
+            if detail["status"] != "REVIEW" or not detail["proposal"]:
+                raise ControllerError("PUBLISHED_REVIEW_REQUIRED")
+            _, plan, _ = ctrl._plan(identifier)
+            proposal = ctrl.store.read("proposals/" + identifier + ".json")["proposal"]
+            receipt = ctrl.github.verified_independent_review(plan, proposal)
+            summary = ("GitHub-authenticated independent review\\nReviewer: " +
+                       receipt["reviewer"] + "\\nPR author: " + receipt["author"] +
+                       "\\nReviewed commit: " + receipt["reviewed_commit"] +
+                       "\\nPR: " + receipt["pr_url"] +
+                       "\\n\\nAccept this LOCAL proposal as COMPLETE? "
+                       "The draft PR will NOT be merged or deployed.")
+            if not messagebox.askyesno("Human acceptance of reviewed proposal",
+                                       summary, parent=self.root):
+                return
+            checkpoint = ctrl.accept_review(identifier)
+            self._log("Accepted local proposal checkpoint: " + checkpoint["id"])
+            self.refresh()
         except Exception as exc:
             self._error(exc)
 
