@@ -30,6 +30,15 @@ This matrix is source inspection, **not** release acceptance.
 - The new read-only screens and explicit REJECT path must be independently reviewed and tested before acceptance.
 - The complete product remains **NOT VERIFIED**; missing V1 features above are genuine product scope, not merely G1 regression issues.
 
+## Windows qualification of the new product feature slice
+
+- Source commit: `fc4dba0b65ead34312de003f4aae9b59220eaefe`.
+- GitHub Actions: `41217799839` (Windows Server 2022), conclusion **SUCCESS**.
+- Exact tests from raw CI log: 40 Desktop integration, 31 G1 unit, 6 NTFS, 5 G1 qualification = **82 PASS**, no reported FAIL/SKIP in these groups.
+- Windows onedir and installer built; frozen GUI process smoke, trusted G1 selftest, frozen Worker/Reviewer, installer/uninstaller and credential cleanup smoke PASS.
+- Installer artifact: `WORKSHOPDesktopV1-Installer` from run `41217799839`; **candidate only**.
+- This qualifies the new read-only project/detail/approval views, bounded persisted logs and explicit REJECT behavior at unit/integration level. Interactive Windows 10/11 GUI and independent product/security acceptance remain **NOT VERIFIED**.
+
 ## Required completion order
 
 Finish safe customer workflow (wizard, connections, project/task eligibility, approval and execution UX), implement an authenticated independent review and human accept/COMPLETE gate, then checkpoint/recovery/settings, integrated Windows security tests, live GitHub test account, clean Windows client acceptance and packaging. Preserve existing G1 and protected policies/agents. No premature release designation.
