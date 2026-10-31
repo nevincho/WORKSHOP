@@ -147,6 +147,62 @@ class GitHubClient:
             raise PartialProposal(result, str(exc)) from None
 
 
+    def verified_independent_review(self, plan, proposal):
+        """Read GitHub-authenticated review of the exact immutable draft PR commit.
+
+        A local deterministic preflight is NOT an independent review.  GitHub
+        identifies the reviewer and records the reviewed commit.  No writes.
+        """
+        repo = plan["repo"]
+        url = proposal.get("pr_url")
+        prefix = "https://github.com/" + repo + "/pull/"
+        if not isinstance(url, str) or not url.startswith(prefix):
+            raise GitHubError("INVALID_PROPOSAL_URL")
+        number = url[len(prefix):]
+        if not number.isdecimal() or int(number) < 1:
+            raise GitHubError("INVALID_PROPOSAL_NUMBER")
+        commit = proposal.get("proposal_sha")
+        branch = proposal.get("branch")
+        if not isinstance(commit, str) or not SHA.fullmatch(commit):
+            raise GitHubError("INVALID_PROPOSAL_SHA")
+        pr = self.request("GET", "/repos/" + repo + "/pulls/" + number, authorized=True)
+        head = pr.get("head") or {}
+        base = pr.get("base") or {}
+        author = (pr.get("user") or {}).get("login")
+        if (pr.get("state") != "open" or pr.get("merged_at") or
+                head.get("sha") != commit or head.get("ref") != branch or
+                (head.get("repo") or {}).get("full_name") != repo or
+                base.get("ref") != plan["ref"] or
+                not isinstance(author, str) or not author):
+            raise GitHubError("PROPOSAL_REMOTE_IDENTITY_CHANGED")
+        if self.head(repo, plan["ref"]) != plan["target_sha"]:
+            raise GitHubError("PROPOSAL_BASE_CHANGED")
+        if self.read_file(repo, branch, plan["path"]) != plan["content"].encode("utf-8"):
+            raise GitHubError("PROPOSAL_REMOTE_CONTENT_CHANGED")
+        reviews = self.request("GET", "/repos/" + repo + "/pulls/" + number + "/reviews?per_page=100",
+                               authorized=True)
+        if not isinstance(reviews, list) or len(reviews) >= 100:
+            raise GitHubError("REVIEW_HISTORY_UNBOUNDED")
+        latest = {}
+        for review in reviews:
+            login = (review.get("user") or {}).get("login")
+            if not isinstance(login, str) or not login:
+                continue
+            if review.get("state") in ("APPROVED", "CHANGES_REQUESTED", "DISMISSED"):
+                latest[login.casefold()] = review
+        eligible = [r for login, r in latest.items()
+                    if login != author.casefold() and r.get("state") == "APPROVED"
+                    and r.get("commit_id") == commit and r.get("submitted_at")]
+        if not eligible:
+            raise GitHubError("INDEPENDENT_GITHUB_APPROVAL_REQUIRED")
+        accepted = sorted(eligible, key=lambda r: (r["submitted_at"], r.get("id", 0)))[-1]
+        return {"provider": "GITHUB_AUTHENTICATED_PR_REVIEW",
+                "reviewer": accepted["user"]["login"], "author": author,
+                "review_id": accepted["id"], "reviewed_commit": commit,
+                "submitted_at": accepted["submitted_at"], "pr_url": url}
+
+
+
 class PartialProposal(GitHubError):
     def __init__(self, partial, reason):
         self.partial = partial
