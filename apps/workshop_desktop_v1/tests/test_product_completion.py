@@ -1,5 +1,6 @@
 """Desktop V1 product completion gates: no remote writes or paid services."""
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -135,6 +136,25 @@ class ProductCompletionTests(unittest.TestCase):
         head = self.ctrl.store.head()
         self.assertTrue(self.ctrl.evaluate_task(identifier)["eligible_for_run"])
         self.assertEqual(self.ctrl.store.head(), head)
+
+
+class WindowsDesktopScreenTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows GUI qualification only")
+    def test_first_launch_all_product_screens_without_implicit_writes(self):
+        import tkinter as tk
+        from workshop_desktop.gui import Desktop
+        root = tk.Tk()
+        root.withdraw()
+        try:
+            app = Desktop(root)
+            names = [app.tabs.tab(i, "text") for i in range(app.tabs.index("end"))]
+            self.assertEqual(names, ["Welcome", "Tasks", "Projects", "Detail",
+                                     "Approvals", "Plan", "Run", "Review", "Recovery",
+                                     "GitHub", "Evidence", "Settings"])
+            self.assertIsNone(app.controller)
+            self.assertFalse(app.busy)
+        finally:
+            root.destroy()
 
 
 class GitHubIndependentReviewTests(unittest.TestCase):
