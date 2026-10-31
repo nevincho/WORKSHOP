@@ -31,6 +31,7 @@ class Desktop:
         self.root.geometry("1200x760")
         self.controller = None
         self.selected = None
+        self.g1_selected = None
         self.cancel_event = threading.Event()
         self.busy = False
         self.path_var = tk.StringVar(value="No workspace selected")
@@ -110,6 +111,9 @@ class Desktop:
         for col in ("id", "status", "project"):
             self.g1_tree.heading(col, text=col.upper())
         self.g1_tree.pack(fill="both", expand=True, pady=6)
+        self.g1_tree.bind("<<TreeviewSelect>>", self._select_g1_task)
+        ttk.Button(self.board, text="INSPECT G1 TASK PREREQUISITES (READ ONLY)",
+                   command=self.show_g1_task).pack(anchor="w", pady=3)
         ttk.Label(self.board, text="G2 coordination tasks (Git-backed)").pack(anchor="w")
         self.task_tree = ttk.Treeview(self.board, columns=("task", "status", "identifier"), show="headings", height=6)
         for col in ("task", "status", "identifier"):
@@ -279,6 +283,7 @@ class Desktop:
         # OPEN never repairs or initializes coordination; recovery is a separate action.
         self.controller = ctrl
         self.selected = None
+        self.g1_selected = None
         self.path_var.set(str(path))
         self.refresh()
 
@@ -356,7 +361,8 @@ class Desktop:
             for item in self.g1_tree.get_children():
                 self.g1_tree.delete(item)
             for filename, fields in tasks:
-                self.g1_tree.insert("", "end", values=(safe_display(fields["TASK_ID"]), safe_display(fields["STATUS"]), safe_display(fields["PROJECT"])))
+                self.g1_tree.insert("", "end", iid=filename,
+                                    values=(safe_display(fields["TASK_ID"]), safe_display(fields["STATUS"]), safe_display(fields["PROJECT"])))
             for item in self.task_tree.get_children():
                 self.task_tree.delete(item)
             state = ctrl.status() if ctrl.store.repo.exists() else {"tasks": {}}
@@ -392,6 +398,30 @@ class Desktop:
             self.diagnostics.insert("end", "\n".join(str(e) for e in errors) or "No G1 diagnostics")
             self.status_var.set("Coordination Git HEAD " + ctrl.store.head()[:12] if ctrl.store.repo.exists()
                                 else "G1 OPEN: read-only. Initialize coordination explicitly to enable tasks.")
+        except Exception as exc:
+            self._error(exc)
+
+    def _select_g1_task(self, event=None):
+        selection = self.g1_tree.selection()
+        if selection:
+            self.g1_selected = selection[0]
+
+    def show_g1_task(self):
+        try:
+            ctrl = self._require()
+            if not self.g1_selected:
+                raise ControllerError("SELECT_G1_TASK_FIRST")
+            inventory = ctrl.discover_g1_tasks()
+            entry = next((row for row in inventory["tasks"]
+                          if row["filename"] == self.g1_selected), None)
+            if entry is None:
+                raise ControllerError("G1_TASK_NO_LONGER_PRESENT")
+            self.task_detail_text.configure(state="normal")
+            self.task_detail_text.delete("1.0", "end")
+            self.task_detail_text.insert("end", json.dumps(entry, indent=2, sort_keys=True,
+                                                             ensure_ascii=False))
+            self.task_detail_text.configure(state="disabled")
+            self.tabs.select(self.detail_page)
         except Exception as exc:
             self._error(exc)
 
