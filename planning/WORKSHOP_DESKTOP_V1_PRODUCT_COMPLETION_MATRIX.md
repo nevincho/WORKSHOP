@@ -42,3 +42,16 @@ This matrix is source inspection, **not** release acceptance.
 ## Required completion order
 
 Finish safe customer workflow (wizard, connections, project/task eligibility, approval and execution UX), implement an authenticated independent review and human accept/COMPLETE gate, then checkpoint/recovery/settings, integrated Windows security tests, live GitHub test account, clean Windows client acceptance and packaging. Preserve existing G1 and protected policies/agents. No premature release designation.
+
+## Product completion implementation slice — 2026-10-31
+
+- **Code branch:** `feature/desktop-v1-completion-20261031`, based on `feature/desktop-v1-product-20261031` at `e0eaec1a41c32bcd0aafba9685d2fb4c53e000ff`. Production `main`/`windows`, G1 source, trusted schemas, policies and agents were not modified by this slice.
+- **Windows-tested source SHA:** `ccb78fac75c089a13b39338556fffa497992c836`.
+- **Exact Windows Server 2022 CI:** run `41226680018`, SUCCESS; 52 Desktop integration/security tests, 31 G1 unit tests, 6 NTFS tests, 5 G1 qualification tests = **94 PASS**. Python compile, frozen GUI process, G1 trust selftest, frozen worker/reviewer, installer install/uninstall and local credential cleanup PASS. This is not Windows 10/11 interactive acceptance.
+- **New product functions:** guided Welcome/workspace flow; dedicated Review, Recovery, Settings, and Execution Monitor screens; scrollable task detail; read-only G1 canonical task discovery with dependency hints; Git-backed bounded non-secret settings; fixed zero-paid-cost executor capability declaration; immutable approved worker timeout; read-only task eligibility; GitHub-authenticated review of exact PR commit by a distinct account; explicit human local COMPLETE transition and Git-backed checkpoint with no remote merge/deployment.
+- **Remote proposal review:** draft PR #3 targets the isolated product candidate branch, NOT `main`/`windows`. No merge authorized. Source/security independent Reviewer verdict: **NOT VERIFIED**.
+- **Artifacts:** CI installer ZIP SHA-256 `f5fde8cacda807da821b4e500d593c4cd1a4bc1a6d1dab781c08662a4c924441`; portable ZIP SHA-256 `13fe6654b79690a1fd3f9431539f497c8a2d5bd2aba01ef7e41906d9fcee05ca`. ZIP integrity verified. These are **tester candidates**, not signed release binaries.
+- **Remaining engineering / acceptance:** durable crash transaction journal and verified restore workflow are NOT IMPLEMENTED; continuous live subprocess log streaming and a step-gated first-run wizard are not fully implemented. Independent source/security review is NOT VERIFIED. Clean Windows 10/11 interactive GUI, first-run/restart/credential lifecycle, live scoped PAT / separate-account draft PR approval/rejection, manual remote rollback exercise and signing/distribution decision remain untested. None can be inferred from Windows Server smoke.
+- **Scope boundary:** fixed Markdown writer remains the only authorized worker; arbitrary autonomous coding agents, unrestricted shell, paid provider adapters and OS-level sandbox claims are **not implemented and not part of this bounded V1 qualification**. COMPLETE records accepted local proposal, not remote merge or deployment.
+
+**Product verdict:** IMPLEMENTATION CANDIDATE / WINDOWS SERVER CI PASS / INDEPENDENT AND CLIENT ACCEPTANCE PENDING. Do not mark commercial release COMPLETE.

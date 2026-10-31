@@ -26,6 +26,10 @@ from .vault import SIGNING, TARGET, WindowsVault
 
 APP = ".workshop_v1"
 MAX_LOG = 32768
+DEFAULT_SETTINGS = {"version": 1, "executor": "markdown-writer-v1",
+                    "max_cost": 0, "worker_timeout_seconds": 20,
+                    "review_policy": "GITHUB_DISTINCT_ACCOUNT",
+                    "proposal_prefix": "docs/"}
 TASK_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{1,80}$")
 
 
@@ -130,8 +134,9 @@ class CoordinationRepo:
         (self.repo / "disabled_hooks").mkdir()
         _git(self.repo, "init", "-q")
         _write_atomic(self.repo / "state.json", canonical({"version": 1, "tasks": {}}))
+        _write_atomic(self.repo / "settings.json", canonical(DEFAULT_SETTINGS))
         self._append_event({"kind": "INITIALIZED", "workspace": self.workspace.name})
-        _git(self.repo, "add", "--", "state.json", "events.jsonl")
+        _git(self.repo, "add", "--", "state.json", "settings.json", "events.jsonl")
         _git(self.repo, "commit", "-qm", "WORKSHOP Desktop coordination initialized")
         return self.head()
 
@@ -215,7 +220,7 @@ class CoordinationRepo:
                 raise ControllerError("COORDINATION_HEAD_CHANGED")
             files = {"state.json": canonical(state)}
             for name, value in artifacts.items():
-                if not re.fullmatch(r"(plans|approvals|runs|reviews|proposals)/[a-f0-9]{32}\.json", name):
+                if name != "settings.json" and not re.fullmatch(r"(plans|approvals|runs|reviews|proposals|checkpoints)/[a-f0-9]{32}\.json", name):
                     raise ControllerError("INVALID_ARTIFACT_PATH")
                 files[name] = canonical(value)
             for name, data in files.items():
@@ -277,6 +282,7 @@ class Controller:
             "run": None,
             "review": None,
             "proposal": None,
+            "checkpoint": None,
         }
         if task.get("run"):
             run = self.store.read("runs/" + task["run"] + ".json")
@@ -319,8 +325,45 @@ class Controller:
                 "kind": proposal.get("kind"),
                 "pr_url": proposal.get("proposal", {}).get("pr_url"),
                 "rollback": proposal.get("rollback"),
+                "proposal_sha": proposal.get("proposal", {}).get("proposal_sha"),
             }
+        if task["status"] == "COMPLETE":
+            checkpoint = self.store.read("checkpoints/" + identifier + ".json")
+            if (checkpoint.get("id") != identifier or
+                    checkpoint.get("plan_hash") != detail["plan_sha256"] or
+                    checkpoint.get("review_id") != task.get("review") or
+                    checkpoint.get("proposal_sha") != (detail["proposal"] or {}).get("proposal_sha")):
+                raise ControllerError("CHECKPOINT_EVIDENCE_BINDING_MISMATCH")
+            detail["checkpoint"] = checkpoint
         return detail
+
+    def discover_g1_tasks(self):
+        """Read-only G1 canonical task inventory with conservative prerequisite hints.
+
+        This does NOT authorize running a G1 task as an arbitrary code worker.
+        """
+        from .g1_adapter import inspect_workspace, trusted_bundle
+        tasks, errors = inspect_workspace(self.store.workspace, trusted_bundle(),
+                                          require_metadata=True)
+        if any(filename == "workspace.json" for filename, _ in errors):
+            raise ControllerError("G1_WORKSPACE_METADATA_INVALID")
+        by_id = {fields["TASK_ID"].casefold(): fields for _, fields in tasks}
+        rows = []
+        for filename, fields in tasks:
+            blockers = [code for name, code in errors if name == filename]
+            for dependency in [v.strip() for v in re.split(r"[,;]", fields.get("DEPENDENCIES", ""))
+                               if v.strip() and v.strip().upper() not in ("NONE", "N/A", "NA", "-")]:
+                target = by_id.get(dependency.casefold())
+                if target is None or target.get("STATUS") != "COMPLETE":
+                    blockers.append("DEPENDENCY_NOT_COMPLETE:" + dependency)
+            if fields["STATUS"] != "READY":
+                blockers.append("STATUS_NOT_READY")
+            rows.append({"filename": filename, "task_id": fields["TASK_ID"],
+                         "project": fields["PROJECT"], "status": fields["STATUS"],
+                         "fields": dict(fields), "read_only_candidate": not blockers,
+                         "blockers": blockers})
+        return {"tasks": rows, "diagnostics": [list(e) for e in errors],
+                "authority": "G1_READ_ONLY_DISCOVERY_NOT_EXECUTION"}
 
     def project_summary(self):
         """Read-only project inventory derived from verified Git coordination."""
@@ -336,6 +379,60 @@ class Controller:
             if task["status"] not in ("COMPLETE", "BLOCKED", "HOLD"):
                 entry["active"] += 1
         return sorted(projects.values(), key=lambda row: row["project"].casefold())
+
+    def settings(self):
+        """Versioned non-secret defaults; old workspaces get fail-closed V1 defaults."""
+        self._snapshot()
+        path = self.store.repo / "settings.json"
+        data = json.loads(path.read_text(encoding="utf-8")) if path.exists() else dict(DEFAULT_SETTINGS)
+        if (not isinstance(data, dict) or set(data) != set(DEFAULT_SETTINGS) or
+                data.get("version") != 1 or data.get("executor") != "markdown-writer-v1" or
+                type(data.get("max_cost")) is not int or data["max_cost"] != 0 or
+                type(data.get("worker_timeout_seconds")) is not int or
+                not 5 <= data["worker_timeout_seconds"] <= 20 or
+                data.get("review_policy") != "GITHUB_DISTINCT_ACCOUNT" or
+                data.get("proposal_prefix") != "docs/"):
+            raise ControllerError("UNSUPPORTED_OR_UNSAFE_SETTINGS")
+        return data
+
+    def update_settings(self, *, worker_timeout_seconds):
+        """Only bounded timeout is user-configurable; never widen security/cost scope."""
+        current = self.settings()
+        if type(worker_timeout_seconds) is not int or not 5 <= worker_timeout_seconds <= 20:
+            raise ControllerError("INVALID_TIMEOUT")
+        state, expected_head = self._snapshot()
+        if any(t["status"] not in ("COMPLETE", "BLOCKED", "HOLD") for t in state["tasks"].values()):
+            raise ControllerError("SETTINGS_CHANGE_WITH_ACTIVE_TASK")
+        updated = dict(current, worker_timeout_seconds=worker_timeout_seconds)
+        self.store.transaction(state, {"kind": "SETTINGS_UPDATED", "actor": self.actor,
+                                       "timeout": worker_timeout_seconds},
+                               {"settings.json": updated}, expected_head=expected_head)
+        return updated
+
+    def executor_capabilities(self):
+        """Only the fixed, no-network, zero-paid-cost executor is supported in V1."""
+        return [{"id": "markdown-writer-v1", "operation": "CREATE_MARKDOWN",
+                 "max_cost": 0, "network": False, "arbitrary_commands": False,
+                 "allowed_path": "docs/*.md", "status": "AVAILABLE"}]
+
+    def evaluate_task(self, identifier):
+        """Read-only task eligibility; remote checks do not mutate coordination."""
+        state, plan, _ = self._plan(identifier)
+        task = state["tasks"][identifier]
+        reasons = []
+        if task["status"] == "READY" and not task.get("approval"):
+            reasons.append("HUMAN_PLAN_APPROVAL_REQUIRED")
+        if task["status"] == "REVIEW" and not task.get("draft_pr_submitted"):
+            reasons.append("DRAFT_PR_NOT_SUBMITTED")
+        if task["status"] in ("BLOCKED", "REWORK", "HOLD", "COMPLETE"):
+            reasons.append("TASK_NOT_EXECUTABLE:" + task["status"])
+        if self.github.head(plan["repo"], plan["ref"]) != plan["target_sha"]:
+            reasons.append("TARGET_HEAD_CHANGED")
+        if self.github.file_exists(plan["repo"], plan["ref"], plan["path"]):
+            reasons.append("TARGET_PATH_EXISTS")
+        return {"task": identifier, "status": task["status"],
+                "eligible_for_run": task["status"] == "READY" and not reasons,
+                "reasons": reasons, "plan_hash": digest(canonical(plan))}
 
     def reject_review(self, identifier, reason):
         """Explicit human rejection; never mutate or close a remote draft PR."""
@@ -382,6 +479,9 @@ class Controller:
         raw = content.encode("utf-8")
         if not raw or len(raw) > 16384 or b"\0" in raw:
             raise ControllerError("INVALID_CONTENT")
+        settings = self.settings()
+        if settings["executor"] != "markdown-writer-v1" or not path.startswith(settings["proposal_prefix"]):
+            raise ControllerError("EXECUTOR_OR_PATH_NOT_ALLOWED")
         sha = self.github.head(repo, ref)
         if self.github.file_exists(repo, ref, path):
             raise ControllerError("TARGET_FILE_ALREADY_EXISTS")
@@ -389,7 +489,8 @@ class Controller:
         plan = {"id": identifier, "task_id": task_id, "project": project, "repo": repo,
                 "ref": ref, "path": path, "content": content, "target_sha": sha,
                 "executor": "markdown-writer-v1", "operation": "CREATE_MARKDOWN",
-                "max_cost": 0, "created_by": self.actor, "created_at": now()}
+                "max_cost": settings["max_cost"], "timeout_seconds": settings["worker_timeout_seconds"],
+                "created_by": self.actor, "created_at": now()}
         plan_hash = digest(canonical(plan))
         state["tasks"][identifier] = {"task_id": task_id, "status": "READY", "plan_hash": plan_hash,
                                       "approval": None, "run": None, "review": None}
@@ -406,7 +507,7 @@ class Controller:
             raise ControllerError("PLAN_TAMPERED")
         return state, plan, expected_head
 
-    def _approval(self, identifier, state, plan):
+    def _approval(self, identifier, state, plan, *, require_unexpired=True):
         approval_id = state["tasks"][identifier].get("approval")
         if not approval_id:
             raise ControllerError("APPROVAL_REQUIRED")
@@ -421,7 +522,7 @@ class Controller:
         if (approval["plan_hash"] != digest(canonical(plan)) or
                 approval["actor"] != self.actor or
                 approval["target_sha"] != plan["target_sha"] or
-                datetime.fromisoformat(approval["expires"]) <= datetime.now(timezone.utc)):
+                (require_unexpired and datetime.fromisoformat(approval["expires"]) <= datetime.now(timezone.utc))):
             raise ControllerError("APPROVAL_STALE_OR_INVALID")
         return approval
 
@@ -457,6 +558,9 @@ class Controller:
         self._approval(identifier, state, plan)
         if self.github.head(plan["repo"], plan["ref"]) != plan["target_sha"]:
             raise ControllerError("TARGET_HEAD_CHANGED")
+        timeout_seconds = plan.get("timeout_seconds", 20)
+        if type(timeout_seconds) is not int or not 5 <= timeout_seconds <= 20:
+            raise ControllerError("UNSAFE_PLAN_TIMEOUT")
         run_id = uuid.uuid4().hex
         stage = self.store.staging / run_id
         stage.mkdir()
@@ -469,7 +573,7 @@ class Controller:
         try:
             code, stdout, stderr = _launch("worker",
                 [self.store.repo / "plans" / (identifier + ".json"), output],
-                stage, timeout=20, cancel=cancel)
+                stage, timeout=timeout_seconds, cancel=cancel)
             metadata_path = stage / "worker_result.json"
             metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
             if (code != 0 or not output.is_file() or
@@ -609,6 +713,54 @@ class Controller:
                                {"proposals/" + identifier + ".json": proposal_record},
                                expected_head=expected_head)
         return proposal_record
+
+    def accept_review(self, identifier):
+        """Human acceptance only after independent GitHub-authenticated PR review.
+
+        COMPLETE means the *local proposal workflow* was accepted; it does not
+        merge the PR, deploy code, or assert production release.
+        """
+        state, plan, expected_head = self._plan(identifier)
+        task = state["tasks"][identifier]
+        if (task["status"] != "REVIEW" or not task.get("draft_pr_submitted") or
+                not task.get("review") or not task.get("run")):
+            raise ControllerError("PUBLISHED_REVIEW_REQUIRED")
+        approval = self._approval(identifier, state, plan, require_unexpired=False)
+        review = self.store.read("reviews/" + task["review"] + ".json")
+        run = self.store.read("runs/" + task["run"] + ".json")
+        if (review.get("verdict") != "PASS" or
+                review.get("review_kind") != "DETERMINISTIC_PREFLIGHT_NOT_INDEPENDENT_ACCEPTANCE" or
+                review.get("plan_hash") != task["plan_hash"] or
+                review.get("run_id") != task["run"] or
+                review.get("evidence_sha256") != run.get("artifact_sha256") or
+                approval.get("plan_hash") != task["plan_hash"]):
+            raise ControllerError("LOCAL_REVIEW_EVIDENCE_INVALID")
+        record = self.store.read("proposals/" + identifier + ".json")
+        proposal = record.get("proposal") or {}
+        if (record.get("id") != identifier or record.get("baseline") != plan["target_sha"] or
+                record.get("preflight_review") != task["review"] or
+                record.get("kind") != "DRAFT_PR_PENDING_INDEPENDENT_ACCEPTANCE"):
+            raise ControllerError("PROPOSAL_EVIDENCE_INVALID")
+        receipt = self.github.verified_independent_review(plan, proposal)
+        if (receipt.get("reviewed_commit") != proposal.get("proposal_sha") or
+                receipt.get("pr_url") != proposal.get("pr_url") or
+                receipt.get("reviewer", "").casefold() == receipt.get("author", "").casefold()):
+            raise ControllerError("INDEPENDENT_REVIEW_IDENTITY_INVALID")
+        checkpoint = {"id": identifier, "kind": "LOCAL_PROPOSAL_ACCEPTED_PR_UNMERGED",
+                      "plan_hash": task["plan_hash"], "review_id": task["review"],
+                      "run_id": task["run"], "artifact_sha256": run["artifact_sha256"],
+                      "baseline_sha": plan["target_sha"], "proposal_sha": proposal["proposal_sha"],
+                      "pr_url": proposal["pr_url"], "independent_review": receipt,
+                      "accepted_by_local_actor": self.actor, "accepted_at": now(),
+                      "rollback": "No automatic remote rollback. Close PR and delete proposal branch manually."}
+        task["status"] = "COMPLETE"
+        task["checkpoint"] = identifier
+        self.store.transaction(state, {"kind": "LOCAL_PROPOSAL_ACCEPTED", "id": identifier,
+                                       "actor": self.actor, "review_id": receipt["review_id"],
+                                       "proposal_sha": proposal["proposal_sha"]},
+                               {"checkpoints/" + identifier + ".json": checkpoint},
+                               expected_head=expected_head)
+        return checkpoint
 
     def recover_remote_intent(self):
         """Manually isolate uncertain remote state; never blindly retry external writes."""
