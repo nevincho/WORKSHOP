@@ -264,6 +264,67 @@ class Controller:
     def status(self):
         return self.store.verify()
 
+    def task_detail(self, identifier):
+        """Verified, read-only task scope and evidence for the customer detail screen."""
+        state, plan, _ = self._plan(identifier)
+        task = state["tasks"][identifier]
+        detail = {
+            "id": identifier,
+            "status": task["status"],
+            "plan_sha256": digest(canonical(plan)),
+            "plan": plan,
+            "approval_recorded": bool(task.get("approval")),
+            "run": None,
+            "review": None,
+            "proposal": None,
+        }
+        if task.get("run"):
+            run = self.store.read("runs/" + task["run"] + ".json")
+            if run.get("task") != identifier or run.get("id") != task["run"]:
+                raise ControllerError("RUN_EVIDENCE_IDENTITY_MISMATCH")
+            detail["run"] = {
+                "id": run["id"],
+                "error": run.get("error"),
+                "worker_exit": run.get("worker_exit"),
+                "artifact_sha256": run.get("artifact_sha256"),
+                "time": run.get("time"),
+            }
+        if task.get("review"):
+            report = self.store.read("reviews/" + task["review"] + ".json")
+            if report.get("task") != identifier or report.get("id") != task["review"]:
+                raise ControllerError("REVIEW_EVIDENCE_IDENTITY_MISMATCH")
+            detail["review"] = {
+                "id": report["id"],
+                "verdict": report.get("verdict"),
+                "review_kind": report.get("review_kind"),
+                "evidence_sha256": report.get("evidence_sha256"),
+            }
+        if task.get("draft_pr_submitted"):
+            proposal = self.store.read("proposals/" + identifier + ".json")
+            if proposal.get("id") != identifier:
+                raise ControllerError("PROPOSAL_EVIDENCE_IDENTITY_MISMATCH")
+            detail["proposal"] = {
+                "kind": proposal.get("kind"),
+                "pr_url": proposal.get("proposal", {}).get("pr_url"),
+                "rollback": proposal.get("rollback"),
+            }
+        return detail
+
+    def project_summary(self):
+        """Read-only project inventory derived from verified Git coordination."""
+        state, _ = self._snapshot()
+        projects = {}
+        for identifier, task in state["tasks"].items():
+            plan = self.store.read("plans/" + identifier + ".json")
+            if digest(canonical(plan)) != task["plan_hash"]:
+                raise ControllerError("PLAN_TAMPERED")
+            project = plan["project"]
+            entry = projects.setdefault(project, {"project": project, "tasks": 0, "active": 0})
+            entry["tasks"] += 1
+            if task["status"] not in ("COMPLETE", "BLOCKED", "HOLD"):
+                entry["active"] += 1
+        return sorted(projects.values(), key=lambda row: row["project"].casefold())
+
     def _snapshot(self):
         head = self.store.head()
         state = self.status()
