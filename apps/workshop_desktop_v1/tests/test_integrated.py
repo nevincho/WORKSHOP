@@ -406,6 +406,69 @@ class IntegratedTests(unittest.TestCase):
             self.controller.status()
 
 
+    def test_project_inventory_and_task_detail_are_read_only(self):
+        identifier = self.make_plan()
+        before = self.controller.store.head()
+        self.assertEqual(self.controller.project_summary(), [
+            {"project": "Demo", "tasks": 1, "active": 1}])
+        detail = self.controller.task_detail(identifier)
+        self.assertEqual(detail["id"], identifier)
+        self.assertEqual(detail["status"], "READY")
+        self.assertEqual(detail["plan"]["content"], "# Verified demo\\n")
+        self.assertEqual(detail["plan_sha256"], self.controller.status()["tasks"][identifier]["plan_hash"])
+        self.assertFalse(detail["approval_recorded"])
+        self.assertIsNone(detail["run"])
+        self.assertIsNone(detail["review"])
+        self.assertIsNone(detail["proposal"])
+        self.assertEqual(self.controller.store.head(), before)
+
+        self.approve_plan(identifier)
+        run = self.controller.run(identifier)
+        review = self.controller.review(identifier)
+        proposal = self.controller.publish(identifier)
+        before = self.controller.store.head()
+        detail = self.controller.task_detail(identifier)
+        self.assertEqual(detail["status"], "REVIEW")
+        self.assertTrue(detail["approval_recorded"])
+        self.assertEqual(detail["run"]["id"], run["id"])
+        self.assertEqual(detail["review"]["id"], review["id"])
+        self.assertEqual(detail["review"]["review_kind"],
+                         "DETERMINISTIC_PREFLIGHT_NOT_INDEPENDENT_ACCEPTANCE")
+        self.assertEqual(detail["proposal"]["pr_url"], proposal["proposal"]["pr_url"])
+        self.assertEqual(self.controller.store.head(), before)
+        self.assertEqual(len(self.github.proposals), 1)
+
+    def test_task_detail_refuses_unknown_task_without_writes(self):
+        before = self.controller.store.head()
+        with self.assertRaisesRegex(ControllerError, "UNKNOWN_TASK"):
+            self.controller.task_detail("0" * 32)
+        self.assertEqual(self.controller.project_summary(), [])
+        self.assertEqual(self.controller.store.head(), before)
+
+    def test_task_detail_refuses_mismatched_run_evidence(self):
+        identifier = self.make_plan()
+        self.approve_plan(identifier)
+        run = self.controller.run(identifier)
+        path = self.controller.store.repo / "runs" / (run["id"] + ".json")
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["task"] = "0" * 32
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        subprocess.run(["git", "add", str(path)], cwd=self.controller.store.repo, check=True)
+        subprocess.run(["git", "-c", "user.name=test", "-c", "user.email=test@example.invalid",
+                        "commit", "-qm", "tamper run evidence"], cwd=self.controller.store.repo, check=True)
+        with self.assertRaisesRegex(ControllerError, "RUN_EVIDENCE_IDENTITY_MISMATCH"):
+            self.controller.task_detail(identifier)
+
+    def test_task_selection_updates_detail_without_executing(self):
+        desktop = object.__new__(gui.Desktop)
+        desktop.task_tree = mock.Mock()
+        desktop.task_tree.selection.return_value = ("abc123",)
+        desktop.show_task_detail = mock.Mock()
+        desktop._select_task()
+        self.assertEqual(desktop.selected, "abc123")
+        desktop.show_task_detail.assert_called_once_with()
+
+
 class GitHubAdapterTests(unittest.TestCase):
     def test_branch_post_timeout_after_server_creation_is_not_retried(self):
         calls = []
