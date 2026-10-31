@@ -177,7 +177,7 @@ class G1BoundedQualification(unittest.TestCase):
         foreign.write_bytes(b'FOREIGN_OBJECT_MUST_SURVIVE')
         workspace = dest / 'workspace.json'
         original_identity = core._path_identity
-        original_unlink = Path.unlink
+        original_close = os.close
         replaced = []
 
         def fail_identity(path):
@@ -185,23 +185,25 @@ class G1BoundedQualification(unittest.TestCase):
                 raise OSError('INJECTED_WORKSPACE_IDENTITY_FAILURE')
             return original_identity(path)
 
-        def replace_before_unlink(path, *args, **kwargs):
-            if Path(path) == workspace and not replaced:
-                # Deterministic interleaving at the exact unverified cleanup unlink.
-                # The original file descriptor was closed by production code.
+        def replace_after_close(fd):
+            original_close(fd)
+            if workspace.exists() and not replaced:
+                # Inject the foreign replacement after the original descriptor
+                # is closed, before any exception cleanup can unlink the path.
                 os.replace(foreign, workspace)
                 replaced.append(True)
-            return original_unlink(path, *args, **kwargs)
 
         with mock.patch.object(core, '_path_identity', side_effect=fail_identity), \
-             mock.patch.object(Path, 'unlink', replace_before_unlink):
+             mock.patch.object(core.os, 'close', side_effect=replace_after_close):
             with self.assertRaisesRegex(OSError, 'INJECTED_WORKSPACE_IDENTITY_FAILURE'):
                 core.create_workspace(dest, BUNDLE)
         self.assertTrue(replaced, 'Race interleaving did not reach cleanup')
-        print('CREATE_FOREIGN_REPLACEMENT_SURVIVES=' + str(foreign.exists()), flush=True)
-        self.assertTrue(foreign.exists(),
-                        'SOURCE_DEFECT: unverified unlink deleted a foreign replacement object')
-        self.assertEqual(foreign.read_bytes(), b'FOREIGN_OBJECT_MUST_SURVIVE')
+        # os.replace MOVES the sentinel: its original pathname must disappear.
+        # The preservation invariant is its bytes at the replacement pathname.
+        print('CREATE_FOREIGN_REPLACEMENT_SURVIVES=' + str(workspace.exists()), flush=True)
+        self.assertTrue(workspace.exists(),
+                        'SOURCE_DEFECT: unverified cleanup deleted the foreign replacement')
+        self.assertEqual(workspace.read_bytes(), b'FOREIGN_OBJECT_MUST_SURVIVE')
 
 
 if __name__ == '__main__':

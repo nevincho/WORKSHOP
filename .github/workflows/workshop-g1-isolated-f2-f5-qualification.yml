@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'qualification/g1-windows-f2-f5-20261031'
+      - 'repair/g1-create-f2ab-20261031'
   workflow_dispatch:
 
 permissions:
