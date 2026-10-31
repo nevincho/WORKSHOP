@@ -469,6 +469,43 @@ class IntegratedTests(unittest.TestCase):
         desktop.show_task_detail.assert_called_once_with()
 
 
+    def test_human_rejection_before_remote_proposal_requires_rework(self):
+        identifier = self.make_plan()
+        self.approve_plan(identifier)
+        self.controller.run(identifier)
+        self.controller.review(identifier)
+        before = len(self.github.proposals)
+        with self.assertRaisesRegex(ControllerError, "REJECTION_REASON_REQUIRED"):
+            self.controller.reject_review(identifier, " ")
+        with self.assertRaisesRegex(ControllerError, "INVALID_REJECTION_REASON"):
+            self.controller.reject_review(identifier, chr(0) + "bad")
+        result = self.controller.reject_review(identifier, "Scope rejected")
+        self.assertFalse(result["remote_cleanup_required"])
+        self.assertEqual(self.controller.status()["tasks"][identifier]["status"], "REWORK")
+        self.assertEqual(len(self.github.proposals), before)
+        with self.assertRaisesRegex(ControllerError, "REVIEW_STATE_REQUIRED"):
+            self.controller.reject_review(identifier, "Again")
+        with self.assertRaisesRegex(ControllerError, "REVIEW_REQUIRED"):
+            self.controller.publish(identifier)
+
+    def test_human_rejection_after_draft_pr_blocks_and_preserves_remote(self):
+        identifier = self.make_plan()
+        self.approve_plan(identifier)
+        self.controller.run(identifier)
+        self.controller.review(identifier)
+        self.controller.publish(identifier)
+        before = len(self.github.proposals)
+        result = self.controller.reject_review(identifier, "Reject proposed change")
+        self.assertTrue(result["remote_cleanup_required"])
+        task = self.controller.status()["tasks"][identifier]
+        self.assertEqual(task["status"], "BLOCKED")
+        self.assertTrue(task["draft_pr_submitted"])
+        self.assertEqual(len(self.github.proposals), before)
+        with self.assertRaisesRegex(ControllerError, "REWORK_STATE_REQUIRED"):
+            self.controller.rework(identifier, "# New")
+        self.assertTrue(self.controller.task_detail(identifier)["proposal"]["pr_url"])
+
+
 class GitHubAdapterTests(unittest.TestCase):
     def test_branch_post_timeout_after_server_creation_is_not_retried(self):
         calls = []
