@@ -1,13 +1,16 @@
 """Consolidated integration and negative/security tests; no live GitHub writes."""
+import hashlib
 import json
 import os
 import uuid
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from workshop_desktop.engine import Controller, ControllerError, CoordinationRepo
+from workshop_desktop import gui, reviewer
 from workshop_desktop.g1_adapter import create_workspace, inspect_workspace, trusted_bundle
 from workshop_desktop.github_api import GitHubClient, GitHubError, PartialProposal, validate_target
 from workshop_desktop.vault import MemoryVault, WindowsVault, SIGNING
@@ -61,9 +64,12 @@ class IntegratedTests(unittest.TestCase):
         self.assertEqual(review["verdict"], "PASS", review)
         self.assertNotEqual(review["reviewer_pid"], review["worker_pid"])
         checkpoint = self.controller.publish(identifier)
-        self.assertEqual(checkpoint["kind"], "DRAFT_PR_NOT_MERGED")
+        self.assertEqual(checkpoint["kind"], "DRAFT_PR_PENDING_INDEPENDENT_ACCEPTANCE")
         self.assertEqual(checkpoint["proposal"]["pr_url"], "https://github.com/example/demo/pull/1")
-        self.assertEqual(self.controller.status()["tasks"][identifier]["status"], "COMPLETE")
+        self.assertEqual(self.controller.status()["tasks"][identifier]["status"], "REVIEW")
+        self.assertTrue(self.controller.status()["tasks"][identifier]["draft_pr_submitted"])
+        with self.assertRaisesRegex(ControllerError, "PROPOSAL_ALREADY_SUBMITTED"):
+            self.controller.publish(identifier)
         self.assertEqual(len(self.github.proposals), 1)
         self.assertEqual(self.github.proposals[0][1], b"# Verified demo\n")
         self.assertEqual(self.github.proposals[0][2], approval)
@@ -139,7 +145,8 @@ class IntegratedTests(unittest.TestCase):
         identifier = self.make_plan()
         state = self.controller.status()
         state["tasks"][identifier]["status"] = "IN_PROGRESS"
-        self.controller.store.transaction(state, {"kind": "INJECTED_INTERRUPTION", "id": identifier})
+        self.controller.store.transaction(state, {"kind": "INJECTED_INTERRUPTION", "id": identifier},
+                                          expected_head=self.controller.store.head())
         with self.assertRaisesRegex(ControllerError, "INTERRUPTED_RUN_REQUIRES_REVIEW"):
             self.controller.status()
         recovered = self.controller.recover_interrupted()
@@ -175,6 +182,142 @@ class IntegratedTests(unittest.TestCase):
         with self.assertRaisesRegex(ControllerError, "UNSAFE_LINK"):
             CoordinationRepo(link)
 
+    def test_two_controller_stale_snapshot_cannot_overwrite(self):
+        second = Controller(self.root, github=self.github, vault=self.vault)
+        stale_state, stale_head = second._snapshot()
+        first = self.make_plan()
+        with mock.patch.object(second, "_snapshot", return_value=(stale_state, stale_head)):
+            with self.assertRaisesRegex(ControllerError, "COORDINATION_HEAD_CHANGED"):
+                second.plan("TASK-02", "Demo", "example/demo", "main",
+                            "docs/other.md", "# Stale\\n")
+        self.assertEqual(list(self.controller.status()["tasks"]), [first])
+
+    def test_transaction_requires_expected_head(self):
+        state = self.controller.status()
+        with self.assertRaisesRegex(TypeError, "expected_head"):
+            self.controller.store.transaction(state, {"kind": "INVALID_NO_LEASE"})
+
+    def test_rework_replan_requires_new_approval_and_completes_preflight(self):
+        identifier = self.make_plan()
+        self.controller.approve(identifier)
+        run = self.controller.run(identifier)
+        def reject(role, arguments, cwd, timeout=20, cancel=None):
+            Path(arguments[2]).write_text(json.dumps({
+                "verdict": "REWORK", "sha256": run["artifact_sha256"],
+                "reviewer_pid": -1}), encoding="utf-8")
+            return 1, "", ""
+        with mock.patch("workshop_desktop.engine._launch", side_effect=reject):
+            review = self.controller.review(identifier)
+        self.assertEqual(review["verdict"], "REWORK")
+        new_hash = self.controller.rework(identifier, "# Corrected\\n")
+        self.assertNotEqual(new_hash, review["plan_hash"])
+        with self.assertRaisesRegex(ControllerError, "APPROVAL_REQUIRED"):
+            self.controller.run(identifier)
+        self.controller.approve(identifier)
+        retry = self.controller.run(identifier)
+        self.assertIsNone(retry["error"])
+        passed = self.controller.review(identifier)
+        self.assertEqual(passed["verdict"], "PASS")
+        self.assertEqual(self.controller.status()["tasks"][identifier]["status"], "REVIEW")
+
+    def test_remote_intent_persisted_before_ambiguous_write(self):
+        identifier = self.make_plan()
+        self.controller.approve(identifier)
+        self.controller.run(identifier)
+        self.controller.review(identifier)
+        def ambiguous(plan, data, approval):
+            state = self.controller.store.state()
+            self.assertEqual(state["tasks"][identifier]["status"], "PUBLISHING")
+            self.assertEqual(state["tasks"][identifier]["remote_intent"]["base_sha"], SHA)
+            raise PartialProposal({"branch": "workshop-proposal-" + approval[:20],
+                                   "remote_created": "UNKNOWN"}, "TIMEOUT")
+        with mock.patch.object(self.github, "propose", side_effect=ambiguous):
+            with self.assertRaises(PartialProposal):
+                self.controller.publish(identifier)
+        task = self.controller.status()["tasks"][identifier]
+        self.assertEqual(task["status"], "BLOCKED")
+        self.assertIn("remote_uncertainty", task)
+        with self.assertRaisesRegex(ControllerError, "REVIEW_REQUIRED"):
+            self.controller.publish(identifier)
+
+    def test_open_g1_is_read_only_and_rejects_bad_metadata(self):
+        separate = Path(self.tmp.name) / "open_only"
+        create_workspace(separate, trusted_bundle())
+        desktop = object.__new__(gui.Desktop)
+        desktop.path_var = mock.Mock()
+        desktop.refresh = mock.Mock()
+        with mock.patch.object(gui, "Controller",
+                side_effect=lambda p: Controller(p, github=self.github, vault=self.vault)):
+            desktop._attach(separate)
+            self.assertFalse((separate / ".workshop_v1").exists())
+            (separate / "workspace.json").write_text("{}", encoding="utf-8")
+            with self.assertRaisesRegex(ControllerError, "G1_WORKSPACE_METADATA_INVALID"):
+                desktop._attach(separate)
+            self.assertFalse((separate / ".workshop_v1").exists())
+
+    def test_open_existing_interrupted_coordination_never_writes(self):
+        identifier = self.make_plan()
+        state = self.controller.status()
+        state["tasks"][identifier]["status"] = "IN_PROGRESS"
+        self.controller.store.transaction(state, {"kind": "SIMULATE_INTERRUPTION"},
+                                          expected_head=self.controller.store.head())
+        before = self.controller.store.head()
+        desktop = object.__new__(gui.Desktop)
+        desktop.path_var = mock.Mock()
+        desktop.refresh = mock.Mock()
+        with mock.patch.object(gui, "Controller", return_value=self.controller):
+            desktop._attach(self.root)
+        self.assertEqual(self.controller.store.head(), before)
+        self.assertEqual(self.controller.store.state()["tasks"][identifier]["status"], "IN_PROGRESS")
+
+    def test_approval_scope_full_payload_and_identity(self):
+        identifier = self.make_plan()
+        _, plan, _ = self.controller._plan(identifier)
+        summary = gui.approval_scope(plan)
+        self.assertTrue(summary.endswith(plan["content"]))
+        self.assertIn(plan["target_sha"], summary)
+        self.assertIn(hashlib.sha256(plan["content"].encode()).hexdigest(), summary)
+        self.assertIn(plan["path"], summary)
+        self.assertIn("Plan SHA-256", summary)
+
+    def test_reviewer_refuses_existing_symlink_report(self):
+        stage = Path(self.tmp.name) / "review_stage"
+        stage.mkdir()
+        plan = stage / "plan.json"
+        output = stage / "artifact.md"
+        victim = Path(self.tmp.name) / "victim.txt"
+        victim.write_text("PROTECTED", encoding="utf-8")
+        plan.write_text(json.dumps({"repo": "example/demo", "ref": "main",
+                                    "path": "docs/a.md", "content": "# Demo",
+                                    "executor": "markdown-writer-v1",
+                                    "operation": "CREATE_MARKDOWN"}), encoding="utf-8")
+        output.write_text("# Demo", encoding="utf-8")
+        link = stage / "review.json"
+        try:
+            link.symlink_to(victim)
+        except (OSError, NotImplementedError):
+            self.skipTest("File symlink unavailable on this runner")
+        with self.assertRaises((ValueError, FileExistsError, OSError)):
+            reviewer.review(plan, output, link)
+        self.assertEqual(victim.read_text(encoding="utf-8"), "PROTECTED")
+
+    @unittest.skipUnless(os.name == "nt", "NTFS junction check")
+    def test_reviewer_refuses_junction_stage(self):
+        real = Path(self.tmp.name) / "real_stage"
+        real.mkdir()
+        junction = Path(self.tmp.name) / "junction_stage"
+        created = subprocess.run(["cmd", "/c", "mklink", "/J", str(junction), str(real)],
+                                 capture_output=True, text=True)
+        self.assertEqual(created.returncode, 0, created.stderr)
+        plan = real / "plan.json"
+        plan.write_text(json.dumps({"repo": "example/demo", "ref": "main",
+                                    "path": "docs/a.md", "content": "# Demo",
+                                    "executor": "markdown-writer-v1",
+                                    "operation": "CREATE_MARKDOWN"}), encoding="utf-8")
+        (real / "artifact.md").write_text("# Demo", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "REVIEW_REPARSE_POINT"):
+            reviewer.review(plan, junction / "artifact.md", junction / "review.json")
+
     def test_audit_chain_rejects_tampered_committed_event(self):
         self.make_plan()
         log = self.controller.store.repo / "events.jsonl"
@@ -188,12 +331,59 @@ class IntegratedTests(unittest.TestCase):
 
 
 class GitHubAdapterTests(unittest.TestCase):
+    def test_branch_post_timeout_after_server_creation_is_not_retried(self):
+        calls = []
+        def transport(method, route, payload, authorized):
+            calls.append((method, route))
+            if method == "GET" and "/branches/" in route:
+                return {"commit": {"sha": SHA}}
+            if method == "GET" and "/git/ref/heads/" in route:
+                return {"object": {"sha": SHA}}
+            if method == "GET" and "/git/ref/heads/" in route:
+                return {"object": {"sha": SHA}}
+            if method == "GET" and "/contents/" in route:
+                raise GitHubError("GITHUB_HTTP_404")
+            if method == "POST" and route.endswith("/git/refs"):
+                raise GitHubError("GITHUB_NETWORK_UNAVAILABLE")
+            raise AssertionError((method, route))
+        client = GitHubClient(lambda: "token", transport=transport)
+        plan = {"repo": "example/demo", "ref": "main", "path": "docs/demo.md",
+                "target_sha": SHA, "task_id": "TASK-01"}
+        with self.assertRaises(PartialProposal) as caught:
+            client.propose(plan, b"# Demo", "d" * 32)
+        self.assertTrue(caught.exception.partial["remote_created"])
+        self.assertEqual(caught.exception.partial["observed_branch_sha"], SHA)
+        self.assertFalse(any(method == "PUT" for method, _ in calls))
+
+    def test_wrong_remote_branch_sha_refuses_write(self):
+        calls = []
+        def transport(method, route, payload, authorized):
+            calls.append((method, route))
+            if method == "GET" and "/branches/" in route:
+                return {"commit": {"sha": SHA}}
+            if method == "GET" and "/git/ref/heads/" in route:
+                return {"object": {"sha": "b" * 40}}
+            if method == "GET" and "/contents/" in route:
+                raise GitHubError("GITHUB_HTTP_404")
+            if method == "POST" and route.endswith("/git/refs"):
+                return {}
+            raise AssertionError((method, route))
+        client = GitHubClient(lambda: "token", transport=transport)
+        plan = {"repo": "example/demo", "ref": "main", "path": "docs/demo.md",
+                "target_sha": SHA, "task_id": "TASK-01"}
+        with self.assertRaises(PartialProposal) as caught:
+            client.propose(plan, b"# Demo", "d" * 32)
+        self.assertIn("PROPOSAL_BRANCH_SHA_MISMATCH", str(caught.exception))
+        self.assertFalse(any(method == "PUT" for method, _ in calls))
+
     def test_read_only_default_and_approved_draft_pr(self):
         calls = []
         def transport(method, route, payload, authorized):
             calls.append((method, route, payload, authorized))
             if method == "GET" and "/branches/" in route:
                 return {"commit": {"sha": SHA}}
+            if method == "GET" and "/git/ref/heads/" in route:
+                return {"object": {"sha": SHA}}
             if method == "GET" and "/contents/" in route:
                 if "ref=workshop-proposal-" in route:
                     return {"encoding": "base64", "content": "IyBEZW1vCg=="}
@@ -222,6 +412,8 @@ class GitHubAdapterTests(unittest.TestCase):
             calls.append((method, route))
             if method == "GET" and "/branches/" in route:
                 return {"commit": {"sha": SHA}}
+            if method == "GET" and "/git/ref/heads/" in route:
+                return {"object": {"sha": SHA}}
             if method == "GET" and "/contents/" in route:
                 if "ref=workshop-proposal-" in route:
                     return {"encoding": "base64", "content": "dGFtcGVyZWQ="}
@@ -243,6 +435,8 @@ class GitHubAdapterTests(unittest.TestCase):
         def transport(method, route, payload, authorized):
             if method == "GET" and "/branches/" in route:
                 return {"commit": {"sha": SHA}}
+            if method == "GET" and "/git/ref/heads/" in route:
+                return {"object": {"sha": SHA}}
             if method == "GET":
                 raise GitHubError("GITHUB_HTTP_404")
             if method == "POST" and route.endswith("/git/refs"):

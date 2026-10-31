@@ -87,8 +87,16 @@ class GitHubClient:
         except (ValueError, base64.binascii.Error):
             raise GitHubError("INVALID_REMOTE_FILE") from None
 
+    def _proposal_branch_sha(self, repo, branch):
+        response = self.request("GET", "/repos/" + repo + "/git/ref/heads/" + branch,
+                                authorized=True)
+        sha = response.get("object", {}).get("sha")
+        if not isinstance(sha, str) or not SHA.fullmatch(sha):
+            raise GitHubError("INVALID_PROPOSAL_BRANCH_REF")
+        return sha
+
     def propose(self, plan, content, approval_id):
-        """Create new isolated branch and PR. Never push to the selected base ref."""
+        """Create a new isolated branch and draft PR; caller must journal intent first."""
         repo, ref, path = plan["repo"], plan["ref"], plan["path"]
         validate_target(repo, ref, path)
         if not SHA.fullmatch(plan["target_sha"]):
@@ -98,11 +106,27 @@ class GitHubClient:
         if self.file_exists(repo, ref, path):
             raise GitHubError("REMOTE_PATH_EXISTS")
         branch = "workshop-proposal-" + approval_id[:20]
-        self.request("POST", "/repos/" + repo + "/git/refs",
-                     {"ref": "refs/heads/" + branch, "sha": plan["target_sha"]}, authorized=True)
-        # The remote branch is a durable external side effect even if a later API call fails.
-        result = {"branch": branch, "remote_created": True, "pr_url": None, "proposal_sha": None}
+        result = {"branch": branch, "remote_created": "UNKNOWN",
+                  "pr_url": None, "proposal_sha": None}
         try:
+            self.request("POST", "/repos/" + repo + "/git/refs",
+                         {"ref": "refs/heads/" + branch, "sha": plan["target_sha"]},
+                         authorized=True)
+        except Exception as exc:
+            # POST may have succeeded server-side despite a client timeout.
+            try:
+                observed = self._proposal_branch_sha(repo, branch)
+                result["remote_created"] = True
+                result["observed_branch_sha"] = observed
+            except Exception as check_exc:
+                result["remote_check_error"] = type(check_exc).__name__ + ":" + str(check_exc)
+            raise PartialProposal(result, "BRANCH_POST_UNCERTAIN:" + str(exc)) from None
+        try:
+            observed = self._proposal_branch_sha(repo, branch)
+            result["remote_created"] = True
+            result["observed_branch_sha"] = observed
+            if observed != plan["target_sha"]:
+                raise GitHubError("PROPOSAL_BRANCH_SHA_MISMATCH")
             response = self.request("PUT", "/repos/" + repo + "/contents/" + urllib.parse.quote(path, safe="/"),
                                     {"message": "WORKSHOP reviewed Markdown proposal " + plan["task_id"],
                                      "content": base64.b64encode(content).decode("ascii"), "branch": branch},
@@ -113,7 +137,7 @@ class GitHubClient:
             pr = self.request("POST", "/repos/" + repo + "/pulls",
                               {"title": "WORKSHOP proposal: " + plan["task_id"],
                                "head": branch, "base": ref,
-                               "body": "Deterministic Markdown-only proposal. Review before merging.",
+                               "body": "Deterministic Markdown-only proposal; independent acceptance pending.",
                                "draft": True}, authorized=True)
             result["pr_url"] = pr.get("html_url")
             if not result["pr_url"] or not SHA.fullmatch(str(result["proposal_sha"])):

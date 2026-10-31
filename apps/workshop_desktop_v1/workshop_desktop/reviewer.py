@@ -2,9 +2,38 @@
 import hashlib
 import json
 import os
+import stat
 import sys
 from pathlib import Path
 from .github_api import validate_target
+
+
+def _exclusive_report(report_file, output_file, payload):
+    """Refuse existing report/reparse points; create new file exclusively in stage."""
+    report = Path(os.path.abspath(report_file))
+    output = Path(os.path.abspath(output_file))
+    if report.parent != output.parent or report.name != "review.json":
+        raise ValueError("REVIEW_REPORT_OUTSIDE_STAGE")
+    for part in (report, *report.parents):
+        try:
+            mode = part.lstat()
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(mode.st_mode) or getattr(mode, "st_file_attributes", 0) & 0x400:
+            raise ValueError("REVIEW_REPARSE_POINT")
+    before = report.parent.stat(follow_symlinks=False)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    fd = os.open(report, flags, 0o600)
+    with os.fdopen(fd, "wb") as stream:
+        opened = os.fstat(stream.fileno())
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+        after = report.parent.stat(follow_symlinks=False)
+        visible = report.stat(follow_symlinks=False)
+        if ((before.st_dev, before.st_ino) != (after.st_dev, after.st_ino) or
+                (opened.st_dev, opened.st_ino) != (visible.st_dev, visible.st_ino)):
+            raise ValueError("REVIEW_OUTPUT_IDENTITY_CHANGED")
 
 
 def review(plan_file, output_file, report_file):
@@ -21,7 +50,7 @@ def review(plan_file, output_file, report_file):
     }
     result = {"reviewer_pid": os.getpid(), "verdict": "PASS" if all(checks.values()) else "REWORK",
               "checks": checks, "sha256": hashlib.sha256(data).hexdigest()}
-    Path(report_file).write_text(json.dumps(result, sort_keys=True, indent=2), encoding="utf-8")
+    _exclusive_report(report_file, output_file, json.dumps(result, sort_keys=True, indent=2).encode("utf-8"))
     return result
 
 

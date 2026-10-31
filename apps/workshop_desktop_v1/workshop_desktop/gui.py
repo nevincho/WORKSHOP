@@ -5,8 +5,23 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
-from .engine import Controller, ControllerError
+from .engine import Controller, ControllerError, canonical, digest
 from .g1_adapter import create_workspace, inspect_workspace, trusted_bundle, verified_trust, safe_display
+
+
+def approval_scope(plan):
+    """Exact, untruncated immutable payload for the scrollable human approval dialog."""
+    content = plan["content"]
+    return ("Task: " + plan["task_id"] + "\nProject: " + plan["project"] +
+            "\nRepository: " + plan["repo"] + "\nBase ref: " + plan["ref"] +
+            "\nImmutable base SHA: " + plan["target_sha"] +
+            "\nOperation: " + plan["operation"] + "\nNew file: " + plan["path"] +
+            "\nExecutor: " + plan["executor"] +
+            "\nMaximum cost: " + str(plan["max_cost"]) +
+            "\nUTF-8 bytes: " + str(len(content.encode("utf-8"))) +
+            "\nContent SHA-256: " + digest(content.encode("utf-8")) +
+            "\nPlan SHA-256: " + digest(canonical(plan)) +
+            "\n\nFULL PROPOSED MARKDOWN (NOT TRUNCATED):\n" + content)
 
 
 class Desktop:
@@ -38,6 +53,8 @@ class Desktop:
         bar.pack(fill="x")
         ttk.Button(bar, text="CREATE G1 WORKSPACE", command=self.create_workspace).pack(side="left", padx=4)
         ttk.Button(bar, text="OPEN WORKSPACE", command=self.open_workspace).pack(side="left", padx=4)
+        ttk.Button(bar, text="INITIALIZE COORDINATION", command=self.initialize_coordination).pack(side="left", padx=4)
+        ttk.Button(bar, text="RECOVER INTERRUPTED", command=self.recover_coordination).pack(side="left", padx=4)
         ttk.Button(bar, text="REFRESH", command=self.refresh).pack(side="left", padx=4)
         ttk.Label(bar, textvariable=self.path_var).pack(side="left", padx=10)
         self.tabs = ttk.Notebook(self.root)
@@ -84,9 +101,10 @@ class Desktop:
                   wraplength=850).pack(anchor="w", pady=12)
         runbar = ttk.Frame(self.run_page)
         runbar.pack(fill="x")
-        ttk.Button(runbar, text="3. RUN & INDEPENDENT PROCESS REVIEW", command=self.run_and_review).pack(side="left", padx=4)
+        ttk.Button(runbar, text="3. RUN & DETERMINISTIC PREFLIGHT", command=self.run_and_review).pack(side="left", padx=4)
+        ttk.Button(runbar, text="REWORK: RESET PLAN / REAPPROVE", command=self.rework).pack(side="left", padx=4)
         ttk.Button(runbar, text="CANCEL RUN", command=self.cancel_run).pack(side="left", padx=4)
-        ttk.Button(runbar, text="4. HUMAN ACCEPT: CREATE DRAFT PR", command=self.publish).pack(side="left", padx=4)
+        ttk.Button(runbar, text="4. SUBMIT DRAFT PR (NOT ACCEPTANCE)", command=self.publish).pack(side="left", padx=4)
         self.runlog = tk.Text(self.run_page, wrap="word", state="disabled")
         self.runlog.pack(fill="both", expand=True, pady=12)
         ttk.Label(self.github_page, text="GitHub access: public read-only by default. Scoped PAT stays in Windows Credential Manager.",
@@ -127,27 +145,56 @@ class Desktop:
     def _attach(self, path, initialize=False):
         if initialize:
             create_workspace(path, trusted_bundle())
+        # G1 OPEN must be strictly read-only, including malformed/untrusted paths.
+        tasks, errors = inspect_workspace(path, trusted_bundle(), require_metadata=True)
+        if any(item[0] == "workspace.json" for item in errors):
+            raise ControllerError("G1_WORKSPACE_METADATA_INVALID")
         ctrl = Controller(path)
-        if initialize or not ctrl.store.repo.exists():
-            if not messagebox.askyesno("Initialize coordination",
-                    "Create a separate local Git-backed .workshop_v1 coordination directory here?",
-                    parent=self.root):
-                return
+        if initialize:
             ctrl.initialize()
-        try:
-            ctrl.status()
-        except ControllerError as exc:
-            if str(exc) != "INTERRUPTED_RUN_REQUIRES_REVIEW":
-                raise
-            if not messagebox.askyesno("Interrupted local run",
-                    "A previous local Worker run was interrupted. Mark it BLOCKED for manual review? "
-                    "No automatic retry, remote write or staging deletion will occur.",
-                    parent=self.root):
-                raise
-            ctrl.recover_interrupted()
+        # OPEN never repairs or initializes coordination; recovery is a separate action.
         self.controller = ctrl
         self.path_var.set(str(path))
         self.refresh()
+
+    def initialize_coordination(self):
+        try:
+            ctrl = self._require()
+            if ctrl.store.repo.exists() or ctrl.store.home.exists():
+                raise ControllerError("COORDINATION_ALREADY_EXISTS")
+            _, errors = inspect_workspace(ctrl.store.workspace, trusted_bundle(), require_metadata=True)
+            if errors:
+                raise ControllerError("G1_DIAGNOSTICS_REQUIRE_REVIEW")
+            if not messagebox.askyesno("Explicit coordination initialization",
+                    "CREATE local .workshop_v1 coordination Git in this verified G1 workspace? "
+                    "OPEN itself performs no writes.", parent=self.root):
+                return
+            ctrl.initialize()
+            self.refresh()
+        except Exception as exc:
+            self._error(exc)
+
+    def recover_coordination(self):
+        try:
+            ctrl = self._require()
+            try:
+                ctrl.status()
+                raise ControllerError("NO_INTERRUPTED_COORDINATION")
+            except ControllerError as exc:
+                if str(exc) not in ("INTERRUPTED_RUN_REQUIRES_REVIEW",
+                                    "REMOTE_INTENT_REQUIRES_RECONCILIATION"):
+                    raise
+                if not messagebox.askyesno("Explicit recovery",
+                        "Mark interrupted operations BLOCKED for manual review? "
+                        "No remote retry or external writes will occur.", parent=self.root):
+                    return
+                if str(exc) == "INTERRUPTED_RUN_REQUIRES_REVIEW":
+                    ctrl.recover_interrupted()
+                else:
+                    ctrl.recover_remote_intent()
+                self.refresh()
+        except Exception as exc:
+            self._error(exc)
 
     def create_workspace(self):
         parent = filedialog.askdirectory(title="Choose parent directory")
@@ -187,13 +234,14 @@ class Desktop:
                 self.g1_tree.insert("", "end", values=(safe_display(fields["TASK_ID"]), safe_display(fields["STATUS"]), safe_display(fields["PROJECT"])))
             for item in self.task_tree.get_children():
                 self.task_tree.delete(item)
-            state = ctrl.status()
+            state = ctrl.status() if ctrl.store.repo.exists() else {"tasks": {}}
             for identifier, entry in state["tasks"].items():
                 self.task_tree.insert("", "end", iid=identifier,
                                       values=(entry["task_id"], entry["status"], identifier))
             self.diagnostics.delete("1.0", "end")
             self.diagnostics.insert("end", "\n".join(str(e) for e in errors) or "No G1 diagnostics")
-            self.status_var.set("Coordination Git HEAD " + ctrl.store.head()[:12])
+            self.status_var.set("Coordination Git HEAD " + ctrl.store.head()[:12] if ctrl.store.repo.exists()
+                                else "G1 OPEN: read-only. Initialize coordination explicitly to enable tasks.")
         except Exception as exc:
             self._error(exc)
 
@@ -214,17 +262,44 @@ class Desktop:
         except Exception as exc:
             self._error(exc)
 
+    def _approval_dialog(self, summary):
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Inspect EXACT immutable plan before approval")
+        dialog.geometry("860x620")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        frame = ttk.Frame(dialog, padding=12)
+        frame.pack(fill="both", expand=True)
+        ttk.Label(frame, text="Review the entire content, SHA-256 and target identity. "
+                  "Approval is valid for one immutable plan only.", wraplength=820).pack(anchor="w")
+        body = ttk.Frame(frame)
+        body.pack(fill="both", expand=True, pady=8)
+        scrollbar = ttk.Scrollbar(body)
+        scrollbar.pack(side="right", fill="y")
+        text = tk.Text(body, wrap="word", yscrollcommand=scrollbar.set)
+        text.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=text.yview)
+        text.insert("1.0", summary)
+        text.configure(state="disabled")
+        result = {"approved": False}
+        def finish(value):
+            result["approved"] = value
+            dialog.destroy()
+        buttons = ttk.Frame(frame)
+        buttons.pack(fill="x")
+        ttk.Button(buttons, text="CANCEL", command=lambda: finish(False)).pack(side="left")
+        ttk.Button(buttons, text="APPROVE EXACT PLAN", command=lambda: finish(True)).pack(side="right")
+        dialog.protocol("WM_DELETE_WINDOW", lambda: finish(False))
+        self.root.wait_window(dialog)
+        return result["approved"]
+
     def approve(self):
         try:
             ctrl = self._require()
             if not self.selected:
                 raise ControllerError("SELECT_TASK_FIRST")
-            _, plan = ctrl._plan(self.selected)
-            summary = ("Approve exactly this ZERO-PAID-API plan?\n\nTask: " + plan["task_id"] +
-                       "\nRepo: " + plan["repo"] + "\nBase: " + plan["ref"] + " @ " + plan["target_sha"] +
-                       "\nNew file: " + plan["path"] + "\nExecutor: " + plan["executor"] +
-                       "\nBytes: " + str(len(plan["content"].encode("utf-8"))))
-            if messagebox.askyesno("Human approval", summary, parent=self.root):
+            _, plan, _ = ctrl._plan(self.selected)
+            if self._approval_dialog(approval_scope(plan)):
                 self._log("Approval stored: " + ctrl.approve(self.selected))
                 self.refresh()
         except Exception as exc:
@@ -266,6 +341,22 @@ class Desktop:
         except Exception as exc:
             self._error(exc)
 
+    def rework(self):
+        try:
+            ctrl = self._require()
+            if not self.selected:
+                raise ControllerError("SELECT_TASK_FIRST")
+            _, plan, _ = ctrl._plan(self.selected)
+            if not messagebox.askyesno("Explicit REWORK",
+                    "Discard the previous approval, replan the selected REWORK task with the "
+                    "current Markdown editor content, and require fresh approval?", parent=self.root):
+                return
+            content = self.content.get("1.0", "end-1c")
+            self._log("REWORK plan SHA-256: " + ctrl.rework(self.selected, content))
+            self.refresh()
+        except Exception as exc:
+            self._error(exc)
+
     def cancel_run(self):
         self.cancel_event.set()
         self.status_var.set("Cancellation requested; active subprocess will be terminated.")
@@ -275,7 +366,7 @@ class Desktop:
             ctrl = self._require()
             if not self.selected:
                 raise ControllerError("SELECT_TASK_FIRST")
-            _, plan = ctrl._plan(self.selected)
+            _, plan, _ = ctrl._plan(self.selected)
             if not messagebox.askyesno("External GitHub write",
                     "Submit reviewed file as a NEW DRAFT PR (never merge automatically)?\n\n" +
                     plan["repo"] + "\n" + plan["path"] + "\nBase " + plan["target_sha"], parent=self.root):
