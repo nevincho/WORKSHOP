@@ -96,10 +96,12 @@ class Desktop:
                    command=lambda: self.tabs.select(self.settings_page)).pack(anchor="w", pady=3)
         ttk.Button(self.welcome_page, text="3B. GITHUB CONNECTIONS",
                    command=lambda: self.tabs.select(self.github_page)).pack(anchor="w", pady=3)
-        ttk.Button(self.welcome_page, text="4. Create a bounded Markdown proposal, approve the exact "
+        ttk.Label(self.welcome_page, text="4. Create a bounded Markdown proposal, approve the exact "
                   "plan, run preflight, submit a draft PR, obtain a distinct GitHub reviewer approval, "
                   "then explicitly accept the local proposal. COMPLETE never means merged/deployed.",
-                  command=lambda: self.tabs.select(self.plan_page)).pack(anchor="w", pady=12)
+                  wraplength=860).pack(anchor="w", pady=8)
+        ttk.Button(self.welcome_page, text="4. OPEN TASK PLANNER",
+                   command=lambda: self.tabs.select(self.plan_page)).pack(anchor="w", pady=4)
         ttk.Label(self.board, text="G1 trusted read-only workspace browser", font=("Segoe UI", 11, "bold")).pack(anchor="w")
         self.g1_tree = ttk.Treeview(self.board, columns=("id", "status", "project"), show="headings", height=8)
         for col in ("id", "status", "project"):
@@ -164,8 +166,12 @@ class Desktop:
         ttk.Button(runbar, text="REJECT REVIEW", command=self.reject_review).pack(side="left", padx=4)
         ttk.Button(runbar, text="CANCEL RUN", command=self.cancel_run).pack(side="left", padx=4)
         ttk.Button(runbar, text="4. SUBMIT DRAFT PR (NOT ACCEPTANCE)", command=self.publish).pack(side="left", padx=4)
-        ttk.Button(runbar, text="5. ACCEPT INDEPENDENTLY REVIEWED PR",
+        acceptbar = ttk.Frame(self.run_page)
+        acceptbar.pack(fill="x", pady=8)
+        ttk.Button(acceptbar, text="5. ACCEPT INDEPENDENTLY REVIEWED PR (LOCAL COMPLETE)",
                    command=self.accept_review).pack(side="left", padx=4)
+        ttk.Label(acceptbar, text="Requires distinct GitHub reviewer approval on exact PR commit; never merges.",
+                  wraplength=450).pack(side="left", padx=10)
         self.runlog = tk.Text(self.run_page, wrap="word", state="disabled")
         self.runlog.pack(fill="both", expand=True, pady=12)
         ttk.Label(self.github_page, text="GitHub access: public read-only by default. Scoped PAT stays in Windows Credential Manager.",
