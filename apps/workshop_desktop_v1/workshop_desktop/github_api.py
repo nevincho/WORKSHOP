@@ -177,7 +177,7 @@ class GitHubClient:
             raise GitHubError("PROPOSAL_REMOTE_IDENTITY_CHANGED")
         if self.head(repo, plan["ref"]) != plan["target_sha"]:
             raise GitHubError("PROPOSAL_BASE_CHANGED")
-        if self.read_file(repo, branch, plan["path"]) != plan["content"].encode("utf-8"):
+        if self.read_file(repo, commit, plan["path"]) != plan["content"].encode("utf-8"):
             raise GitHubError("PROPOSAL_REMOTE_CONTENT_CHANGED")
         reviews = self.request("GET", "/repos/" + repo + "/pulls/" + number + "/reviews?per_page=100",
                                authorized=True)
