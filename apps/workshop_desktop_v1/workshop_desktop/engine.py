@@ -529,6 +529,7 @@ class Controller:
         self._approval(identifier, state, plan)
         if self.github.head(plan["repo"], plan["ref"]) != plan["target_sha"]:
             raise ControllerError("TARGET_HEAD_CHANGED")
+        timeout_seconds = self.settings()["worker_timeout_seconds"]
         run_id = uuid.uuid4().hex
         stage = self.store.staging / run_id
         stage.mkdir()
@@ -541,7 +542,7 @@ class Controller:
         try:
             code, stdout, stderr = _launch("worker",
                 [self.store.repo / "plans" / (identifier + ".json"), output],
-                stage, timeout=self.settings()["worker_timeout_seconds"], cancel=cancel)
+                stage, timeout=timeout_seconds, cancel=cancel)
             metadata_path = stage / "worker_result.json"
             metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
             if (code != 0 or not output.is_file() or
