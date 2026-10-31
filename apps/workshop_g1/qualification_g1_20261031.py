@@ -40,9 +40,9 @@ class G1BoundedQualification(unittest.TestCase):
         root = self.root / name
         (root / 'tasks').mkdir(parents=True)
         (root / '.git').mkdir()
-        (root / '.git' / 'config').write_bytes(b'[core]\\nrepositoryformatversion = 0\\n')
+        (root / '.git' / 'config').write_bytes(b'[core]\nrepositoryformatversion = 0\n')
         (root / '.hidden').write_bytes(b'preserve hidden file')
-        (root / 'tasks' / 'README.md').write_text('# inert data\\n', encoding='utf-8')
+        (root / 'tasks' / 'README.md').write_text('# inert data\n', encoding='utf-8')
         if metadata != 'missing':
             body = {'workspace_version': core.WORKSPACE_VERSION,
                     'workspace_id': 'e47a47b5-1fd5-472e-8d9f-3b7f93b8aa19',
@@ -80,7 +80,7 @@ class G1BoundedQualification(unittest.TestCase):
                 self.assertFalse(any(k == 'workspace.json' for k, _ in imported_errors))
                 after_import = snapshot(root)
                 self.assertEqual(before, after_import, 'IMPORT mutated NTFS file or metadata')
-                self.assertIn('.git\\\\config', before)
+                self.assertIn('.git\\config', before)
                 self.assertIn('.hidden', before)
                 print('NTFS_STRICT_OPEN_IMPORT case=' + name +
                       ' diagnostic=' + str(diagnostic) +
@@ -98,7 +98,7 @@ class G1BoundedQualification(unittest.TestCase):
             return root
 
         try:
-            with mock.patch.object(app.tk, 'Tk', side_effect=capture_root), \\
+            with mock.patch.object(app.tk, 'Tk', side_effect=capture_root), \
                  mock.patch.object(real_tk, 'mainloop', lambda self: None):
                 app.main()
             self.assertEqual(len(roots), 1)
@@ -127,7 +127,7 @@ class G1BoundedQualification(unittest.TestCase):
     def test_unreadable_acl_denial_and_recovery(self):
         root = self.workspace('acl')
         locked = root / 'tasks' / 'TASK-LOCK.md'
-        original = b'TASK_ID: LOCKED\\n'
+        original = b'TASK_ID: LOCKED\n'
         locked.write_bytes(original)
         user = subprocess.run(['whoami', '/user', '/fo', 'csv', '/nh'],
                               capture_output=True, text=True, check=True, timeout=15)
@@ -193,7 +193,7 @@ class G1BoundedQualification(unittest.TestCase):
                 replaced.append(True)
             return original_unlink(path, *args, **kwargs)
 
-        with mock.patch.object(core, '_path_identity', side_effect=fail_identity), \\
+        with mock.patch.object(core, '_path_identity', side_effect=fail_identity), \
              mock.patch.object(Path, 'unlink', replace_before_unlink):
             with self.assertRaisesRegex(OSError, 'INJECTED_WORKSPACE_IDENTITY_FAILURE'):
                 core.create_workspace(dest, BUNDLE)
