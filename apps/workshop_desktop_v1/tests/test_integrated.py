@@ -414,7 +414,7 @@ class IntegratedTests(unittest.TestCase):
         detail = self.controller.task_detail(identifier)
         self.assertEqual(detail["id"], identifier)
         self.assertEqual(detail["status"], "READY")
-        self.assertEqual(detail["plan"]["content"], "# Verified demo\\n")
+        self.assertEqual(detail["plan"]["content"], "# Verified demo" + chr(10))
         self.assertEqual(detail["plan_sha256"], self.controller.status()["tasks"][identifier]["plan_hash"])
         self.assertFalse(detail["approval_recorded"])
         self.assertIsNone(detail["run"])
