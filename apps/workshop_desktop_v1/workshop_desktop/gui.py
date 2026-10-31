@@ -18,6 +18,7 @@ def approval_scope(plan):
             "\nOperation: " + plan["operation"] + "\nNew file: " + plan["path"] +
             "\nExecutor: " + plan["executor"] +
             "\nMaximum cost: " + str(plan["max_cost"]) +
+            "\nWorker timeout seconds: " + str(plan.get("timeout_seconds", 20)) +
             "\nUTF-8 bytes: " + str(len(content.encode("utf-8"))) +
             "\nContent SHA-256: " + digest(content.encode("utf-8")) +
             "\nPlan SHA-256: " + digest(canonical(plan)) +
