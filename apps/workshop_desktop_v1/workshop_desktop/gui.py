@@ -210,6 +210,8 @@ class Desktop:
         self.checkpoint_tree.bind("<<TreeviewSelect>>", self._select_checkpoint)
         ttk.Button(self.checkpoint_page, text="VIEW SELECTED CHECKPOINT",
                    command=self.show_checkpoint).pack(anchor="w", pady=5)
+        ttk.Button(self.checkpoint_page, text="RECOVER INTERRUPTED LOCAL GIT TRANSACTION",
+                   command=self.recover_transaction).pack(anchor="w", pady=5)
         ttk.Button(self.checkpoint_page, text="EXPLICIT INTERRUPTED-RUN RECOVERY",
                    command=self.recover_coordination).pack(anchor="w", pady=5)
         ttk.Label(self.checkpoint_page, text="No automatic remote rollback: close a draft PR and "
@@ -301,6 +303,23 @@ class Desktop:
                     "OPEN itself performs no writes.", parent=self.root):
                 return
             ctrl.initialize()
+            self.refresh()
+        except Exception as exc:
+            self._error(exc)
+
+    def recover_transaction(self):
+        try:
+            ctrl = self._require()
+            if not ctrl.store.journal.is_file():
+                raise ControllerError("NO_TRANSACTION_JOURNAL")
+            if not messagebox.askyesno("Recover local Git transaction",
+                    "Inspect and reconcile the recorded local Git transaction? "
+                    "Only known journal files may be rolled back, and only if their "
+                    "content and Git HEAD still match. No remote actions are retried.",
+                    parent=self.root):
+                return
+            outcome = ctrl.recover_transaction()
+            self._log("Local Git transaction: " + json.dumps(outcome, sort_keys=True))
             self.refresh()
         except Exception as exc:
             self._error(exc)
