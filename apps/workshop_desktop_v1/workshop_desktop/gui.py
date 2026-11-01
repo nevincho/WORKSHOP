@@ -322,8 +322,9 @@ class Desktop:
         # requires the separate, explicitly confirmed INITIALIZE action.
         # OPEN never repairs or initializes coordination; recovery is a separate action.
         self.controller = ctrl
-        self.wizard_step = 0
-        self.wizard_status_var.set("Step 1/4: Workspace opened. Verify and continue.")
+        if hasattr(self, "wizard_status_var"):
+            self.wizard_step = 0
+            self.wizard_status_var.set("Step 1/4: Workspace opened. Verify and continue.")
         self.selected = None
         self.g1_selected = None
         self.path_var.set(str(path))
