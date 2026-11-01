@@ -123,6 +123,25 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertTrue(all(len(item["stdout"]) <= 32768 and
                             len(item["stderr"]) <= 32768 for item in events))
 
+    def test_git_subprocess_ignores_inherited_repository_redirection(self):
+        # A launched desktop may inherit these from a developer shell or IDE.
+        # No inherited Git control variable may redirect canonical Git reads.
+        poisoned = {"GIT_DIR": str(self.root / "foreign-git-dir"),
+                    "GIT_WORK_TREE": str(self.root / "foreign-worktree"),
+                    "GIT_INDEX_FILE": str(self.root / "foreign-index"),
+                    "GIT_CONFIG_COUNT": "1",
+                    "GIT_CONFIG_KEY_0": "core.hooksPath",
+                    "GIT_CONFIG_VALUE_0": str(self.root / "foreign-hooks")}
+        baseline = self.ctrl.store.head()
+        with patch.dict(os.environ, poisoned):
+            actual = _git(self.ctrl.store.repo, "rev-parse", "--show-toplevel")
+            self.assertEqual(os.path.normcase(os.path.abspath(actual)),
+                             os.path.normcase(os.path.abspath(self.ctrl.store.repo)))
+            self.assertEqual(self.ctrl.store.head(), baseline)
+            self.assertEqual(self.ctrl.status()["tasks"], {})
+        self.assertFalse((self.root / "foreign-git-dir").exists())
+        self.assertFalse((self.root / "foreign-index").exists())
+
     def test_transaction_journal_rolls_back_partial_local_commit(self):
         real_git = _git
         def fail_commit(repo, *args, **kwargs):
