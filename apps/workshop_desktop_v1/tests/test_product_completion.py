@@ -205,6 +205,27 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertEqual(result["error"], "WORKER_OUTPUT_INVALID")
         self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "BLOCKED")
 
+    def test_reviewer_pass_without_required_checks_is_rework(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        state = self.ctrl.status()["tasks"][identifier]
+        run = self.ctrl.store.read("runs/" + state["run"] + ".json")
+        def forged_report(role, arguments, cwd, **kwargs):
+            self.assertEqual(role, "reviewer")
+            Path(arguments[2]).write_text(json.dumps({
+                "reviewer_pid": run["worker_pid"] + 1,
+                "verdict": "PASS", "sha256": run["artifact_sha256"],
+                "checks": {"approved_operation": True, "path_allowlist": True,
+                           "exact_bytes": True, "bounded_bytes": True}
+            }), encoding="utf-8")
+            return 0, "", ""
+        with patch("workshop_desktop.engine._launch", side_effect=forged_report):
+            review = self.ctrl.review(identifier)
+        self.assertEqual(review["verdict"], "REWORK")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+
     def test_reviewer_crash_is_durable_rework_not_stranded_review(self):
         identifier = self.plan()
         _, plan, _ = self.ctrl._plan(identifier)
