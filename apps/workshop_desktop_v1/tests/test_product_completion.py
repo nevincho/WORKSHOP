@@ -384,6 +384,14 @@ class GitHubIndependentReviewTests(unittest.TestCase):
         receipt = client.verified_independent_review(plan, proposal)
         self.assertEqual(receipt["reviewed_commit"], PROPOSED)
 
+    def test_review_history_order_cannot_hide_newer_veto(self):
+        client, plan, proposal, _ = self.fixture([
+            self.approval(login="reviewer-a", state="CHANGES_REQUESTED", id=42),
+            self.approval(login="reviewer-b", state="APPROVED", id=41),
+            self.approval(login="reviewer-a", state="APPROVED", id=40)])
+        with self.assertRaisesRegex(GitHubError, "UNRESOLVED_CHANGES_REQUESTED"):
+            client.verified_independent_review(plan, proposal)
+
     def test_remote_commit_change_refused(self):
         client, plan, proposal, _ = self.fixture([self.approval()], head_sha="c" * 40)
         with self.assertRaisesRegex(GitHubError, "PROPOSAL_REMOTE_IDENTITY_CHANGED"):
