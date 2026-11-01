@@ -33,3 +33,22 @@ PREVIOUS_SOURCE_SHA: d39385a6a2a3631e3200031eea4b03162c2a4787
 
 ## Next eligible action
 Distinct Reviewer: read exact PR #4 diff at cac097d6, source and raw Windows job 124865034909; independently assess D1-D3, worker metadata error state, reviewer report schema, transaction journal/rollback, GitHub authenticated review, installer provenance and repository hygiene. Record explicit PASS/FAIL on immutable source. On FAIL, perform smallest bounded correction and rerun Windows CI. Only after distinct PASS, perform owner-only Windows 10/11 and live two-identity G7 acceptance. Preserve draft PR and rollback; do not infer commercial release from CI.
+
+## 2026-11-01 bounded source/security continuation (post-110 PASS)
+
+ROLE: CONTROL ROOM source inspection and implementation; **not** a distinct authenticated independent Reviewer.
+FROZEN_EXECUTABLE_SOURCE: `466552574b09a47a124003320eb4caaa0c399d4e`
+BASELINE: `cac097d69b781843159b5c9474cbabe9ea25ead6` (110 PASS).
+
+Three source-grounded defects corrected without changing G1, trusted schemas, policies, agents, main or windows:
+1. Coordination Git subprocess inherited caller-controlled `GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_CONFIG_*`. This could redirect Git commands away from the verified workspace. `_git()` now drops all inherited `GIT_*` variables before applying fixed settings. A real local Git regression test poisons all these variables and confirms the canonical repo HEAD/status are unchanged.
+2. Interrupted reviewer could leave `review.json` before the coordination transaction, causing every retry to throw `REVIEW_REPORT_ALREADY_EXISTS` and strand REVIEW. The existing report now fails closed to **durable REWORK**, preserving bytes and preventing forged PASS. New negative test verifies the reviewer is not re-executed and no checkpoint appears.
+3. Scoped Markdown proposal paths accepted Windows device names `COM1.md`/`LPT9.md`, which GitHub accepts but Windows cannot check out normally. `validate_target()` now rejects reserved COM1–COM9/LPT1–LPT9 in every path segment, including mixed case; extended existing negative fixture.
+
+**Actual Windows Server 2022 qualification:** GitHub Actions run `41314058862`, job `124870267609`, exact source `466552574b09a47a124003320eb4caaa0c399d4e`, conclusion SUCCESS. Raw job log: `python -B -m unittest discover -s tests -v` **70 PASS**; G1 unit **31 PASS**; NTFS **6 PASS**; G1 F2A/F2B qualification **5 PASS**; total **112 PASS / 0 FAIL**. Python compile, frozen GUI process smoke, G1 trust selftest, frozen Worker/Reviewer, Windows onedir build, Inno Setup build, Windows Server silent install/uninstall and credential cleanup all completed successfully.
+
+Artifact `WORKSHOPDesktopV1-Installer` ID `13086369276`, ZIP SHA-256 `c273ad707e00e55d2e2e3400f4aab1724db23c172324b1044a45d7d89402b37d`.
+Artifact `WORKSHOPDesktopV1-Windows-onedir` ID `13086513753`, ZIP SHA-256 `29c19bbc2e4f4e4d9f015b035651d5284ae74a2e75e874aa1a9ab788a822543a`.
+Artifacts are unsigned tester candidates. The CI result does not establish interactive Windows 10/11 acceptance.
+
+**Reviewer handoff:** inspect immutable source/diff from `cac097d6` to `46655257`, raw job `124870267609`, the three new negative tests, prior D1–D3, journal and GitHub proposal trust boundaries. A distinct Reviewer PASS/checkpoint is **NOT VERIFIED**. PR #4 remains draft/unmerged. Live two-identity GitHub PAT/PR and clean Windows 10/11 G7 tests remain **NOT VERIFIED**; no commercial release COMPLETE. Previous 110-PASS source remains the rollback reference.
