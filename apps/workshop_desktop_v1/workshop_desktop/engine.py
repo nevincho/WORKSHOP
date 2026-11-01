@@ -727,12 +727,13 @@ class Controller:
         if not output.is_file() or digest(output.read_bytes()) != run["artifact_sha256"]:
             raise ControllerError("STAGED_ARTIFACT_CHANGED")
         report_file = _safe_path(stage / "review.json")
-        if report_file.exists():
-            raise ControllerError("REVIEW_REPORT_ALREADY_EXISTS")
-        # Reviewer process failures are durable REWORK, not stranded REVIEW.
-        # Do not catch coordination/storage failures: those must fail closed.
+        # A crash after the reviewer wrote its report but before the Git
+        # checkpoint must not permanently strand the task in REVIEW.
+        # Fail closed to REWORK; never trust or overwrite a preexisting report.
         worker_pid = run.get("worker_pid")
         try:
+            if report_file.exists():
+                raise ControllerError("REVIEW_REPORT_ALREADY_EXISTS")
             code, stdout, stderr = _launch("reviewer",
                 [self.store.repo / "plans" / (identifier + ".json"), output, report_file], stage, timeout=20)
             if not report_file.is_file():
