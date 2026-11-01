@@ -286,6 +286,25 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
         self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
 
+    def test_interrupted_reviewer_preexisting_report_is_durable_rework(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        result = self.ctrl.run(identifier)
+        self.assertIsNone(result["error"])
+        stage = self.ctrl.store.staging / result["id"]
+        stale = stage / "review.json"
+        stale.write_text('{"verdict":"PASS","forged":true}', encoding="utf-8")
+        with patch("workshop_desktop.engine._launch") as launch:
+            report = self.ctrl.review(identifier)
+        launch.assert_not_called()
+        self.assertEqual(report["verdict"], "REWORK")
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+        self.assertEqual(stale.read_text(encoding="utf-8"),
+                         '{"verdict":"PASS","forged":true}')
+        self.assertFalse((self.ctrl.store.repo / "checkpoints" / (identifier + ".json")).exists())
+
     def test_human_acceptance_refuses_changed_displayed_review(self):
         identifier = self.ready_for_acceptance()
         head = self.ctrl.store.head()
