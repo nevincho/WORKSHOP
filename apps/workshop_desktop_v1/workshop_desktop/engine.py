@@ -683,15 +683,21 @@ class Controller:
             code, stdout, stderr = _launch("worker",
                 [self.store.repo / "plans" / (identifier + ".json"), output],
                 stage, timeout=timeout_seconds, cancel=cancel, progress=progress)
-            metadata_path = stage / "worker_result.json"
-            metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
+            metadata_path = _safe_path(stage / "worker_result.json")
+            if metadata_path.is_file():
+                if metadata_path.stat().st_size > 8192:
+                    raise ControllerError("WORKER_METADATA_OVERSIZED")
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                if not isinstance(metadata, dict):
+                    raise ControllerError("WORKER_METADATA_INVALID")
             if (code != 0 or not output.is_file() or
                     metadata.get("sha256") != digest(output.read_bytes()) or
-                    not isinstance(metadata.get("pid"), int)):
+                    type(metadata.get("pid")) is not int):
                 error = "WORKER_FAILED"
-        except ControllerError as exc:
-            code, stdout, stderr = -1, "", str(exc)
-            error = str(exc)
+        except (ControllerError, OSError, ValueError, TypeError, KeyError) as exc:
+            code, stdout, stderr = -1, "", type(exc).__name__
+            error = str(exc) if isinstance(exc, ControllerError) else "WORKER_OUTPUT_INVALID"
+            metadata = {}
         result = {"id": run_id, "task": identifier, "worker_exit": code,
                   "stdout": stdout, "stderr": stderr, "error": error,
                   "worker_pid": metadata.get("pid"),
