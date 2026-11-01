@@ -678,7 +678,9 @@ class Desktop:
             if not messagebox.askyesno("Human acceptance of reviewed proposal",
                                        summary, parent=self.root):
                 return
-            checkpoint = ctrl.accept_review(identifier)
+            checkpoint = ctrl.accept_review(
+                identifier, expected_review_id=receipt["review_id"],
+                expected_reviewed_commit=receipt["reviewed_commit"])
             self._log("Accepted local proposal checkpoint: " + checkpoint["id"])
             self.refresh()
         except Exception as exc:
