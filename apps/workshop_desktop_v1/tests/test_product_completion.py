@@ -170,6 +170,40 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertEqual(len(self.ctrl.status()["tasks"]), 1)
         self.assertFalse(journal.exists())
 
+    def test_malformed_worker_metadata_is_durable_blocked_not_stranded(self):
+        for payload in ("{broken", "[]"):
+            with self.subTest(payload=payload):
+                # Each subtest needs a fresh workspace and coordination Git.
+                with tempfile.TemporaryDirectory(prefix="workshop_bad_worker_") as temp:
+                    root = Path(temp) / "g1"
+                    create_workspace(root, trusted_bundle())
+                    ctrl = Controller(root, github=ReviewFixture(), vault=MemoryVault())
+                    ctrl.initialize()
+                    identifier = ctrl.plan("TASK-01", "Demo", "example/demo", "main",
+                                           "docs/demo.md", "# Demo\\n")
+                    _, plan, _ = ctrl._plan(identifier)
+                    ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+                    def corrupt_worker(role, arguments, cwd, **kwargs):
+                        self.assertEqual(role, "worker")
+                        (Path(cwd) / "worker_result.json").write_text(payload, encoding="utf-8")
+                        (Path(cwd) / "artifact.md").write_text("# Demo\\n", encoding="utf-8")
+                        return 0, "", ""
+                    with patch("workshop_desktop.engine._launch", side_effect=corrupt_worker):
+                        result = ctrl.run(identifier)
+                    self.assertEqual(result["error"], "WORKER_OUTPUT_INVALID")
+                    self.assertEqual(ctrl.status()["tasks"][identifier]["status"], "BLOCKED")
+                    self.assertEqual(ctrl.store.read("runs/" + result["id"] + ".json")["error"],
+                                     "WORKER_OUTPUT_INVALID")
+
+    def test_worker_launch_oserror_is_durable_blocked(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        with patch("workshop_desktop.engine._launch", side_effect=OSError("cannot launch")):
+            result = self.ctrl.run(identifier)
+        self.assertEqual(result["error"], "WORKER_OUTPUT_INVALID")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "BLOCKED")
+
     def test_reviewer_crash_is_durable_rework_not_stranded_review(self):
         identifier = self.plan()
         _, plan, _ = self.ctrl._plan(identifier)
