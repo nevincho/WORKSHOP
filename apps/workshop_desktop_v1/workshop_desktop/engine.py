@@ -738,7 +738,14 @@ class Controller:
                 raise ControllerError("INVALID_REVIEW_REPORT")
             if report.get("reviewer_pid") == worker_pid:
                 raise ControllerError("REVIEWER_IDENTITY_COLLISION")
-            if code != 0 or report.get("verdict") != "PASS" or report.get("sha256") != run["artifact_sha256"]:
+            expected_checks = {"approved_operation", "path_allowlist", "exact_bytes",
+                               "bounded_bytes", "no_null"}
+            checks = report.get("checks")
+            if (code != 0 or report.get("verdict") != "PASS" or
+                    report.get("sha256") != run["artifact_sha256"] or
+                    type(report.get("reviewer_pid")) is not int or report["reviewer_pid"] <= 0 or
+                    not isinstance(checks, dict) or set(checks) != expected_checks or
+                    any(checks[name] is not True for name in expected_checks)):
                 report["verdict"] = "REWORK"
         except (ControllerError, ValueError, TypeError, OSError, TimeoutError) as exc:
             report = {"verdict": "REWORK", "reason": "REVIEWER_EXECUTION_FAILED",
