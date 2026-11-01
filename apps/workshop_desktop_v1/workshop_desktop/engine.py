@@ -610,16 +610,25 @@ class Controller:
         report_file = _safe_path(stage / "review.json")
         if report_file.exists():
             raise ControllerError("REVIEW_REPORT_ALREADY_EXISTS")
-        code, stdout, stderr = _launch("reviewer",
-            [self.store.repo / "plans" / (identifier + ".json"), output, report_file], stage, timeout=20)
-        if not report_file.is_file():
-            raise ControllerError("REVIEWER_DID_NOT_REPORT")
-        report = json.loads(report_file.read_text(encoding="utf-8"))
+        # Reviewer process failures are durable REWORK, not stranded REVIEW.
+        # Do not catch coordination/storage failures: those must fail closed.
         worker_pid = run.get("worker_pid")
-        if report.get("reviewer_pid") == worker_pid:
-            raise ControllerError("REVIEWER_IDENTITY_COLLISION")
-        if code != 0 or report.get("verdict") != "PASS" or report.get("sha256") != run["artifact_sha256"]:
-            report["verdict"] = "REWORK"
+        try:
+            code, stdout, stderr = _launch("reviewer",
+                [self.store.repo / "plans" / (identifier + ".json"), output, report_file], stage, timeout=20)
+            if not report_file.is_file():
+                raise ControllerError("REVIEWER_DID_NOT_REPORT")
+            report = json.loads(report_file.read_text(encoding="utf-8"))
+            if not isinstance(report, dict):
+                raise ControllerError("INVALID_REVIEW_REPORT")
+            if report.get("reviewer_pid") == worker_pid:
+                raise ControllerError("REVIEWER_IDENTITY_COLLISION")
+            if code != 0 or report.get("verdict") != "PASS" or report.get("sha256") != run["artifact_sha256"]:
+                report["verdict"] = "REWORK"
+        except (ControllerError, ValueError, TypeError, OSError, TimeoutError) as exc:
+            report = {"verdict": "REWORK", "reason": "REVIEWER_EXECUTION_FAILED",
+                      "failure_type": type(exc).__name__}
+            stdout, stderr = "", str(exc)[:1000]
         review_id = uuid.uuid4().hex
         report.update({"id": review_id, "task": identifier, "worker_pid": worker_pid,
                        "review_kind": "DETERMINISTIC_PREFLIGHT_NOT_INDEPENDENT_ACCEPTANCE",
@@ -714,7 +723,7 @@ class Controller:
                                expected_head=expected_head)
         return proposal_record
 
-    def accept_review(self, identifier):
+    def accept_review(self, identifier, expected_review_id=None, expected_reviewed_commit=None):
         """Human acceptance only after independent GitHub-authenticated PR review.
 
         COMPLETE means the *local proposal workflow* was accepted; it does not
@@ -746,6 +755,10 @@ class Controller:
                 receipt.get("pr_url") != proposal.get("pr_url") or
                 receipt.get("reviewer", "").casefold() == receipt.get("author", "").casefold()):
             raise ControllerError("INDEPENDENT_REVIEW_IDENTITY_INVALID")
+        # Bind the final human decision to exactly the receipt shown in the GUI.
+        if (expected_review_id is not None and receipt.get("review_id") != expected_review_id or
+                expected_reviewed_commit is not None and receipt.get("reviewed_commit") != expected_reviewed_commit):
+            raise ControllerError("DISPLAYED_REVIEW_CHANGED")
         checkpoint = {"id": identifier, "kind": "LOCAL_PROPOSAL_ACCEPTED_PR_UNMERGED",
                       "plan_hash": task["plan_hash"], "review_id": task["review"],
                       "run_id": task["run"], "artifact_sha256": run["artifact_sha256"],
