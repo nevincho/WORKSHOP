@@ -201,7 +201,7 @@ class CoordinationRepo:
             allowed = set(writes)
             for name, hashes in writes.items():
                 if (name not in {"state.json", "events.jsonl", "settings.json"} and
-                        not re.fullmatch(r"(plans|approvals|runs|reviews|proposals|checkpoints)/[a-f0-9]{32}\\.json", name)):
+                        not re.fullmatch(r"(plans|approvals|runs|reviews|proposals|checkpoints)/[a-f0-9]{32}\.json", name)):
                     raise ControllerError("INVALID_TRANSACTION_JOURNAL")
                 if not isinstance(hashes, dict) or not re.fullmatch(r"[a-f0-9]{64}", str(hashes.get("after", ""))):
                     raise ControllerError("INVALID_TRANSACTION_JOURNAL")
