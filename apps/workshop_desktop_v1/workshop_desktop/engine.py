@@ -98,7 +98,11 @@ def _git(repo, *args, timeout=20):
     if not shutil.which("git"):
         raise ControllerError("GIT_NOT_INSTALLED")
     repo = _safe_path(repo)
-    env = dict(os.environ)
+    # Never inherit caller-supplied Git control variables. GIT_DIR,
+    # GIT_WORK_TREE, GIT_INDEX_FILE and GIT_CONFIG_* can redirect repository
+    # operations or override the intended fixed configuration.
+    env = {key: value for key, value in os.environ.items()
+           if not key.upper().startswith("GIT_")}
     env["GIT_CONFIG_NOSYSTEM"] = "1"
     env["GIT_CONFIG_GLOBAL"] = os.devnull
     env["GIT_TERMINAL_PROMPT"] = "0"
