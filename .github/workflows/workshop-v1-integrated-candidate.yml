@@ -7,6 +7,7 @@ on:
       - integration/desktop-v1-g1-f2ab-20261031
       - feature/desktop-v1-product-20261031
       - feature/desktop-v1-completion-20261031
+      - feature/desktop-v1-d1-d3-repair-20261101
     paths:
       - 'apps/workshop_desktop_v1/**'
       - 'apps/workshop_g1/**'
