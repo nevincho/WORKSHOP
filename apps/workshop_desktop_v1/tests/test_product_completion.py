@@ -311,7 +311,7 @@ class GitHubIndependentReviewTests(unittest.TestCase):
     def test_latest_changes_requested_revokes_prior_approval(self):
         client, plan, proposal, _ = self.fixture([
             self.approval(id=10), self.approval(state="CHANGES_REQUESTED", id=11)])
-        with self.assertRaisesRegex(GitHubError, "INDEPENDENT_GITHUB_APPROVAL_REQUIRED"):
+        with self.assertRaisesRegex(GitHubError, "UNRESOLVED_CHANGES_REQUESTED"):
             client.verified_independent_review(plan, proposal)
 
     def test_conflicting_reviewers_fail_closed(self):
