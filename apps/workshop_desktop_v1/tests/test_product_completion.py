@@ -92,7 +92,14 @@ class ProductCompletionTests(unittest.TestCase):
     def test_complete_records_git_checkpoint_without_remote_merge(self):
         identifier = self.ready_for_acceptance()
         before = self.github.remote_writes
-        checkpoint = self.ctrl.accept_review(identifier)
+        _, plan, _ = self.ctrl._plan(identifier)
+        proposal = self.ctrl.store.read("proposals/" + identifier + ".json")["proposal"]
+        displayed = self.github.verified_independent_review(plan, proposal)
+        checkpoint = self.ctrl.accept_review(
+            identifier, expected_review_id=displayed["review_id"],
+            expected_reviewed_commit=displayed["reviewed_commit"],
+            expected_reviewer=displayed["reviewer"],
+            expected_pr_url=displayed["pr_url"])
         self.assertEqual(checkpoint["kind"], "LOCAL_PROPOSAL_ACCEPTED_PR_UNMERGED")
         self.assertEqual(checkpoint["independent_review"]["reviewer"], "external-reviewer")
         self.assertEqual(checkpoint["proposal_sha"], PROPOSED)
@@ -209,8 +216,16 @@ class ProductCompletionTests(unittest.TestCase):
         head = self.ctrl.store.head()
         with self.assertRaisesRegex(ControllerError, "DISPLAYED_REVIEW_CHANGED"):
             self.ctrl.accept_review(identifier, expected_review_id=999,
-                                    expected_reviewed_commit=PROPOSED)
+                                    expected_reviewed_commit=PROPOSED,
+                                    expected_reviewer="external-reviewer",
+                                    expected_pr_url="https://github.com/example/demo/pull/3")
         self.assertEqual(self.ctrl.store.head(), head)
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REVIEW")
+
+    def test_programmatic_acceptance_cannot_skip_displayed_receipt(self):
+        identifier = self.ready_for_acceptance()
+        with self.assertRaisesRegex(ControllerError, "DISPLAYED_REVIEW_RECEIPT_REQUIRED"):
+            self.ctrl.accept_review(identifier)
         self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REVIEW")
 
     def test_safe_settings_are_git_backed_and_bounded(self):
