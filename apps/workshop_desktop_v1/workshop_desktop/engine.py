@@ -177,7 +177,7 @@ class CoordinationRepo:
         previous = json.loads(lines[-1])["hash"] if lines else "0" * 64
         record = {"previous": previous, "event": event, "time": now()}
         record["hash"] = digest(canonical(record))
-        return old + json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8") + b"\\n"
+        return old + json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8") + b"\n"
 
     def recover_transaction(self):
         """Explicit local-only rollback of an interrupted Git transaction.
