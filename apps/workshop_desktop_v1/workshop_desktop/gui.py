@@ -746,7 +746,9 @@ class Desktop:
                 return
             checkpoint = ctrl.accept_review(
                 identifier, expected_review_id=receipt["review_id"],
-                expected_reviewed_commit=receipt["reviewed_commit"])
+                expected_reviewed_commit=receipt["reviewed_commit"],
+                expected_reviewer=receipt["reviewer"],
+                expected_pr_url=receipt["pr_url"])
             self._log("Accepted local proposal checkpoint: " + checkpoint["id"])
             self.refresh()
         except Exception as exc:
