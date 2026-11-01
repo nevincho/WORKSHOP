@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from workshop_desktop.engine import Controller, ControllerError, canonical, digest
+from workshop_desktop.engine import Controller, ControllerError, canonical, digest, _git
 from workshop_desktop.g1_adapter import create_workspace, trusted_bundle
 from workshop_desktop.github_api import GitHubClient, GitHubError
 from workshop_desktop.vault import MemoryVault
@@ -103,6 +103,53 @@ class ProductCompletionTests(unittest.TestCase):
         with self.assertRaisesRegex(ControllerError, "PUBLISHED_REVIEW_REQUIRED"):
             self.ctrl.accept_review(identifier)
         self.assertEqual(self.github.remote_writes, 1)
+
+    def test_transaction_journal_rolls_back_partial_local_commit(self):
+        real_git = _git
+        def fail_commit(repo, *args, **kwargs):
+            if args and args[0] == "commit":
+                raise ControllerError("INJECTED_COMMIT_FAILURE")
+            return real_git(repo, *args, **kwargs)
+        with patch("workshop_desktop.engine._git", side_effect=fail_commit):
+            with self.assertRaisesRegex(ControllerError, "INJECTED_COMMIT_FAILURE"):
+                self.plan()
+        self.assertTrue(self.ctrl.store.journal.is_file())
+        with self.assertRaisesRegex(ControllerError, "TRANSACTION_JOURNAL_REQUIRES_RECOVERY"):
+            self.ctrl.status()
+        result = self.ctrl.recover_transaction()
+        self.assertEqual(result["outcome"], "ROLLED_BACK")
+        self.assertEqual(self.ctrl.status()["tasks"], {})
+        self.assertFalse(self.ctrl.store.journal.exists())
+
+    def test_transaction_journal_refuses_foreign_content(self):
+        real_git = _git
+        def fail_commit(repo, *args, **kwargs):
+            if args and args[0] == "commit":
+                raise ControllerError("INJECTED_COMMIT_FAILURE")
+            return real_git(repo, *args, **kwargs)
+        with patch("workshop_desktop.engine._git", side_effect=fail_commit):
+            with self.assertRaises(ControllerError):
+                self.plan()
+        (self.ctrl.store.repo / "state.json").write_text('{"foreign":true}', encoding="utf-8")
+        with self.assertRaisesRegex(ControllerError, "TRANSACTION_CONTENT_MISMATCH"):
+            self.ctrl.recover_transaction()
+        self.assertTrue(self.ctrl.store.journal.exists())
+
+    def test_transaction_journal_recognizes_committed_git_head(self):
+        journal = self.ctrl.store.journal
+        real_unlink = Path.unlink
+        def fail_cleanup(path, *args, **kwargs):
+            if path == journal:
+                raise OSError("INJECTED_JOURNAL_CLEANUP_FAILURE")
+            return real_unlink(path, *args, **kwargs)
+        with patch.object(Path, "unlink", fail_cleanup):
+            with self.assertRaisesRegex(OSError, "INJECTED_JOURNAL_CLEANUP_FAILURE"):
+                self.plan()
+        self.assertTrue(journal.is_file())
+        result = self.ctrl.recover_transaction()
+        self.assertEqual(result["outcome"], "COMMITTED")
+        self.assertEqual(len(self.ctrl.status()["tasks"]), 1)
+        self.assertFalse(journal.exists())
 
     def test_reviewer_crash_is_durable_rework_not_stranded_review(self):
         identifier = self.plan()
