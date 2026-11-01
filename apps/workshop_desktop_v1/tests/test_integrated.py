@@ -174,7 +174,8 @@ class IntegratedTests(unittest.TestCase):
 
     def test_path_allowlist(self):
         for path in ("../escape.md", ".git/config", "tasks/run.py", "docs/../evil.md",
-                     "docs/file.txt", "docs/CON.md", "docs/a\\b.md"):
+                     "docs/file.txt", "docs/CON.md", "docs/COM1.md", "docs/LPT9.md",
+                     "docs/subdir/com2.md", "docs/a\\b.md"):
             with self.subTest(path=path), self.assertRaises(GitHubError):
                 validate_target("example/demo", "main", path)
 
