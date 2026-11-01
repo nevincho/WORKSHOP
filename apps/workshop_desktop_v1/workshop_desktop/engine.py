@@ -832,7 +832,8 @@ class Controller:
                                expected_head=expected_head)
         return proposal_record
 
-    def accept_review(self, identifier, expected_review_id=None, expected_reviewed_commit=None):
+    def accept_review(self, identifier, expected_review_id=None, expected_reviewed_commit=None,
+                      expected_reviewer=None, expected_pr_url=None):
         """Human acceptance only after independent GitHub-authenticated PR review.
 
         COMPLETE means the *local proposal workflow* was accepted; it does not
@@ -864,9 +865,16 @@ class Controller:
                 receipt.get("pr_url") != proposal.get("pr_url") or
                 receipt.get("reviewer", "").casefold() == receipt.get("author", "").casefold()):
             raise ControllerError("INDEPENDENT_REVIEW_IDENTITY_INVALID")
-        # Bind the final human decision to exactly the receipt shown in the GUI.
-        if (expected_review_id is not None and receipt.get("review_id") != expected_review_id or
-                expected_reviewed_commit is not None and receipt.get("reviewed_commit") != expected_reviewed_commit):
+        # A programmatic caller cannot bypass the displayed human decision.
+        if (type(expected_review_id) is not int or
+                not isinstance(expected_reviewed_commit, str) or
+                not isinstance(expected_reviewer, str) or
+                not isinstance(expected_pr_url, str)):
+            raise ControllerError("DISPLAYED_REVIEW_RECEIPT_REQUIRED")
+        if (receipt.get("review_id") != expected_review_id or
+                receipt.get("reviewed_commit") != expected_reviewed_commit or
+                receipt.get("reviewer") != expected_reviewer or
+                receipt.get("pr_url") != expected_pr_url):
             raise ControllerError("DISPLAYED_REVIEW_CHANGED")
         checkpoint = {"id": identifier, "kind": "LOCAL_PROPOSAL_ACCEPTED_PR_UNMERGED",
                       "plan_hash": task["plan_hash"], "review_id": task["review"],
