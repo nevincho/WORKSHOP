@@ -104,6 +104,18 @@ class ProductCompletionTests(unittest.TestCase):
             self.ctrl.accept_review(identifier)
         self.assertEqual(self.github.remote_writes, 1)
 
+    def test_bounded_worker_progress_callback_does_not_change_result(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        events = []
+        result = self.ctrl.run(identifier, progress=events.append)
+        self.assertIsNone(result["error"])
+        self.assertTrue(events)
+        self.assertEqual(events[-1]["phase"], "EXITED")
+        self.assertTrue(all(len(item["stdout"]) <= 32768 and
+                            len(item["stderr"]) <= 32768 for item in events))
+
     def test_transaction_journal_rolls_back_partial_local_commit(self):
         real_git = _git
         def fail_commit(repo, *args, **kwargs):
