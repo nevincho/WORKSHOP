@@ -277,6 +277,34 @@ class WindowsDesktopScreenTests(unittest.TestCase):
             root.destroy()
 
 
+class WindowsWizardFlowTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows Tkinter wizard qualification only")
+    def test_first_run_wizard_requires_real_workspace_and_coordination(self):
+        import tkinter as tk
+        from workshop_desktop.gui import Desktop
+        with tempfile.TemporaryDirectory(prefix="workshop_wizard_") as tmp:
+            path = Path(tmp) / "g1"
+            create_workspace(path, trusted_bundle())
+            root = tk.Tk()
+            root.withdraw()
+            try:
+                app = Desktop(root)
+                self.assertEqual(app.wizard_step, 0)
+                app._attach(path)
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 1)
+                app.controller.initialize()
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 2)
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 3)
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 4)
+                self.assertIn("Wizard complete", app.wizard_status_var.get())
+            finally:
+                root.destroy()
+
+
 class GitHubIndependentReviewTests(unittest.TestCase):
     def fixture(self, reviews, *, author="author", head_sha=PROPOSED):
         calls = []
