@@ -143,7 +143,13 @@ class CoordinationRepo:
     def head(self):
         return _git(self.repo, "rev-parse", "HEAD")
 
+    @property
+    def journal(self):
+        return self.home / "transaction.json"
+
     def _clean(self):
+        if self.journal.exists():
+            raise ControllerError("TRANSACTION_JOURNAL_REQUIRES_RECOVERY")
         if not (self.repo / ".git").is_dir():
             raise ControllerError("COORDINATION_GIT_MISSING")
         if _git(self.repo, "status", "--porcelain"):
@@ -163,6 +169,80 @@ class CoordinationRepo:
         record["hash"] = digest(canonical(record))
         lines.append(json.dumps(record, sort_keys=True, ensure_ascii=False))
         _write_atomic(path, ("\n".join(lines) + "\n").encode("utf-8"))
+
+    def _event_bytes(self, event):
+        path = self.repo / "events.jsonl"
+        old = path.read_bytes() if path.exists() else b""
+        lines = old.splitlines()
+        previous = json.loads(lines[-1])["hash"] if lines else "0" * 64
+        record = {"previous": previous, "event": event, "time": now()}
+        record["hash"] = digest(canonical(record))
+        return old + json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8") + b"\\n"
+
+    def recover_transaction(self):
+        """Explicit local-only rollback of an interrupted Git transaction.
+
+        Refuse foreign edits, unknown paths, mismatched hashes and changed HEAD.
+        Never replay a worker or remote GitHub write.
+        """
+        if not self.journal.is_file():
+            raise ControllerError("NO_TRANSACTION_JOURNAL")
+        if (self.home / "transaction.lock").exists():
+            raise ControllerError("TRANSACTION_LOCK_REQUIRES_MANUAL_INSPECTION")
+        with self._lock():
+            record = json.loads(self.journal.read_text(encoding="utf-8"))
+            writes = record.get("writes")
+            expected = record.get("expected_head")
+            if (record.get("version") != 1 or
+                    not isinstance(expected, str) or not re.fullmatch(r"[a-f0-9]{40}", expected) or
+                    not isinstance(writes, dict) or not writes or
+                    "state.json" not in writes or "events.jsonl" not in writes):
+                raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+            allowed = set(writes)
+            for name, hashes in writes.items():
+                if (name not in {"state.json", "events.jsonl", "settings.json"} and
+                        not re.fullmatch(r"(plans|approvals|runs|reviews|proposals|checkpoints)/[a-f0-9]{32}\\.json", name)):
+                    raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+                if not isinstance(hashes, dict) or not re.fullmatch(r"[a-f0-9]{64}", str(hashes.get("after", ""))):
+                    raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+                before_hash = hashes.get("before")
+                if before_hash is not None and not re.fullmatch(r"[a-f0-9]{64}", str(before_hash)):
+                    raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+            head = self.head()
+            if head != expected:
+                parents = _git(self.repo, "rev-list", "--parents", "-n", "1", "HEAD").split()
+                if (len(parents) != 2 or parents[1] != expected or
+                        _git(self.repo, "status", "--porcelain", "-uall")):
+                    raise ControllerError("TRANSACTION_HEAD_CHANGED_REQUIRES_MANUAL_REVIEW")
+                for name, hashes in writes.items():
+                    target = _safe_path(self.repo / name)
+                    if not target.is_file() or digest(target.read_bytes()) != hashes["after"]:
+                        raise ControllerError("TRANSACTION_COMMIT_CONTENT_MISMATCH")
+                self.journal.unlink()
+                return {"outcome": "COMMITTED", "head": head}
+            changed = _git(self.repo, "status", "--porcelain", "-uall").splitlines()
+            for line in changed:
+                if len(line) < 4 or line[3:] not in allowed or line[:2].strip() not in {"M", "A", "??", "AM", "MM"}:
+                    raise ControllerError("FOREIGN_CHANGE_BLOCKS_TRANSACTION_RECOVERY")
+            for name, hashes in writes.items():
+                target = _safe_path(self.repo / name)
+                if target.exists():
+                    if not target.is_file() or digest(target.read_bytes()) not in {hashes["before"], hashes["after"]}:
+                        raise ControllerError("TRANSACTION_CONTENT_MISMATCH")
+                elif hashes["before"] is not None:
+                    raise ControllerError("TRANSACTION_CONTENT_MISMATCH")
+            # Reset only the journal-listed paths; no branch or remote reset.
+            _git(self.repo, "reset", "-q", "HEAD", "--", *sorted(allowed))
+            for name, hashes in writes.items():
+                target = _safe_path(self.repo / name)
+                if hashes["before"] is None:
+                    target.unlink(missing_ok=True)
+                else:
+                    _git(self.repo, "restore", "--worktree", "--", name)
+            if _git(self.repo, "status", "--porcelain", "-uall"):
+                raise ControllerError("TRANSACTION_ROLLBACK_INCOMPLETE")
+            self.journal.unlink()
+            return {"outcome": "ROLLED_BACK", "head": expected}
 
     def verify(self):
         self._clean()
@@ -223,12 +303,20 @@ class CoordinationRepo:
                 if name != "settings.json" and not re.fullmatch(r"(plans|approvals|runs|reviews|proposals|checkpoints)/[a-f0-9]{32}\.json", name):
                     raise ControllerError("INVALID_ARTIFACT_PATH")
                 files[name] = canonical(value)
+            files["events.jsonl"] = self._event_bytes(event)
+            journal = {"version": 1, "expected_head": before,
+                       "writes": {name: {"before": digest((self.repo / name).read_bytes())
+                                                if (self.repo / name).is_file() else None,
+                                         "after": digest(data)}
+                                  for name, data in files.items()}}
+            _write_atomic(self.journal, canonical(journal))
             for name, data in files.items():
                 _write_atomic(self.repo / name, data)
-            self._append_event(event)
-            _git(self.repo, "add", "--", *files.keys(), "events.jsonl")
+            _git(self.repo, "add", "--", *files.keys())
             _git(self.repo, "commit", "-qm", "WORKSHOP Desktop: " + event["kind"])
-            return self.head()
+            committed = self.head()
+            self.journal.unlink()
+            return committed
 
 
 def _launch(role, arguments, cwd, timeout=20, cancel=None):
@@ -789,6 +877,9 @@ class Controller:
                                        "actor": self.actor, "ids": ids},
                                expected_head=expected_head)
         return ids
+
+    def recover_transaction(self):
+        return self.store.recover_transaction()
 
     def recover_interrupted(self):
         return self.store.recover_interrupted(self.actor)
