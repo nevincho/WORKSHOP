@@ -190,6 +190,12 @@ class GitHubClient:
                 continue
             if review.get("state") in ("APPROVED", "CHANGES_REQUESTED", "DISMISSED"):
                 latest[login.casefold()] = review
+        # Fail closed if any other independent reviewer still requests changes.
+        # An approval from a different account does not resolve that veto.
+        unresolved = [login for login, review in latest.items()
+                      if login != author.casefold() and review.get("state") == "CHANGES_REQUESTED"]
+        if unresolved:
+            raise GitHubError("UNRESOLVED_CHANGES_REQUESTED")
         eligible = [r for login, r in latest.items()
                     if login != author.casefold() and r.get("state") == "APPROVED"
                     and r.get("commit_id") == commit and r.get("submitted_at")]
