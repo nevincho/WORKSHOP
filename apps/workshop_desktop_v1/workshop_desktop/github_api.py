@@ -183,8 +183,12 @@ class GitHubClient:
                                authorized=True)
         if not isinstance(reviews, list) or len(reviews) >= 100:
             raise GitHubError("REVIEW_HISTORY_UNBOUNDED")
+        # Review APIs may not guarantee caller-visible ordering. Resolve each
+        # reviewer's latest submitted decision by timestamp and immutable ID.
+        if any(not isinstance(r, dict) for r in reviews):
+            raise GitHubError("INVALID_REVIEW_HISTORY")
         latest = {}
-        for review in reviews:
+        for review in sorted(reviews, key=lambda r: (r.get("submitted_at") or "", r.get("id") or 0)):
             login = (review.get("user") or {}).get("login")
             if not isinstance(login, str) or not login:
                 continue
