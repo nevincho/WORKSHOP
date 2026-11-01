@@ -37,6 +37,8 @@ class Desktop:
         self.busy = False
         self.path_var = tk.StringVar(value="No workspace selected")
         self.status_var = tk.StringVar(value="Local-first. No paid AI or automatic repository writes.")
+        self.wizard_step = 0
+        self.wizard_status_var = tk.StringVar(value="Step 1/4: CREATE or OPEN a trusted workspace.")
         self.repo_var = tk.StringVar(value="")
         self.ref_var = tk.StringVar(value="main")
         self.task_var = tk.StringVar(value="TASK-DEMO-01")
@@ -83,6 +85,10 @@ class Desktop:
             self.tabs.add(page, text=name)
         ttk.Label(self.welcome_page, text="WORKSHOP Desktop V1 — guided first launch",
                   font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=10)
+        ttk.Label(self.welcome_page, textvariable=self.wizard_status_var,
+                  wraplength=850).pack(anchor="w", pady=8)
+        ttk.Button(self.welcome_page, text="VERIFY STEP / CONTINUE WIZARD",
+                   command=self.advance_wizard).pack(anchor="w", pady=6)
         ttk.Label(self.welcome_page, text="1. CREATE a trusted G1 workspace, or OPEN an existing one. "
                   "OPEN never repairs or writes to the workspace.", wraplength=860).pack(anchor="w", pady=8)
         ttk.Button(self.welcome_page, text="1A. CREATE WORKSPACE",
@@ -268,6 +274,37 @@ class Desktop:
         messagebox.showerror("WORKSHOP", str(exc), parent=self.root)
         self.status_var.set(type(exc).__name__ + ": " + str(exc))
 
+    def advance_wizard(self):
+        """Guided, explicitly gated navigation; no implicit filesystem or remote writes."""
+        try:
+            ctrl = self._require()
+            if self.wizard_step == 0:
+                self.wizard_step = 1
+                self.wizard_status_var.set("Step 2/4: Initialize local coordination Git explicitly.")
+            elif self.wizard_step == 1:
+                if not ctrl.store.repo.is_dir():
+                    raise ControllerError("INITIALIZE_COORDINATION_FIRST")
+                ctrl.status()
+                self.wizard_step = 2
+                self.wizard_status_var.set("Step 3/4: Verify bounded executor settings.")
+                self.tabs.select(self.settings_page)
+            elif self.wizard_step == 2:
+                settings = ctrl.settings()
+                if settings["executor"] != "markdown-writer-v1" or settings["max_cost"] != 0:
+                    raise ControllerError("UNSUPPORTED_WIZARD_EXECUTOR")
+                self.wizard_step = 3
+                self.wizard_status_var.set("Step 4/4: Optional scoped GitHub PAT; offline planning remains available.")
+                self.tabs.select(self.github_page)
+            elif self.wizard_step == 3:
+                self.wizard_step = 4
+                self.wizard_status_var.set("Wizard complete: create and explicitly approve a bounded task. "
+                                           "GitHub connection is required only before remote operations.")
+                self.tabs.select(self.plan_page)
+            else:
+                self.tabs.select(self.plan_page)
+        except Exception as exc:
+            self._error(exc)
+
     def _require(self):
         if self.controller is None:
             raise ControllerError("OPEN_WORKSPACE_FIRST")
@@ -285,6 +322,8 @@ class Desktop:
         # requires the separate, explicitly confirmed INITIALIZE action.
         # OPEN never repairs or initializes coordination; recovery is a separate action.
         self.controller = ctrl
+        self.wizard_step = 0
+        self.wizard_status_var.set("Step 1/4: Workspace opened. Verify and continue.")
         self.selected = None
         self.g1_selected = None
         self.path_var.set(str(path))
