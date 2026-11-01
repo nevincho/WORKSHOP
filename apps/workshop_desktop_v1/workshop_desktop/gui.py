@@ -606,8 +606,16 @@ class Desktop:
                 raise ControllerError("SELECT_TASK_FIRST")
             identifier = self.selected
             self.cancel_event.clear()
+            def on_progress(event):
+                def display():
+                    label = "Worker " + event["phase"] + " (" + str(event["elapsed_seconds"]) + "s)"
+                    self._log(label)
+                    for key in ("stdout", "stderr"):
+                        if event.get(key):
+                            self._log(key.upper() + ": " + event[key][:1200])
+                self.root.after(0, display)
             def action():
-                run = ctrl.run(identifier, cancel=self.cancel_event)
+                run = ctrl.run(identifier, cancel=self.cancel_event, progress=on_progress)
                 if run["error"]:
                     return run
                 review = ctrl.review(identifier)
