@@ -190,10 +190,11 @@ class ProductCompletionTests(unittest.TestCase):
                         return 0, "", ""
                     with patch("workshop_desktop.engine._launch", side_effect=corrupt_worker):
                         result = ctrl.run(identifier)
-                    self.assertEqual(result["error"], "WORKER_OUTPUT_INVALID")
+                    expected = "WORKER_OUTPUT_INVALID" if payload == "{broken" else "WORKER_METADATA_INVALID"
+                    self.assertEqual(result["error"], expected)
                     self.assertEqual(ctrl.status()["tasks"][identifier]["status"], "BLOCKED")
                     self.assertEqual(ctrl.store.read("runs/" + result["id"] + ".json")["error"],
-                                     "WORKER_OUTPUT_INVALID")
+                                     expected)
 
     def test_worker_launch_oserror_is_durable_blocked(self):
         identifier = self.plan()
