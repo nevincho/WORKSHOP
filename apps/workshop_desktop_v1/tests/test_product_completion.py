@@ -117,6 +117,34 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
         self.assertEqual(self.ctrl.store.read("reviews/" + report["id"] + ".json")["verdict"], "REWORK")
 
+    def test_reviewer_missing_report_is_rework_and_can_replan(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        with patch("workshop_desktop.engine._launch", return_value=(0, "", "")):
+            report = self.ctrl.review(identifier)
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+        new_hash = self.ctrl.rework(identifier)
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "READY")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["plan_hash"], new_hash)
+        self.assertIsNone(self.ctrl.status()["tasks"][identifier]["approval"])
+
+    def test_reviewer_malformed_report_is_durable_rework(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        def corrupt(role, arguments, cwd, **kwargs):
+            Path(arguments[-1]).write_text("{not-json", encoding="utf-8")
+            return 0, "", ""
+        with patch("workshop_desktop.engine._launch", side_effect=corrupt):
+            report = self.ctrl.review(identifier)
+        self.assertEqual(report["verdict"], "REWORK")
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+
     def test_human_acceptance_refuses_changed_displayed_review(self):
         identifier = self.ready_for_acceptance()
         head = self.ctrl.store.head()
@@ -245,6 +273,14 @@ class GitHubIndependentReviewTests(unittest.TestCase):
             self.approval(login="reviewer-b", state="CHANGES_REQUESTED", id=22)])
         with self.assertRaisesRegex(GitHubError, "UNRESOLVED_CHANGES_REQUESTED"):
             client.verified_independent_review(plan, proposal)
+
+    def test_conflicting_review_resolved_by_same_reviewer_approval(self):
+        client, plan, proposal, _ = self.fixture([
+            self.approval(login="reviewer-a", state="APPROVED", id=21),
+            self.approval(login="reviewer-b", state="CHANGES_REQUESTED", id=22),
+            self.approval(login="reviewer-b", state="APPROVED", id=23)])
+        receipt = client.verified_independent_review(plan, proposal)
+        self.assertEqual(receipt["reviewed_commit"], PROPOSED)
 
     def test_remote_commit_change_refused(self):
         client, plan, proposal, _ = self.fixture([self.approval()], head_sha="c" * 40)
