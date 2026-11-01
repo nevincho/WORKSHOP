@@ -319,7 +319,7 @@ class CoordinationRepo:
             return committed
 
 
-def _launch(role, arguments, cwd, timeout=20, cancel=None):
+def _launch(role, arguments, cwd, timeout=20, cancel=None, progress=None):
     entrypoint = Path(__file__).resolve().parents[1] / "main.py"
     if getattr(sys, "frozen", False):
         command = [sys.executable, "--" + role, *map(str, arguments)]
@@ -332,12 +332,33 @@ def _launch(role, arguments, cwd, timeout=20, cancel=None):
     proc = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, creationflags=flags)
     started = time.monotonic()
+    seen_out = seen_err = 0
+    last_tick = -1
     while True:
         try:
             out, err = proc.communicate(timeout=0.2)
+            if progress is not None:
+                try:
+                    progress({"phase": "EXITED", "elapsed_seconds": round(time.monotonic() - started, 1),
+                              "stdout": out[seen_out:MAX_LOG].decode("utf-8", "replace"),
+                              "stderr": err[seen_err:MAX_LOG].decode("utf-8", "replace")})
+                except Exception:
+                    pass  # Display callback must never control process outcome.
             break
-        except subprocess.TimeoutExpired:
-            if (cancel is not None and cancel.is_set()) or time.monotonic() - started > timeout:
+        except subprocess.TimeoutExpired as exc:
+            elapsed = time.monotonic() - started
+            partial_out = (exc.stdout or b"")[:MAX_LOG]
+            partial_err = (exc.stderr or b"")[:MAX_LOG]
+            tick = int(elapsed)
+            if progress is not None and (tick != last_tick or len(partial_out) > seen_out or len(partial_err) > seen_err):
+                try:
+                    progress({"phase": "RUNNING", "elapsed_seconds": round(elapsed, 1),
+                              "stdout": partial_out[seen_out:].decode("utf-8", "replace"),
+                              "stderr": partial_err[seen_err:].decode("utf-8", "replace")})
+                except Exception:
+                    pass
+                seen_out, seen_err, last_tick = len(partial_out), len(partial_err), tick
+            if (cancel is not None and cancel.is_set()) or elapsed > timeout:
                 proc.kill()
                 out, err = proc.communicate()
                 raise ControllerError("EXECUTOR_CANCELLED_OR_TIMED_OUT")
@@ -639,7 +660,7 @@ class Controller:
                                {"approvals/" + approval_id + ".json": approval}, expected_head=expected_head)
         return approval_id
 
-    def run(self, identifier, cancel=None):
+    def run(self, identifier, cancel=None, progress=None):
         state, plan, expected_head = self._plan(identifier)
         if state["tasks"][identifier]["status"] != "READY":
             raise ControllerError("INVALID_RUN_STATE")
@@ -661,7 +682,7 @@ class Controller:
         try:
             code, stdout, stderr = _launch("worker",
                 [self.store.repo / "plans" / (identifier + ".json"), output],
-                stage, timeout=timeout_seconds, cancel=cancel)
+                stage, timeout=timeout_seconds, cancel=cancel, progress=progress)
             metadata_path = stage / "worker_result.json"
             metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
             if (code != 0 or not output.is_file() or
