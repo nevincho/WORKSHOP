@@ -4,6 +4,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from workshop_desktop.engine import Controller, ControllerError, canonical, digest
 from workshop_desktop.g1_adapter import create_workspace, trusted_bundle
@@ -102,6 +103,28 @@ class ProductCompletionTests(unittest.TestCase):
         with self.assertRaisesRegex(ControllerError, "PUBLISHED_REVIEW_REQUIRED"):
             self.ctrl.accept_review(identifier)
         self.assertEqual(self.github.remote_writes, 1)
+
+    def test_reviewer_crash_is_durable_rework_not_stranded_review(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        with patch("workshop_desktop.engine._launch",
+                   side_effect=ControllerError("EXECUTOR_CANCELLED_OR_TIMED_OUT")):
+            report = self.ctrl.review(identifier)
+        self.assertEqual(report["verdict"], "REWORK")
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+        self.assertEqual(self.ctrl.store.read("reviews/" + report["id"] + ".json")["verdict"], "REWORK")
+
+    def test_human_acceptance_refuses_changed_displayed_review(self):
+        identifier = self.ready_for_acceptance()
+        head = self.ctrl.store.head()
+        with self.assertRaisesRegex(ControllerError, "DISPLAYED_REVIEW_CHANGED"):
+            self.ctrl.accept_review(identifier, expected_review_id=999,
+                                    expected_reviewed_commit=PROPOSED)
+        self.assertEqual(self.ctrl.store.head(), head)
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REVIEW")
 
     def test_safe_settings_are_git_backed_and_bounded(self):
         original = self.ctrl.settings()
@@ -214,6 +237,13 @@ class GitHubIndependentReviewTests(unittest.TestCase):
         client, plan, proposal, _ = self.fixture([
             self.approval(id=10), self.approval(state="CHANGES_REQUESTED", id=11)])
         with self.assertRaisesRegex(GitHubError, "INDEPENDENT_GITHUB_APPROVAL_REQUIRED"):
+            client.verified_independent_review(plan, proposal)
+
+    def test_conflicting_reviewers_fail_closed(self):
+        client, plan, proposal, _ = self.fixture([
+            self.approval(login="reviewer-a", state="APPROVED", id=21),
+            self.approval(login="reviewer-b", state="CHANGES_REQUESTED", id=22)])
+        with self.assertRaisesRegex(GitHubError, "UNRESOLVED_CHANGES_REQUESTED"):
             client.verified_independent_review(plan, proposal)
 
     def test_remote_commit_change_refused(self):
