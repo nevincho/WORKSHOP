@@ -4,8 +4,9 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from workshop_desktop.engine import Controller, ControllerError, canonical, digest
+from workshop_desktop.engine import Controller, ControllerError, canonical, digest, _git
 from workshop_desktop.g1_adapter import create_workspace, trusted_bundle
 from workshop_desktop.github_api import GitHubClient, GitHubError
 from workshop_desktop.vault import MemoryVault
@@ -91,7 +92,14 @@ class ProductCompletionTests(unittest.TestCase):
     def test_complete_records_git_checkpoint_without_remote_merge(self):
         identifier = self.ready_for_acceptance()
         before = self.github.remote_writes
-        checkpoint = self.ctrl.accept_review(identifier)
+        _, plan, _ = self.ctrl._plan(identifier)
+        proposal = self.ctrl.store.read("proposals/" + identifier + ".json")["proposal"]
+        displayed = self.github.verified_independent_review(plan, proposal)
+        checkpoint = self.ctrl.accept_review(
+            identifier, expected_review_id=displayed["review_id"],
+            expected_reviewed_commit=displayed["reviewed_commit"],
+            expected_reviewer=displayed["reviewer"],
+            expected_pr_url=displayed["pr_url"])
         self.assertEqual(checkpoint["kind"], "LOCAL_PROPOSAL_ACCEPTED_PR_UNMERGED")
         self.assertEqual(checkpoint["independent_review"]["reviewer"], "external-reviewer")
         self.assertEqual(checkpoint["proposal_sha"], PROPOSED)
@@ -102,6 +110,240 @@ class ProductCompletionTests(unittest.TestCase):
         with self.assertRaisesRegex(ControllerError, "PUBLISHED_REVIEW_REQUIRED"):
             self.ctrl.accept_review(identifier)
         self.assertEqual(self.github.remote_writes, 1)
+
+    def test_bounded_worker_progress_callback_does_not_change_result(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        events = []
+        result = self.ctrl.run(identifier, progress=events.append)
+        self.assertIsNone(result["error"])
+        self.assertTrue(events)
+        self.assertEqual(events[-1]["phase"], "EXITED")
+        self.assertTrue(all(len(item["stdout"]) <= 32768 and
+                            len(item["stderr"]) <= 32768 for item in events))
+
+    def test_git_subprocess_ignores_inherited_repository_redirection(self):
+        # A launched desktop may inherit these from a developer shell or IDE.
+        # No inherited Git control variable may redirect canonical Git reads.
+        poisoned = {"GIT_DIR": str(self.root / "foreign-git-dir"),
+                    "GIT_WORK_TREE": str(self.root / "foreign-worktree"),
+                    "GIT_INDEX_FILE": str(self.root / "foreign-index"),
+                    "GIT_CONFIG_COUNT": "1",
+                    "GIT_CONFIG_KEY_0": "core.hooksPath",
+                    "GIT_CONFIG_VALUE_0": str(self.root / "foreign-hooks")}
+        baseline = self.ctrl.store.head()
+        with patch.dict(os.environ, poisoned):
+            actual = _git(self.ctrl.store.repo, "rev-parse", "--show-toplevel")
+            self.assertEqual(os.path.normcase(os.path.abspath(actual)),
+                             os.path.normcase(os.path.abspath(self.ctrl.store.repo)))
+            self.assertEqual(self.ctrl.store.head(), baseline)
+            self.assertEqual(self.ctrl.status()["tasks"], {})
+        self.assertFalse((self.root / "foreign-git-dir").exists())
+        self.assertFalse((self.root / "foreign-index").exists())
+
+    def test_transaction_journal_rolls_back_partial_local_commit(self):
+        real_git = _git
+        def fail_commit(repo, *args, **kwargs):
+            if args and args[0] == "commit":
+                raise ControllerError("INJECTED_COMMIT_FAILURE")
+            return real_git(repo, *args, **kwargs)
+        with patch("workshop_desktop.engine._git", side_effect=fail_commit):
+            with self.assertRaisesRegex(ControllerError, "INJECTED_COMMIT_FAILURE"):
+                self.plan()
+        self.assertTrue(self.ctrl.store.journal.is_file())
+        with self.assertRaisesRegex(ControllerError, "TRANSACTION_JOURNAL_REQUIRES_RECOVERY"):
+            self.ctrl.status()
+        result = self.ctrl.recover_transaction()
+        self.assertEqual(result["outcome"], "ROLLED_BACK")
+        self.assertEqual(self.ctrl.status()["tasks"], {})
+        self.assertFalse(self.ctrl.store.journal.exists())
+
+    def test_transaction_journal_refuses_foreign_committed_path(self):
+        """A committed unrelated file must never be accepted as our transaction."""
+        real_git = _git
+        baseline = self.ctrl.store.head()
+
+        def inject_foreign_commit(repo, *args, **kwargs):
+            if args and args[0] == "commit":
+                (Path(repo) / "foreign.md").write_text("unrelated", encoding="utf-8")
+                real_git(repo, "add", "--", "foreign.md")
+                real_git(repo, *args, **kwargs)
+                raise ControllerError("INJECTED_AFTER_FOREIGN_COMMIT")
+            return real_git(repo, *args, **kwargs)
+
+        with patch("workshop_desktop.engine._git", side_effect=inject_foreign_commit):
+            with self.assertRaisesRegex(ControllerError, "INJECTED_AFTER_FOREIGN_COMMIT"):
+                self.plan()
+        self.assertNotEqual(self.ctrl.store.head(), baseline)
+        self.assertTrue(self.ctrl.store.journal.is_file())
+        with self.assertRaisesRegex(ControllerError, "TRANSACTION_COMMIT_SCOPE_MISMATCH"):
+            self.ctrl.recover_transaction()
+        self.assertTrue(self.ctrl.store.journal.is_file())
+        self.assertTrue((self.ctrl.store.repo / "foreign.md").is_file())
+
+    def test_transaction_journal_refuses_foreign_content(self):
+        real_git = _git
+        def fail_commit(repo, *args, **kwargs):
+            if args and args[0] == "commit":
+                raise ControllerError("INJECTED_COMMIT_FAILURE")
+            return real_git(repo, *args, **kwargs)
+        with patch("workshop_desktop.engine._git", side_effect=fail_commit):
+            with self.assertRaises(ControllerError):
+                self.plan()
+        (self.ctrl.store.repo / "state.json").write_text('{"foreign":true}', encoding="utf-8")
+        with self.assertRaisesRegex(ControllerError, "TRANSACTION_CONTENT_MISMATCH"):
+            self.ctrl.recover_transaction()
+        self.assertTrue(self.ctrl.store.journal.exists())
+
+    def test_transaction_journal_recognizes_committed_git_head(self):
+        journal = self.ctrl.store.journal
+        real_unlink = Path.unlink
+        def fail_cleanup(path, *args, **kwargs):
+            if path == journal:
+                raise OSError("INJECTED_JOURNAL_CLEANUP_FAILURE")
+            return real_unlink(path, *args, **kwargs)
+        with patch.object(Path, "unlink", fail_cleanup):
+            with self.assertRaisesRegex(OSError, "INJECTED_JOURNAL_CLEANUP_FAILURE"):
+                self.plan()
+        self.assertTrue(journal.is_file())
+        result = self.ctrl.recover_transaction()
+        self.assertEqual(result["outcome"], "COMMITTED")
+        self.assertEqual(len(self.ctrl.status()["tasks"]), 1)
+        self.assertFalse(journal.exists())
+
+    def test_malformed_worker_metadata_is_durable_blocked_not_stranded(self):
+        for payload in ("{broken", "[]"):
+            with self.subTest(payload=payload):
+                # Each subtest needs a fresh workspace and coordination Git.
+                with tempfile.TemporaryDirectory(prefix="workshop_bad_worker_") as temp:
+                    root = Path(temp) / "g1"
+                    create_workspace(root, trusted_bundle())
+                    ctrl = Controller(root, github=ReviewFixture(), vault=MemoryVault())
+                    ctrl.initialize()
+                    identifier = ctrl.plan("TASK-01", "Demo", "example/demo", "main",
+                                           "docs/demo.md", "# Demo\\n")
+                    _, plan, _ = ctrl._plan(identifier)
+                    ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+                    def corrupt_worker(role, arguments, cwd, **kwargs):
+                        self.assertEqual(role, "worker")
+                        (Path(cwd) / "worker_result.json").write_text(payload, encoding="utf-8")
+                        (Path(cwd) / "artifact.md").write_text("# Demo\\n", encoding="utf-8")
+                        return 0, "", ""
+                    with patch("workshop_desktop.engine._launch", side_effect=corrupt_worker):
+                        result = ctrl.run(identifier)
+                    expected = "WORKER_OUTPUT_INVALID" if payload == "{broken" else "WORKER_METADATA_INVALID"
+                    self.assertEqual(result["error"], expected)
+                    self.assertEqual(ctrl.status()["tasks"][identifier]["status"], "BLOCKED")
+                    self.assertEqual(ctrl.store.read("runs/" + result["id"] + ".json")["error"],
+                                     expected)
+
+    def test_worker_launch_oserror_is_durable_blocked(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        with patch("workshop_desktop.engine._launch", side_effect=OSError("cannot launch")):
+            result = self.ctrl.run(identifier)
+        self.assertEqual(result["error"], "WORKER_OUTPUT_INVALID")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "BLOCKED")
+
+    def test_reviewer_pass_without_required_checks_is_rework(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        state = self.ctrl.status()["tasks"][identifier]
+        run = self.ctrl.store.read("runs/" + state["run"] + ".json")
+        def forged_report(role, arguments, cwd, **kwargs):
+            self.assertEqual(role, "reviewer")
+            Path(arguments[2]).write_text(json.dumps({
+                "reviewer_pid": run["worker_pid"] + 1,
+                "verdict": "PASS", "sha256": run["artifact_sha256"],
+                "checks": {"approved_operation": True, "path_allowlist": True,
+                           "exact_bytes": True, "bounded_bytes": True}
+            }), encoding="utf-8")
+            return 0, "", ""
+        with patch("workshop_desktop.engine._launch", side_effect=forged_report):
+            review = self.ctrl.review(identifier)
+        self.assertEqual(review["verdict"], "REWORK")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+
+    def test_reviewer_crash_is_durable_rework_not_stranded_review(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        with patch("workshop_desktop.engine._launch",
+                   side_effect=ControllerError("EXECUTOR_CANCELLED_OR_TIMED_OUT")):
+            report = self.ctrl.review(identifier)
+        self.assertEqual(report["verdict"], "REWORK")
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+        self.assertEqual(self.ctrl.store.read("reviews/" + report["id"] + ".json")["verdict"], "REWORK")
+
+    def test_reviewer_missing_report_is_rework_and_can_replan(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        with patch("workshop_desktop.engine._launch", return_value=(0, "", "")):
+            report = self.ctrl.review(identifier)
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+        new_hash = self.ctrl.rework(identifier)
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "READY")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["plan_hash"], new_hash)
+        self.assertIsNone(self.ctrl.status()["tasks"][identifier]["approval"])
+
+    def test_reviewer_malformed_report_is_durable_rework(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        self.assertIsNone(self.ctrl.run(identifier)["error"])
+        def corrupt(role, arguments, cwd, **kwargs):
+            Path(arguments[-1]).write_text("{not-json", encoding="utf-8")
+            return 0, "", ""
+        with patch("workshop_desktop.engine._launch", side_effect=corrupt):
+            report = self.ctrl.review(identifier)
+        self.assertEqual(report["verdict"], "REWORK")
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+
+    def test_interrupted_reviewer_preexisting_report_is_durable_rework(self):
+        identifier = self.plan()
+        _, plan, _ = self.ctrl._plan(identifier)
+        self.ctrl.approve(identifier, expected_plan_hash=digest(canonical(plan)))
+        result = self.ctrl.run(identifier)
+        self.assertIsNone(result["error"])
+        stage = self.ctrl.store.staging / result["id"]
+        stale = stage / "review.json"
+        stale.write_text('{"verdict":"PASS","forged":true}', encoding="utf-8")
+        with patch("workshop_desktop.engine._launch") as launch:
+            report = self.ctrl.review(identifier)
+        launch.assert_not_called()
+        self.assertEqual(report["verdict"], "REWORK")
+        self.assertEqual(report["reason"], "REVIEWER_EXECUTION_FAILED")
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REWORK")
+        self.assertEqual(stale.read_text(encoding="utf-8"),
+                         '{"verdict":"PASS","forged":true}')
+        self.assertFalse((self.ctrl.store.repo / "checkpoints" / (identifier + ".json")).exists())
+
+    def test_human_acceptance_refuses_changed_displayed_review(self):
+        identifier = self.ready_for_acceptance()
+        head = self.ctrl.store.head()
+        with self.assertRaisesRegex(ControllerError, "DISPLAYED_REVIEW_CHANGED"):
+            self.ctrl.accept_review(identifier, expected_review_id=999,
+                                    expected_reviewed_commit=PROPOSED,
+                                    expected_reviewer="external-reviewer",
+                                    expected_pr_url="https://github.com/example/demo/pull/3")
+        self.assertEqual(self.ctrl.store.head(), head)
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REVIEW")
+
+    def test_programmatic_acceptance_cannot_skip_displayed_receipt(self):
+        identifier = self.ready_for_acceptance()
+        with self.assertRaisesRegex(ControllerError, "DISPLAYED_REVIEW_RECEIPT_REQUIRED"):
+            self.ctrl.accept_review(identifier)
+        self.assertEqual(self.ctrl.status()["tasks"][identifier]["status"], "REVIEW")
 
     def test_safe_settings_are_git_backed_and_bounded(self):
         original = self.ctrl.settings()
@@ -167,6 +409,34 @@ class WindowsDesktopScreenTests(unittest.TestCase):
             root.destroy()
 
 
+class WindowsWizardFlowTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows Tkinter wizard qualification only")
+    def test_first_run_wizard_requires_real_workspace_and_coordination(self):
+        import tkinter as tk
+        from workshop_desktop.gui import Desktop
+        with tempfile.TemporaryDirectory(prefix="workshop_wizard_") as tmp:
+            path = Path(tmp) / "g1"
+            create_workspace(path, trusted_bundle())
+            root = tk.Tk()
+            root.withdraw()
+            try:
+                app = Desktop(root)
+                self.assertEqual(app.wizard_step, 0)
+                app._attach(path)
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 1)
+                app.controller.initialize()
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 2)
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 3)
+                app.advance_wizard()
+                self.assertEqual(app.wizard_step, 4)
+                self.assertIn("Wizard complete", app.wizard_status_var.get())
+            finally:
+                root.destroy()
+
+
 class GitHubIndependentReviewTests(unittest.TestCase):
     def fixture(self, reviews, *, author="author", head_sha=PROPOSED):
         calls = []
@@ -213,7 +483,30 @@ class GitHubIndependentReviewTests(unittest.TestCase):
     def test_latest_changes_requested_revokes_prior_approval(self):
         client, plan, proposal, _ = self.fixture([
             self.approval(id=10), self.approval(state="CHANGES_REQUESTED", id=11)])
-        with self.assertRaisesRegex(GitHubError, "INDEPENDENT_GITHUB_APPROVAL_REQUIRED"):
+        with self.assertRaisesRegex(GitHubError, "UNRESOLVED_CHANGES_REQUESTED"):
+            client.verified_independent_review(plan, proposal)
+
+    def test_conflicting_reviewers_fail_closed(self):
+        client, plan, proposal, _ = self.fixture([
+            self.approval(login="reviewer-a", state="APPROVED", id=21),
+            self.approval(login="reviewer-b", state="CHANGES_REQUESTED", id=22)])
+        with self.assertRaisesRegex(GitHubError, "UNRESOLVED_CHANGES_REQUESTED"):
+            client.verified_independent_review(plan, proposal)
+
+    def test_conflicting_review_resolved_by_same_reviewer_approval(self):
+        client, plan, proposal, _ = self.fixture([
+            self.approval(login="reviewer-a", state="APPROVED", id=21),
+            self.approval(login="reviewer-b", state="CHANGES_REQUESTED", id=22),
+            self.approval(login="reviewer-b", state="APPROVED", id=23)])
+        receipt = client.verified_independent_review(plan, proposal)
+        self.assertEqual(receipt["reviewed_commit"], PROPOSED)
+
+    def test_review_history_order_cannot_hide_newer_veto(self):
+        client, plan, proposal, _ = self.fixture([
+            self.approval(login="reviewer-a", state="CHANGES_REQUESTED", id=42),
+            self.approval(login="reviewer-b", state="APPROVED", id=41),
+            self.approval(login="reviewer-a", state="APPROVED", id=40)])
+        with self.assertRaisesRegex(GitHubError, "UNRESOLVED_CHANGES_REQUESTED"):
             client.verified_independent_review(plan, proposal)
 
     def test_remote_commit_change_refused(self):

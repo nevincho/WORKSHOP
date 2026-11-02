@@ -98,7 +98,11 @@ def _git(repo, *args, timeout=20):
     if not shutil.which("git"):
         raise ControllerError("GIT_NOT_INSTALLED")
     repo = _safe_path(repo)
-    env = dict(os.environ)
+    # Never inherit caller-supplied Git control variables. GIT_DIR,
+    # GIT_WORK_TREE, GIT_INDEX_FILE and GIT_CONFIG_* can redirect repository
+    # operations or override the intended fixed configuration.
+    env = {key: value for key, value in os.environ.items()
+           if not key.upper().startswith("GIT_")}
     env["GIT_CONFIG_NOSYSTEM"] = "1"
     env["GIT_CONFIG_GLOBAL"] = os.devnull
     env["GIT_TERMINAL_PROMPT"] = "0"
@@ -143,7 +147,13 @@ class CoordinationRepo:
     def head(self):
         return _git(self.repo, "rev-parse", "HEAD")
 
+    @property
+    def journal(self):
+        return self.home / "transaction.json"
+
     def _clean(self):
+        if self.journal.exists():
+            raise ControllerError("TRANSACTION_JOURNAL_REQUIRES_RECOVERY")
         if not (self.repo / ".git").is_dir():
             raise ControllerError("COORDINATION_GIT_MISSING")
         if _git(self.repo, "status", "--porcelain"):
@@ -163,6 +173,90 @@ class CoordinationRepo:
         record["hash"] = digest(canonical(record))
         lines.append(json.dumps(record, sort_keys=True, ensure_ascii=False))
         _write_atomic(path, ("\n".join(lines) + "\n").encode("utf-8"))
+
+    def _event_bytes(self, event):
+        path = self.repo / "events.jsonl"
+        old = path.read_bytes() if path.exists() else b""
+        lines = old.splitlines()
+        previous = json.loads(lines[-1])["hash"] if lines else "0" * 64
+        record = {"previous": previous, "event": event, "time": now()}
+        record["hash"] = digest(canonical(record))
+        return old + json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8") + b"\n"
+
+    def recover_transaction(self):
+        """Explicit local-only rollback of an interrupted Git transaction.
+
+        Refuse foreign edits, unknown paths, mismatched hashes and changed HEAD.
+        Never replay a worker or remote GitHub write.
+        """
+        if not self.journal.is_file():
+            raise ControllerError("NO_TRANSACTION_JOURNAL")
+        if (self.home / "transaction.lock").exists():
+            raise ControllerError("TRANSACTION_LOCK_REQUIRES_MANUAL_INSPECTION")
+        with self._lock():
+            record = json.loads(self.journal.read_text(encoding="utf-8"))
+            writes = record.get("writes")
+            expected = record.get("expected_head")
+            if (record.get("version") != 1 or
+                    not isinstance(expected, str) or not re.fullmatch(r"[a-f0-9]{40}", expected) or
+                    not isinstance(writes, dict) or not writes or
+                    "state.json" not in writes or "events.jsonl" not in writes):
+                raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+            allowed = set(writes)
+            for name, hashes in writes.items():
+                if (name not in {"state.json", "events.jsonl", "settings.json"} and
+                        not re.fullmatch(r"(plans|approvals|runs|reviews|proposals|checkpoints)/[a-f0-9]{32}\.json", name)):
+                    raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+                if not isinstance(hashes, dict) or not re.fullmatch(r"[a-f0-9]{64}", str(hashes.get("after", ""))):
+                    raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+                before_hash = hashes.get("before")
+                if before_hash is not None and not re.fullmatch(r"[a-f0-9]{64}", str(before_hash)):
+                    raise ControllerError("INVALID_TRANSACTION_JOURNAL")
+            head = self.head()
+            if head != expected:
+                parents = _git(self.repo, "rev-list", "--parents", "-n", "1", "HEAD").split()
+                if (len(parents) != 2 or parents[1] != expected or
+                        _git(self.repo, "status", "--porcelain", "-uall")):
+                    raise ControllerError("TRANSACTION_HEAD_CHANGED_REQUIRES_MANUAL_REVIEW")
+                # A direct-child commit is not sufficient evidence of a completed
+                # transaction: it must change ONLY the journal-declared paths.
+                # Otherwise a foreign staged file can be silently accepted.
+                committed_paths = set(filter(None, _git(
+                    self.repo, "diff-tree", "--no-commit-id", "--name-only",
+                    "-r", "-z", "HEAD").split("\0")))
+                expected_paths = {name for name, hashes in writes.items()
+                                  if hashes["before"] != hashes["after"]}
+                if committed_paths != expected_paths:
+                    raise ControllerError("TRANSACTION_COMMIT_SCOPE_MISMATCH")
+                for name, hashes in writes.items():
+                    target = _safe_path(self.repo / name)
+                    if not target.is_file() or digest(target.read_bytes()) != hashes["after"]:
+                        raise ControllerError("TRANSACTION_COMMIT_CONTENT_MISMATCH")
+                self.journal.unlink()
+                return {"outcome": "COMMITTED", "head": head}
+            changed = _git(self.repo, "status", "--porcelain", "-uall").splitlines()
+            for line in changed:
+                if len(line) < 4 or line[3:] not in allowed or line[:2].strip() not in {"M", "A", "??", "AM", "MM"}:
+                    raise ControllerError("FOREIGN_CHANGE_BLOCKS_TRANSACTION_RECOVERY")
+            for name, hashes in writes.items():
+                target = _safe_path(self.repo / name)
+                if target.exists():
+                    if not target.is_file() or digest(target.read_bytes()) not in {hashes["before"], hashes["after"]}:
+                        raise ControllerError("TRANSACTION_CONTENT_MISMATCH")
+                elif hashes["before"] is not None:
+                    raise ControllerError("TRANSACTION_CONTENT_MISMATCH")
+            # Reset only the journal-listed paths; no branch or remote reset.
+            _git(self.repo, "reset", "-q", "HEAD", "--", *sorted(allowed))
+            for name, hashes in writes.items():
+                target = _safe_path(self.repo / name)
+                if hashes["before"] is None:
+                    target.unlink(missing_ok=True)
+                else:
+                    _git(self.repo, "restore", "--worktree", "--", name)
+            if _git(self.repo, "status", "--porcelain", "-uall"):
+                raise ControllerError("TRANSACTION_ROLLBACK_INCOMPLETE")
+            self.journal.unlink()
+            return {"outcome": "ROLLED_BACK", "head": expected}
 
     def verify(self):
         self._clean()
@@ -223,15 +317,23 @@ class CoordinationRepo:
                 if name != "settings.json" and not re.fullmatch(r"(plans|approvals|runs|reviews|proposals|checkpoints)/[a-f0-9]{32}\.json", name):
                     raise ControllerError("INVALID_ARTIFACT_PATH")
                 files[name] = canonical(value)
+            files["events.jsonl"] = self._event_bytes(event)
+            journal = {"version": 1, "expected_head": before,
+                       "writes": {name: {"before": digest((self.repo / name).read_bytes())
+                                                if (self.repo / name).is_file() else None,
+                                         "after": digest(data)}
+                                  for name, data in files.items()}}
+            _write_atomic(self.journal, canonical(journal))
             for name, data in files.items():
                 _write_atomic(self.repo / name, data)
-            self._append_event(event)
-            _git(self.repo, "add", "--", *files.keys(), "events.jsonl")
+            _git(self.repo, "add", "--", *files.keys())
             _git(self.repo, "commit", "-qm", "WORKSHOP Desktop: " + event["kind"])
-            return self.head()
+            committed = self.head()
+            self.journal.unlink()
+            return committed
 
 
-def _launch(role, arguments, cwd, timeout=20, cancel=None):
+def _launch(role, arguments, cwd, timeout=20, cancel=None, progress=None):
     entrypoint = Path(__file__).resolve().parents[1] / "main.py"
     if getattr(sys, "frozen", False):
         command = [sys.executable, "--" + role, *map(str, arguments)]
@@ -244,12 +346,33 @@ def _launch(role, arguments, cwd, timeout=20, cancel=None):
     proc = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, creationflags=flags)
     started = time.monotonic()
+    seen_out = seen_err = 0
+    last_tick = -1
     while True:
         try:
             out, err = proc.communicate(timeout=0.2)
+            if progress is not None:
+                try:
+                    progress({"phase": "EXITED", "elapsed_seconds": round(time.monotonic() - started, 1),
+                              "stdout": out[seen_out:MAX_LOG].decode("utf-8", "replace"),
+                              "stderr": err[seen_err:MAX_LOG].decode("utf-8", "replace")})
+                except Exception:
+                    pass  # Display callback must never control process outcome.
             break
-        except subprocess.TimeoutExpired:
-            if (cancel is not None and cancel.is_set()) or time.monotonic() - started > timeout:
+        except subprocess.TimeoutExpired as exc:
+            elapsed = time.monotonic() - started
+            partial_out = (exc.stdout or b"")[:MAX_LOG]
+            partial_err = (exc.stderr or b"")[:MAX_LOG]
+            tick = int(elapsed)
+            if progress is not None and (tick != last_tick or len(partial_out) > seen_out or len(partial_err) > seen_err):
+                try:
+                    progress({"phase": "RUNNING", "elapsed_seconds": round(elapsed, 1),
+                              "stdout": partial_out[seen_out:].decode("utf-8", "replace"),
+                              "stderr": partial_err[seen_err:].decode("utf-8", "replace")})
+                except Exception:
+                    pass
+                seen_out, seen_err, last_tick = len(partial_out), len(partial_err), tick
+            if (cancel is not None and cancel.is_set()) or elapsed > timeout:
                 proc.kill()
                 out, err = proc.communicate()
                 raise ControllerError("EXECUTOR_CANCELLED_OR_TIMED_OUT")
@@ -551,7 +674,7 @@ class Controller:
                                {"approvals/" + approval_id + ".json": approval}, expected_head=expected_head)
         return approval_id
 
-    def run(self, identifier, cancel=None):
+    def run(self, identifier, cancel=None, progress=None):
         state, plan, expected_head = self._plan(identifier)
         if state["tasks"][identifier]["status"] != "READY":
             raise ControllerError("INVALID_RUN_STATE")
@@ -573,16 +696,22 @@ class Controller:
         try:
             code, stdout, stderr = _launch("worker",
                 [self.store.repo / "plans" / (identifier + ".json"), output],
-                stage, timeout=timeout_seconds, cancel=cancel)
-            metadata_path = stage / "worker_result.json"
-            metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
+                stage, timeout=timeout_seconds, cancel=cancel, progress=progress)
+            metadata_path = _safe_path(stage / "worker_result.json")
+            if metadata_path.is_file():
+                if metadata_path.stat().st_size > 8192:
+                    raise ControllerError("WORKER_METADATA_OVERSIZED")
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                if not isinstance(metadata, dict):
+                    raise ControllerError("WORKER_METADATA_INVALID")
             if (code != 0 or not output.is_file() or
                     metadata.get("sha256") != digest(output.read_bytes()) or
-                    not isinstance(metadata.get("pid"), int)):
+                    type(metadata.get("pid")) is not int):
                 error = "WORKER_FAILED"
-        except ControllerError as exc:
-            code, stdout, stderr = -1, "", str(exc)
-            error = str(exc)
+        except (ControllerError, OSError, ValueError, TypeError, KeyError) as exc:
+            code, stdout, stderr = -1, "", type(exc).__name__
+            error = str(exc) if isinstance(exc, ControllerError) else "WORKER_OUTPUT_INVALID"
+            metadata = {}
         result = {"id": run_id, "task": identifier, "worker_exit": code,
                   "stdout": stdout, "stderr": stderr, "error": error,
                   "worker_pid": metadata.get("pid"),
@@ -608,18 +737,35 @@ class Controller:
         if not output.is_file() or digest(output.read_bytes()) != run["artifact_sha256"]:
             raise ControllerError("STAGED_ARTIFACT_CHANGED")
         report_file = _safe_path(stage / "review.json")
-        if report_file.exists():
-            raise ControllerError("REVIEW_REPORT_ALREADY_EXISTS")
-        code, stdout, stderr = _launch("reviewer",
-            [self.store.repo / "plans" / (identifier + ".json"), output, report_file], stage, timeout=20)
-        if not report_file.is_file():
-            raise ControllerError("REVIEWER_DID_NOT_REPORT")
-        report = json.loads(report_file.read_text(encoding="utf-8"))
+        # A crash after the reviewer wrote its report but before the Git
+        # checkpoint must not permanently strand the task in REVIEW.
+        # Fail closed to REWORK; never trust or overwrite a preexisting report.
         worker_pid = run.get("worker_pid")
-        if report.get("reviewer_pid") == worker_pid:
-            raise ControllerError("REVIEWER_IDENTITY_COLLISION")
-        if code != 0 or report.get("verdict") != "PASS" or report.get("sha256") != run["artifact_sha256"]:
-            report["verdict"] = "REWORK"
+        try:
+            if report_file.exists():
+                raise ControllerError("REVIEW_REPORT_ALREADY_EXISTS")
+            code, stdout, stderr = _launch("reviewer",
+                [self.store.repo / "plans" / (identifier + ".json"), output, report_file], stage, timeout=20)
+            if not report_file.is_file():
+                raise ControllerError("REVIEWER_DID_NOT_REPORT")
+            report = json.loads(report_file.read_text(encoding="utf-8"))
+            if not isinstance(report, dict):
+                raise ControllerError("INVALID_REVIEW_REPORT")
+            if report.get("reviewer_pid") == worker_pid:
+                raise ControllerError("REVIEWER_IDENTITY_COLLISION")
+            expected_checks = {"approved_operation", "path_allowlist", "exact_bytes",
+                               "bounded_bytes", "no_null"}
+            checks = report.get("checks")
+            if (code != 0 or report.get("verdict") != "PASS" or
+                    report.get("sha256") != run["artifact_sha256"] or
+                    type(report.get("reviewer_pid")) is not int or report["reviewer_pid"] <= 0 or
+                    not isinstance(checks, dict) or set(checks) != expected_checks or
+                    any(checks[name] is not True for name in expected_checks)):
+                report["verdict"] = "REWORK"
+        except (ControllerError, ValueError, TypeError, OSError, TimeoutError) as exc:
+            report = {"verdict": "REWORK", "reason": "REVIEWER_EXECUTION_FAILED",
+                      "failure_type": type(exc).__name__}
+            stdout, stderr = "", str(exc)[:1000]
         review_id = uuid.uuid4().hex
         report.update({"id": review_id, "task": identifier, "worker_pid": worker_pid,
                        "review_kind": "DETERMINISTIC_PREFLIGHT_NOT_INDEPENDENT_ACCEPTANCE",
@@ -714,7 +860,8 @@ class Controller:
                                expected_head=expected_head)
         return proposal_record
 
-    def accept_review(self, identifier):
+    def accept_review(self, identifier, expected_review_id=None, expected_reviewed_commit=None,
+                      expected_reviewer=None, expected_pr_url=None):
         """Human acceptance only after independent GitHub-authenticated PR review.
 
         COMPLETE means the *local proposal workflow* was accepted; it does not
@@ -746,6 +893,17 @@ class Controller:
                 receipt.get("pr_url") != proposal.get("pr_url") or
                 receipt.get("reviewer", "").casefold() == receipt.get("author", "").casefold()):
             raise ControllerError("INDEPENDENT_REVIEW_IDENTITY_INVALID")
+        # A programmatic caller cannot bypass the displayed human decision.
+        if (type(expected_review_id) is not int or
+                not isinstance(expected_reviewed_commit, str) or
+                not isinstance(expected_reviewer, str) or
+                not isinstance(expected_pr_url, str)):
+            raise ControllerError("DISPLAYED_REVIEW_RECEIPT_REQUIRED")
+        if (receipt.get("review_id") != expected_review_id or
+                receipt.get("reviewed_commit") != expected_reviewed_commit or
+                receipt.get("reviewer") != expected_reviewer or
+                receipt.get("pr_url") != expected_pr_url):
+            raise ControllerError("DISPLAYED_REVIEW_CHANGED")
         checkpoint = {"id": identifier, "kind": "LOCAL_PROPOSAL_ACCEPTED_PR_UNMERGED",
                       "plan_hash": task["plan_hash"], "review_id": task["review"],
                       "run_id": task["run"], "artifact_sha256": run["artifact_sha256"],
@@ -776,6 +934,9 @@ class Controller:
                                        "actor": self.actor, "ids": ids},
                                expected_head=expected_head)
         return ids
+
+    def recover_transaction(self):
+        return self.store.recover_transaction()
 
     def recover_interrupted(self):
         return self.store.recover_interrupted(self.actor)

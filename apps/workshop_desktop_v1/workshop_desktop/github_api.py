@@ -21,7 +21,10 @@ def validate_target(repo, ref, path):
         raise GitHubError("INVALID_REPOSITORY_OR_REF")
     if not SAFE_FILE.fullmatch(path) or ".." in path or "\\" in path:
         raise GitHubError("INVALID_PROPOSAL_PATH")
-    if any(part.upper().split(".")[0] in {"CON", "PRN", "AUX", "NUL"} for part in path.split("/")):
+    # Windows device names remain reserved even with a .md extension.
+    # A GitHub-accepted path must not create an uncheckoutable Windows repo.
+    if any(re.fullmatch(r"(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])",
+                        part.upper().split(".")[0]) for part in path.split("/")):
         raise GitHubError("INVALID_PROPOSAL_PATH")
 
 
@@ -183,13 +186,23 @@ class GitHubClient:
                                authorized=True)
         if not isinstance(reviews, list) or len(reviews) >= 100:
             raise GitHubError("REVIEW_HISTORY_UNBOUNDED")
+        # Review APIs may not guarantee caller-visible ordering. Resolve each
+        # reviewer's latest submitted decision by timestamp and immutable ID.
+        if any(not isinstance(r, dict) for r in reviews):
+            raise GitHubError("INVALID_REVIEW_HISTORY")
         latest = {}
-        for review in reviews:
+        for review in sorted(reviews, key=lambda r: (r.get("submitted_at") or "", r.get("id") or 0)):
             login = (review.get("user") or {}).get("login")
             if not isinstance(login, str) or not login:
                 continue
             if review.get("state") in ("APPROVED", "CHANGES_REQUESTED", "DISMISSED"):
                 latest[login.casefold()] = review
+        # Fail closed if any other independent reviewer still requests changes.
+        # An approval from a different account does not resolve that veto.
+        unresolved = [login for login, review in latest.items()
+                      if login != author.casefold() and review.get("state") == "CHANGES_REQUESTED"]
+        if unresolved:
+            raise GitHubError("UNRESOLVED_CHANGES_REQUESTED")
         eligible = [r for login, r in latest.items()
                     if login != author.casefold() and r.get("state") == "APPROVED"
                     and r.get("commit_id") == commit and r.get("submitted_at")]

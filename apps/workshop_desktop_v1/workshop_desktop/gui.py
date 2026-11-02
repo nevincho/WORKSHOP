@@ -37,6 +37,8 @@ class Desktop:
         self.busy = False
         self.path_var = tk.StringVar(value="No workspace selected")
         self.status_var = tk.StringVar(value="Local-first. No paid AI or automatic repository writes.")
+        self.wizard_step = 0
+        self.wizard_status_var = tk.StringVar(value="Step 1/4: CREATE or OPEN a trusted workspace.")
         self.repo_var = tk.StringVar(value="")
         self.ref_var = tk.StringVar(value="main")
         self.task_var = tk.StringVar(value="TASK-DEMO-01")
@@ -83,6 +85,10 @@ class Desktop:
             self.tabs.add(page, text=name)
         ttk.Label(self.welcome_page, text="WORKSHOP Desktop V1 — guided first launch",
                   font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=10)
+        ttk.Label(self.welcome_page, textvariable=self.wizard_status_var,
+                  wraplength=850).pack(anchor="w", pady=8)
+        ttk.Button(self.welcome_page, text="VERIFY STEP / CONTINUE WIZARD",
+                   command=self.advance_wizard).pack(anchor="w", pady=6)
         ttk.Label(self.welcome_page, text="1. CREATE a trusted G1 workspace, or OPEN an existing one. "
                   "OPEN never repairs or writes to the workspace.", wraplength=860).pack(anchor="w", pady=8)
         ttk.Button(self.welcome_page, text="1A. CREATE WORKSPACE",
@@ -210,6 +216,8 @@ class Desktop:
         self.checkpoint_tree.bind("<<TreeviewSelect>>", self._select_checkpoint)
         ttk.Button(self.checkpoint_page, text="VIEW SELECTED CHECKPOINT",
                    command=self.show_checkpoint).pack(anchor="w", pady=5)
+        ttk.Button(self.checkpoint_page, text="RECOVER INTERRUPTED LOCAL GIT TRANSACTION",
+                   command=self.recover_transaction).pack(anchor="w", pady=5)
         ttk.Button(self.checkpoint_page, text="EXPLICIT INTERRUPTED-RUN RECOVERY",
                    command=self.recover_coordination).pack(anchor="w", pady=5)
         ttk.Label(self.checkpoint_page, text="No automatic remote rollback: close a draft PR and "
@@ -266,6 +274,37 @@ class Desktop:
         messagebox.showerror("WORKSHOP", str(exc), parent=self.root)
         self.status_var.set(type(exc).__name__ + ": " + str(exc))
 
+    def advance_wizard(self):
+        """Guided, explicitly gated navigation; no implicit filesystem or remote writes."""
+        try:
+            ctrl = self._require()
+            if self.wizard_step == 0:
+                self.wizard_step = 1
+                self.wizard_status_var.set("Step 2/4: Initialize local coordination Git explicitly.")
+            elif self.wizard_step == 1:
+                if not ctrl.store.repo.is_dir():
+                    raise ControllerError("INITIALIZE_COORDINATION_FIRST")
+                ctrl.status()
+                self.wizard_step = 2
+                self.wizard_status_var.set("Step 3/4: Verify bounded executor settings.")
+                self.tabs.select(self.settings_page)
+            elif self.wizard_step == 2:
+                settings = ctrl.settings()
+                if settings["executor"] != "markdown-writer-v1" or settings["max_cost"] != 0:
+                    raise ControllerError("UNSUPPORTED_WIZARD_EXECUTOR")
+                self.wizard_step = 3
+                self.wizard_status_var.set("Step 4/4: Optional scoped GitHub PAT; offline planning remains available.")
+                self.tabs.select(self.github_page)
+            elif self.wizard_step == 3:
+                self.wizard_step = 4
+                self.wizard_status_var.set("Wizard complete: create and explicitly approve a bounded task. "
+                                           "GitHub connection is required only before remote operations.")
+                self.tabs.select(self.plan_page)
+            else:
+                self.tabs.select(self.plan_page)
+        except Exception as exc:
+            self._error(exc)
+
     def _require(self):
         if self.controller is None:
             raise ControllerError("OPEN_WORKSPACE_FIRST")
@@ -283,6 +322,9 @@ class Desktop:
         # requires the separate, explicitly confirmed INITIALIZE action.
         # OPEN never repairs or initializes coordination; recovery is a separate action.
         self.controller = ctrl
+        if hasattr(self, "wizard_status_var"):
+            self.wizard_step = 0
+            self.wizard_status_var.set("Step 1/4: Workspace opened. Verify and continue.")
         self.selected = None
         self.g1_selected = None
         self.path_var.set(str(path))
@@ -301,6 +343,23 @@ class Desktop:
                     "OPEN itself performs no writes.", parent=self.root):
                 return
             ctrl.initialize()
+            self.refresh()
+        except Exception as exc:
+            self._error(exc)
+
+    def recover_transaction(self):
+        try:
+            ctrl = self._require()
+            if not ctrl.store.journal.is_file():
+                raise ControllerError("NO_TRANSACTION_JOURNAL")
+            if not messagebox.askyesno("Recover local Git transaction",
+                    "Inspect and reconcile the recorded local Git transaction? "
+                    "Only known journal files may be rolled back, and only if their "
+                    "content and Git HEAD still match. No remote actions are retried.",
+                    parent=self.root):
+                return
+            outcome = ctrl.recover_transaction()
+            self._log("Local Git transaction: " + json.dumps(outcome, sort_keys=True))
             self.refresh()
         except Exception as exc:
             self._error(exc)
@@ -587,8 +646,16 @@ class Desktop:
                 raise ControllerError("SELECT_TASK_FIRST")
             identifier = self.selected
             self.cancel_event.clear()
+            def on_progress(event):
+                def display():
+                    label = "Worker " + event["phase"] + " (" + str(event["elapsed_seconds"]) + "s)"
+                    self._log(label)
+                    for key in ("stdout", "stderr"):
+                        if event.get(key):
+                            self._log(key.upper() + ": " + event[key][:1200])
+                self.root.after(0, display)
             def action():
-                run = ctrl.run(identifier, cancel=self.cancel_event)
+                run = ctrl.run(identifier, cancel=self.cancel_event, progress=on_progress)
                 if run["error"]:
                     return run
                 review = ctrl.review(identifier)
@@ -678,7 +745,11 @@ class Desktop:
             if not messagebox.askyesno("Human acceptance of reviewed proposal",
                                        summary, parent=self.root):
                 return
-            checkpoint = ctrl.accept_review(identifier)
+            checkpoint = ctrl.accept_review(
+                identifier, expected_review_id=receipt["review_id"],
+                expected_reviewed_commit=receipt["reviewed_commit"],
+                expected_reviewer=receipt["reviewer"],
+                expected_pr_url=receipt["pr_url"])
             self._log("Accepted local proposal checkpoint: " + checkpoint["id"])
             self.refresh()
         except Exception as exc:
