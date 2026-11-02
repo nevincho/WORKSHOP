@@ -218,6 +218,16 @@ class CoordinationRepo:
                 if (len(parents) != 2 or parents[1] != expected or
                         _git(self.repo, "status", "--porcelain", "-uall")):
                     raise ControllerError("TRANSACTION_HEAD_CHANGED_REQUIRES_MANUAL_REVIEW")
+                # A direct-child commit is not sufficient evidence of a completed
+                # transaction: it must change ONLY the journal-declared paths.
+                # Otherwise a foreign staged file can be silently accepted.
+                committed_paths = set(filter(None, _git(
+                    self.repo, "diff-tree", "--no-commit-id", "--name-only",
+                    "-r", "-z", "HEAD").split("\0")))
+                expected_paths = {name for name, hashes in writes.items()
+                                  if hashes["before"] != hashes["after"]}
+                if committed_paths != expected_paths:
+                    raise ControllerError("TRANSACTION_COMMIT_SCOPE_MISMATCH")
                 for name, hashes in writes.items():
                     target = _safe_path(self.repo / name)
                     if not target.is_file() or digest(target.read_bytes()) != hashes["after"]:

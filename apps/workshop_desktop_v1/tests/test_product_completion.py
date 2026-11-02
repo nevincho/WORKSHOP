@@ -159,6 +159,29 @@ class ProductCompletionTests(unittest.TestCase):
         self.assertEqual(self.ctrl.status()["tasks"], {})
         self.assertFalse(self.ctrl.store.journal.exists())
 
+    def test_transaction_journal_refuses_foreign_committed_path(self):
+        """A committed unrelated file must never be accepted as our transaction."""
+        real_git = _git
+        baseline = self.ctrl.store.head()
+
+        def inject_foreign_commit(repo, *args, **kwargs):
+            if args and args[0] == "commit":
+                (Path(repo) / "foreign.md").write_text("unrelated", encoding="utf-8")
+                real_git(repo, "add", "--", "foreign.md")
+                real_git(repo, *args, **kwargs)
+                raise ControllerError("INJECTED_AFTER_FOREIGN_COMMIT")
+            return real_git(repo, *args, **kwargs)
+
+        with patch("workshop_desktop.engine._git", side_effect=inject_foreign_commit):
+            with self.assertRaisesRegex(ControllerError, "INJECTED_AFTER_FOREIGN_COMMIT"):
+                self.plan()
+        self.assertNotEqual(self.ctrl.store.head(), baseline)
+        self.assertTrue(self.ctrl.store.journal.is_file())
+        with self.assertRaisesRegex(ControllerError, "TRANSACTION_COMMIT_SCOPE_MISMATCH"):
+            self.ctrl.recover_transaction()
+        self.assertTrue(self.ctrl.store.journal.is_file())
+        self.assertTrue((self.ctrl.store.repo / "foreign.md").is_file())
+
     def test_transaction_journal_refuses_foreign_content(self):
         real_git = _git
         def fail_commit(repo, *args, **kwargs):
