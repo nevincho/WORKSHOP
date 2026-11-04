@@ -1,83 +1,46 @@
-# TANGRA-FC-CONFIG-01
+# TANGRA-FC-CONFIG-01 — current task state
 
-TASK_ID: TANGRA-FC-CONFIG-01  
-PROJECT: TANGRA  
-PRIORITY: HIGH  
-STATUS: BLOCKED
+TASK_ID: TANGRA-FC-CONFIG-01
+PROJECT: TANGRA
+PRIORITY: HIGH
+STATUS: REVIEW
+EXECUTION_CLASS: WORKER
+CODEX_ALLOWED: NO
 
-## OBJECTIVE
-Develop a complete, implementation-ready MAVLink runtime configuration subsystem for the existing TANGRA ESP32 Flight Controller, preserving the existing FC architecture and bench-only safety restrictions.
+## Objective and scope
+Source-derived bounded MAVLink runtime configuration implementation for the ESP32-WROOM-32 FC. Preserve bench-only motor/arming restrictions, existing message 69 and FC control logic. No flashing, actuation, Pi changes or Codex.
 
-## SOURCE_PLAN_OR_REQUEST
-Human-directed Control Room request dated 2026-11-04. Target source supplied as:
-`D:\RaspberryPi5\TANGRA\WORKSPACE\TANGRA_FC_ESP32`.
+## Source checkpoint
+- Human-supplied archive: `TANGRA_FC_ESP32.zip`, SHA-256 `fe917ba2cc8bc87b59e5b38f2ad817b12ad99c712b38a9bd6d1761bbd2c2ee32`.
+- Confirmed inside archive: `config.h`, `TANGRA_FC_ESP32.ino`, `src/mavlink/mavlink2_minimal.cpp/.h`, `src/fc/*`, sensors, build options and old firmware artifacts.
+- Source-reported version: `0.7.0-quad-x-usb-bench`; USB serial 115200; MAVLink2 MANUAL_CONTROL (69).
+- Current device flash identity: NOT VERIFIED.
+- File-level SHA-256 inventory generated as `source_manifest.json` within engineering package.
 
-## CURRENT_STATE
-- Canonical TANGRA coordination/source-of-truth repository inspected: `nevincho/TANGRA-DOCS`.
-- TANGRA engineering repository `nevincho/TANGRA-2.0` inspected.
-- WORKSHOP repository `nevincho/WORKSHOP` inspected.
-- GitHub code search for `TANGRA_FC_ESP32`, `v0.7.0-quad-x-usb-bench`, and MAVLink MANUAL_CONTROL FC identifiers returned no authoritative FC source.
-- Project/Library search found historical transcripts and inventory references to the Windows path, but no authoritative current source files suitable for implementation.
-- Current flashed firmware identity: NOT VERIFIED.
-- Baseline source findings supplied by the human remain NOT VERIFIED against current source in this execution context.
+## Implementation artifacts
+- `TANGRA-FC-CONFIG-01.patch` (SHA-256 `bd46561ecb32a4d1d4f3276cde04e6e69440a35cc2433668c7b9e6d96b7fc253`).
+- `TANGRA-FC-CONFIG-01-engineering-candidate.zip` (SHA-256 `6e82ab0041867fd983d4e930f2a392026154e2593836c211ab1e4aad07b4cdc9`).
+- Created in isolated execution environment and supplied as downloadable artifacts in Control Room; NOT integrated into a GitHub target branch.
+- Candidate includes complete source tree (excluding historical backups/build binaries), tests and integration notes.
+- Registry: `FC_ANGLE_KP` [0.1,10], `FC_HOVER_THR` [0,1], `FC_CMD_ANGLE` [0,45], `FC_CMD_YAW` [0,180], all REAL32 and from config.h factory defaults.
+- NVS: Preferences namespace `tangra_fc`, key `params_v1`; single versioned checked blob; startup restore before controller init; fallback to factory defaults; minimum 5 seconds between changed writes.
+- Existing compile-time safety flags remain compile-time and unexposed.
 
-## PREREQUISITES
-1. Direct readable access to the current authoritative FC source tree, or an exact current repository/branch/ref containing it.
-2. Exact pre-change source checkpoint/hash or repository commit.
-3. Existing build dependency/version information from the current source/build metadata.
+## Evidence
+- Host deterministic C++ tests compiled and executed PASS including MAVLink 20/21/22/23, target filtering, CRC rejection, malformed payload, unsupported IDs/types, bounds, NVS corruption/restore/write-rate, sim arming restrictions, message 69 regression.
+- GCC ASan+UBSan execution: PASS.
+- Four existing Python static/fixture validators exit 0 (after test output directory established). They are not actual ESP32 build/hardware tests.
+- Git patch replay using exact baseline: git apply --check PASS; replayed files byte-identical to candidate; replayed host tests PASS.
+- Existing `STATUSTEXT` formatter triggers a host GCC truncation warning; unrelated baseline code.
 
-## DEPENDENCIES
-- Existing MAVLink implementation and `config.h`.
-- Existing FC initialization order and runtime consumers.
-- Existing hardware/arming/motor safety contracts.
+## Protected components
+No changes to production Pi5/runtime, FC device flash, serial ports, ESC, motors, Master or MicroNodes. Stabilization/PID algorithm, sensors, failsafe and existing message 69 command interpretation preserved.
 
-## AFFECTED_COMPONENTS
-Expected only after source inspection:
-- FC MAVLink receive/response path.
-- Runtime parameter registry.
-- ESP32 Preferences/NVS persistence adapter.
-- Supported parameter consumers.
-- Repository-side tests/fixtures.
+## Remaining gates
+Independent WORKSHOP Reviewer must review candidate source/diff and actual evidence; Reviewer PASS required before qualified integration handoff. Target ESP32 Arduino compile, real NVS reboot, USB protocol and timing/bench hardware: NOT VERIFIED. Codex integration and flashing not authorized.
 
-## PROTECTED_COMPONENTS
-- Production Raspberry Pi 5.
-- Active TANGRA service.
-- Existing flashed FC firmware.
-- Existing MAVLink communication behavior.
-- ESP32 Master and MicroNodes.
-- Physical motors and ESC outputs.
-- Stabilization, PID, sensor drivers, failsafe and motor-safety behavior except minimal verified parameter-consumer wiring required by this task.
-
-## EXECUTION_CLASS
-HUMAN_GATE
-
-## CODEX_ALLOWED
-NO
-
-## ACCEPTANCE_CRITERIA
-As specified by the Control Room request, including:
-- bounded runtime registry based only on existing supported FC configuration;
-- MAVLink PARAM_REQUEST_LIST, PARAM_REQUEST_READ, PARAM_SET and PARAM_VALUE;
-- correct framing/CRC/target filtering/encoding/responses;
-- Preferences/NVS persistence with validation/recovery/write-frequency safeguards;
-- defaults from config.h;
-- preserved MANUAL_CONTROL message 69 behavior;
-- invalid/malformed/unsupported request tests;
-- reboot restoration and corruption recovery tests;
-- independent Reviewer PASS;
-- reviewed implementation package, rollback references and minimal Codex integration handoff.
-
-## VALIDATION_METHOD
-Repository-side build/static checks plus deterministic protocol/NVS fixtures against the actual current FC source. Hardware validation remains NOT VERIFIED unless separately executed on authorized hardware.
-
-## PRE_CHANGE_CHECKPOINT
-NOT VERIFIED — current FC source repository/ref/hash is unavailable in this execution context.
-
-## ROLLBACK_METHOD
-NOT ESTABLISHED until the current authoritative source checkpoint is available. No implementation changes performed.
-
-## EVIDENCE_PATHS
-- `AGENTS.md`
-- `policies/TANGRA_ENGINEERING_TO_PROMOTION_WORKFLOW_POLICY.md`
-- `projects/TANGRA.md`
-- `blockers/TANGRA-FC-CONFIG-01-SOURCE-ACCESS.md`
+## Current assessment
+SOURCE_ACCESS blocker: RESOLVED for this supplied source snapshot.
+ENGINEERING_CANDIDATE: PRODUCED; HOST_TESTS: PASS.
+INDEPENDENT_REVIEW: NOT_PERFORMED.
+INTEGRATION_GATE: CLOSED.
