@@ -400,9 +400,10 @@ class WindowsDesktopScreenTests(unittest.TestCase):
         try:
             app = Desktop(root)
             names = [app.tabs.tab(i, "text") for i in range(app.tabs.index("end"))]
-            self.assertEqual(names, ["Welcome", "Tasks", "Projects", "Detail",
-                                     "Approvals", "Plan", "Run", "Review", "Recovery",
-                                     "GitHub", "Evidence", "Settings"])
+            self.assertEqual(names[0], "Create Project")
+            self.assertEqual(names[1:], ["Welcome", "Tasks", "Projects", "Detail",
+                                         "Approvals", "Plan", "Run", "Review", "Recovery",
+                                         "GitHub", "Evidence", "Settings"])
             self.assertIsNone(app.controller)
             self.assertFalse(app.busy)
         finally:
