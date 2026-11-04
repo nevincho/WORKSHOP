@@ -1,0 +1,14 @@
+# TANGRA-FC-CONFIG-01 — REVIEW FAIL checkpoint
+
+TASK_ID: TANGRA-FC-CONFIG-01
+STATUS: UNQUALIFIED_REVIEW_FAIL
+DATE: 2026-11-04
+SOURCE_ARCHIVE_SHA256: fe917ba2cc8bc87b59e5b38f2ad817b12ad99c712b38a9bd6d1761bbd2c2ee32
+CANDIDATE_ZIP_SHA256: 6e82ab0041867fd983d4e930f2a392026154e2593836c211ab1e4aad07b4cdc9
+PATCH_SHA256: bd46561ecb32a4d1d4f3276cde04e6e69440a35cc2433668c7b9e6d96b7fc253
+REPLAY: PASS
+INDEPENDENT_REVIEW: FAIL
+INTEGRATION_READY: NO
+ROLLBACK: Use unmodified source from original archive at its SHA-256; no physical firmware changes have occurred.
+REVIEW_EVIDENCE: review/TANGRA-FC-CONFIG-01.md
+NOTE: This is a provenance / rejection checkpoint, NOT a validated implementation checkpoint.
