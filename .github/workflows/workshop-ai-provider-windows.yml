@@ -1,0 +1,24 @@
+name: WORKSHOP AI provider unit (Windows)
+on:
+  pull_request:
+    paths:
+      - 'apps/workshop_desktop_v1/workshop_desktop/ai_provider_contract.py'
+      - 'apps/workshop_desktop_v1/workshop_desktop/ollama_provider.py'
+      - 'apps/workshop_desktop_v1/tests/test_ollama_provider.py'
+      - '.github/workflows/workshop-ai-provider-windows.yml'
+  workflow_dispatch:
+jobs:
+  bounded-provider:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run bounded local-provider tests
+        shell: pwsh
+        run: |
+          $env:PYTHONPATH = 'apps/workshop_desktop_v1'
+          python -m unittest discover -s apps/workshop_desktop_v1/tests -p test_ollama_provider.py -v
