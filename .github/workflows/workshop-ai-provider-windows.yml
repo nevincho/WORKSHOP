@@ -30,11 +30,11 @@ jobs:
         run: python -B -m unittest discover -s tests -v
       - name: Build Windows Desktop candidate
         shell: pwsh
-        run: .\\apps\\workshop_desktop_v1\\build_windows.ps1
+        run: ./apps/workshop_desktop_v1/build_windows.ps1
       - name: Frozen trust and executable process smoke
         shell: pwsh
         run: |
-          $exe = Resolve-Path .\\apps\\workshop_desktop_v1\\dist\\WORKSHOPDesktopV1\\WORKSHOPDesktopV1.exe
+          $exe = Resolve-Path ./apps/workshop_desktop_v1/dist/WORKSHOPDesktopV1/WORKSHOPDesktopV1.exe
           $trust = Start-Process -FilePath $exe -ArgumentList "--selftest-g1" -PassThru -Wait
           if ($trust.ExitCode -ne 0) { throw "Frozen G1 trust test failed" }
           $gui = Start-Process -FilePath $exe -PassThru
