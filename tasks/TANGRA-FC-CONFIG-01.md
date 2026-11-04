@@ -4,8 +4,8 @@ TASK_ID: TANGRA-FC-CONFIG-01
 PROJECT: TANGRA
 PRIORITY: HIGH
 STATUS: REVIEW
-REVIEW_VERDICT: FAIL
-NEXT_ACTION: BOUNDED_CORRECTION
+REVIEW_VERDICT: BLOCKED_ON_NEW_INDEPENDENT_REVIEW
+NEXT_ACTION: INDEPENDENT_REVIEW_OF_CORRECTED_CANDIDATE
 CODEX_ALLOWED: NO
 
 OBJECTIVE: Implement bounded MAVLink runtime parameter subsystem on actual source preserving existing Quad-X/MANUAL_CONTROL(69), bench restrictions and motor safety.
@@ -27,3 +27,16 @@ UNQUALIFIED_CHECKPOINT: `checkpoints/TANGRA-FC-CONFIG-01-REVIEW-FAIL.md`
 PROTECTED: Pi5 production, current flashed FC, stabilisation/PID, physical motors/ESC, sensor stack, Master, MicroNodes.
 NO_CHANGE: No flash, motors, Pi5, Codex or production modifications.
 GATES: bounded repair -> tests + independent review PASS -> reviewed qualified checkpoint -> separately authorized dev-copy integration/Arduino-ESP32 build -> bench testing -> separate promotion decision.
+
+## Bounded correction addendum (2026-11-04)
+
+Source-specific D1/D2 candidate correction completed and host-tested; original source-access blocker remains resolved. No new task ID.
+
+CORRECTED_PACKAGE_ZIP_SHA256: `99368879ed581801626d4f18991e5d73e377a57e5ae651ac868140c2aaef01a4`.
+CORRECTED_PATCH_SHA256: `5c7580f7d9caf605cd9d97170e3fe158da537b3019d8df365a367cf3c2951571`.
+CORRECTION_EVIDENCE: `evidence/TANGRA-FC-CONFIG-01/CORRECTION.md`.
+CURRENT_REVIEW_GATE: `review/TANGRA-FC-CONFIG-01-CORRECTION.md`.
+
+D1: direct flash write removed from 2 ms MAVLink fast-control handler; a single pending transaction commits only in DISARMED main-loop maintenance. Delayed-NVS host test PASS. Single-threaded maintenance still delays scheduler during commit: actual timing NOT VERIFIED.
+D2: public MAVLink parser now rejects payload >118 before copying; CRC-valid 130-byte ASan/UBSan regression PASS.
+Host tests / four source validators / patch replay: PASS. No independent Reviewer PASS for corrected exact hashes yet; therefore no qualified checkpoint, no integration authorization, no Codex, flashing or production modifications.
