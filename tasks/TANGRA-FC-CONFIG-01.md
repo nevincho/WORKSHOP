@@ -3,9 +3,9 @@
 TASK_ID: TANGRA-FC-CONFIG-01
 PROJECT: TANGRA
 PRIORITY: HIGH
-STATUS: REVIEW
-REVIEW_VERDICT: BLOCKED_ON_NEW_INDEPENDENT_REVIEW
-NEXT_ACTION: INDEPENDENT_REVIEW_OF_CORRECTED_CANDIDATE
+STATUS: SOURCE_LEVEL_QUALIFIED
+REVIEW_VERDICT: PASS_SOURCE_LEVEL_BENCH_ONLY
+NEXT_ACTION: AWAIT_SEPARATE_HUMAN_AUTHORIZATION_FOR_DEVELOPMENT_COPY_INTEGRATION
 CODEX_ALLOWED: NO
 
 OBJECTIVE: Implement bounded MAVLink runtime parameter subsystem on actual source preserving existing Quad-X/MANUAL_CONTROL(69), bench restrictions and motor safety.
@@ -40,3 +40,17 @@ CURRENT_REVIEW_GATE: `review/TANGRA-FC-CONFIG-01-CORRECTION.md`.
 D1: direct flash write removed from 2 ms MAVLink fast-control handler; a single pending transaction commits only in DISARMED main-loop maintenance. Delayed-NVS host test PASS. Single-threaded maintenance still delays scheduler during commit: actual timing NOT VERIFIED.
 D2: public MAVLink parser now rejects payload >118 before copying; CRC-valid 130-byte ASan/UBSan regression PASS.
 Host tests / four source validators / patch replay: PASS. No independent Reviewer PASS for corrected exact hashes yet; therefore no qualified checkpoint, no integration authorization, no Codex, flashing or production modifications.
+
+## Independent corrected-candidate reviewer outcome — 2026-11-04 (SUPERSEDES earlier FAIL/BLOCKED gate for D1/D2)
+RESULT: PASS — SOURCE_LEVEL / BENCH_ONLY ONLY.
+Current corrected ZIP SHA256: `99368879ed581801626d4f18991e5d73e377a57e5ae651ac868140c2aaef01a4`.
+Current corrected patch SHA256: `5c7580f7d9caf605cd9d97170e3fe158da537b3019d8df365a367cf3c2951571`.
+Original baseline ZIP SHA256: `fe917ba2cc8bc87b59e5b38f2ad817b12ad99c712b38a9bd6d1761bbd2c2ee32`.
+Independent replay: PASS, 59/59 manifest paths byte-identical; host regression PASS; sanitizer PASS; four existing source validators PASS.
+D1: PASS for DISARMED/BENCH_ONLY. NVS is not in 2ms fast-control task. Commit remains synchronously blocking in main loop; missed disarmed cycles possible, hardware timing NOT VERIFIED.
+D2: PASS. Direct parser bounds-check rejects 130 byte oversized CRC-valid message under ASan/UBSan, message69 host regression PASS.
+Review: `review/TANGRA-FC-CONFIG-01-INDEPENDENT-CORRECTED.md`.
+Qualified source-level checkpoint: `checkpoints/TANGRA-FC-CONFIG-01-SOURCE-LEVEL-PASS.md`.
+Minimal non-executed Codex handoff: `handoffs/TANGRA-FC-CONFIG-01-CODEX-INTEGRATION.md`.
+Hardware, actual ESP32 Arduino compilation, USB/NVS timing, physical validation and production remain NOT VERIFIED.
+No Codex, firmware flashing, physical motor use, Pi5 or production modification occurred. Integration not initiated.
