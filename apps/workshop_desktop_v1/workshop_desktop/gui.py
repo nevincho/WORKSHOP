@@ -7,6 +7,7 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from .engine import Controller, ControllerError, canonical, digest
 from .g1_adapter import create_workspace, inspect_workspace, trusted_bundle, verified_trust, safe_display
+from .ai_project_page import AIProjectPage
 
 
 def approval_scope(plan):
@@ -65,6 +66,7 @@ class Desktop:
         self.tabs = ttk.Notebook(self.root)
         self.tabs.pack(fill="both", expand=True, padx=8, pady=5)
         self.welcome_page = ttk.Frame(self.tabs, padding=12)
+        self.ai_project_page = AIProjectPage(self.tabs)
         self.board = ttk.Frame(self.tabs, padding=12)
         self.projects_page = ttk.Frame(self.tabs, padding=12)
         self.detail_page = ttk.Frame(self.tabs, padding=12)
@@ -76,7 +78,7 @@ class Desktop:
         self.github_page = ttk.Frame(self.tabs, padding=12)
         self.audit_page = ttk.Frame(self.tabs, padding=12)
         self.settings_page = ttk.Frame(self.tabs, padding=12)
-        for name, page in [("Welcome", self.welcome_page), ("Tasks", self.board),
+        for name, page in [("Create Project", self.ai_project_page), ("Welcome", self.welcome_page), ("Tasks", self.board),
                            ("Projects", self.projects_page), ("Detail", self.detail_page),
                            ("Approvals", self.approval_page), ("Plan", self.plan_page),
                            ("Run", self.run_page), ("Review", self.review_page),
