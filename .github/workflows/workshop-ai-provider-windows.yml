@@ -2,6 +2,8 @@ name: WORKSHOP AI provider unit (Windows)
 on:
   pull_request:
     paths:
+      - 'apps/workshop_desktop_v1/**'
+      - 'apps/workshop_g1/**'
       - 'apps/workshop_desktop_v1/workshop_desktop/ai_provider_contract.py'
       - 'apps/workshop_desktop_v1/workshop_desktop/ollama_provider.py'
       - 'apps/workshop_desktop_v1/workshop_desktop/ai_project_page.py'
@@ -22,8 +24,29 @@ jobs:
       - name: Compile application modules
         shell: pwsh
         run: python -m compileall -q apps/workshop_desktop_v1/workshop_desktop
-      - name: Run bounded local-provider tests
+      - name: Complete Desktop unit and integration regression
+        shell: pwsh
+        working-directory: apps/workshop_desktop_v1
+        run: python -B -m unittest discover -s tests -v
+      - name: Build Windows Desktop candidate
+        shell: pwsh
+        run: .\\apps\\workshop_desktop_v1\\build_windows.ps1
+      - name: Frozen trust and executable process smoke
         shell: pwsh
         run: |
-          $env:PYTHONPATH = 'apps/workshop_desktop_v1'
-          python -m unittest discover -s apps/workshop_desktop_v1/tests -p test_ollama_provider.py -v
+          $exe = Resolve-Path .\\apps\\workshop_desktop_v1\\dist\\WORKSHOPDesktopV1\\WORKSHOPDesktopV1.exe
+          $trust = Start-Process -FilePath $exe -ArgumentList "--selftest-g1" -PassThru -Wait
+          if ($trust.ExitCode -ne 0) { throw "Frozen G1 trust test failed" }
+          $gui = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 3
+          $gui.Refresh()
+          $alive = -not $gui.HasExited
+          if ($alive) { Stop-Process -Id $gui.Id -Force }
+          if (-not $alive) { throw "Frozen UI exited unexpectedly" }
+          Write-Output "FROZEN_GUI_PROCESS_ALIVE_AFTER_3S=True"
+      - name: Upload Windows candidate (not a commercial release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: WORKSHOP-AI-Desktop-Candidate-Windows
+          path: apps/workshop_desktop_v1/dist/WORKSHOPDesktopV1/
+          if-no-files-found: error
