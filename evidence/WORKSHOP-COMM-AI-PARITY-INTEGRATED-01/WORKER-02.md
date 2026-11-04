@@ -29,3 +29,15 @@ https://github.com/nevincho/WORKSHOP/actions/runs/41802911885
 
 PARTIAL_CANDIDATE, NOT COMMERCIAL RELEASE.
 CI is not a substitute for Worker or independent Reviewer. Next gate: independent review of PR #6 source, test sufficiency and trust boundaries; then next scoped implementation dependency. No Codex used. Do not claim continuous autonomous dispatch.
+
+## 2026-11-04 direct Control Room execution — full Windows candidate qualification
+
+SOURCE_COMMIT: 610ae41d5ab81fac456cafa09a86cb03a0f0c8a1
+VALIDATION_RUN: https://github.com/nevincho/WORKSHOP/actions/runs/41809184738
+VALIDATION_RESULT: SUCCESS, Windows hosted runner, 76 tests executed; all tests passed or were skipped according to platform-specific conditions (consult raw log for breakdown).
+BUILD: PyInstaller Windows onedir PASS; Inno Setup installer compilation PASS; frozen G1 trust PASS; frozen GUI process smoke PASS (not interactive end-user acceptance).
+ARTIFACT: WORKSHOP-AI-Desktop-Candidate-Windows, ID 13310842968; SHA256 digest 0237e2767bcfa01e915b0cd2acadb682feff921b501ae36815a539628c38ecfe.
+
+A broader regression initially failed for two separately diagnosed reasons: Windows TEMP/TMP fixture path produced G1 UNSAFE_LINK in CI and old product screen expectation assumed exactly twelve tabs despite the explicitly added Create Project tab. Fixes were limited to workflow temporary-directory selection and updating the UI test expectation to preserve all twelve old tabs behind Create Project. Protected G1 source was unchanged. The same full suite was then rerun successfully at the frozen source commit above. No implementation defect in G1 was inferred from environment fixture failure.
+
+Review boundary: this is Worker/CI evidence only; no independent Reviewer PASS. Product still lacks genuine tool-capable coding Worker, paid/customer-owned API providers, external GitHub agent integration and qualified commercial installation on clean Windows client.
