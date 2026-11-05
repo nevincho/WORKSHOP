@@ -64,3 +64,12 @@ User supplied and verified three archives in isolated workspace. The pre-existin
 - Full missing list, official source URLs and archive hashes are preserved in `TANGRA-ARDUPILOT-ESP32-BUILD-01-offline-recovery-report.zip` SHA256 `a4dec3c227e49c0b817b63cbbcb5dab756eced610fd738d2d6bbe30de5bb5612` generated as conversation artifact.
 
 Status remains `BLOCKED_BUILD_PREREQUISITES`; prior reviewer gate remains BLOCKED. No qualified checkpoint.
+
+## Source reconstruction continuation — 2026-11-05
+
+The three previously uploaded ArduPilot parts were concatenated in order and validated. Original archive `TANGRA_ARDUPILOT_COMPLETE.tar.gz` SHA-256 `63df137f110449c339668357b52aaedefeee6627a430eccaaf097d513eedd1f5`; `gzip -t` PASS, `tar -tzf` PASS (30,461 entries), extraction PASS. Local Git HEAD exactly `adb3766244981e0cd5c4f7fa58d9fc4142278e9f`. 16/16 recursive gitlink HEAD comparisons MATCH across 17 repositories, including waf and mavlink. ArduPilot dependency-acquisition blocker RESOLVED.
+
+New first build prerequisite blocker: required ESP-IDF pinned commit `cc3203dc4f087ab41b434afff1ed7520c6d90993` (from `Tools/scripts/esp32_get_idf.sh`) is not locally supplied as verifiable full checkout. The existing `esp-idf-release-v5.3.zip` lacks Git metadata and all 23 declared submodules. `modules/esp_idf/` missing from ArduPilot checkout. Xtensa `.tar.xz` passes `xz -t`; native `flex`/`bison` absent; toolchain execution was proven in an earlier phase but not re-run in this stop-on-blocker task. Provisional board remains unbuilt.
+
+BUILD_ATTEMPTED: NO. FIRMWARE_BINARY: NONE. FIRMWARE_SIZE: NOT VERIFIED. INDEPENDENT_REVIEW: BLOCKED. QUALIFIED_BUILD_CHECKPOINT: NONE.
+Local evidence: `/mnt/data/tangra_ardupilot_recovery/RECOVERY_CHECKPOINT.md` (SHA256 `ca5d0323d96e8aac3718883a9ace8df86d3453f1b06adf165e7977d545ad88cf`). No Codex, flash, motor, Pi5 or production action.
