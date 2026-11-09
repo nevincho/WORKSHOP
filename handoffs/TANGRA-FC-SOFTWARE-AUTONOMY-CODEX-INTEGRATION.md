@@ -115,3 +115,23 @@ Codex local adapters:
 
 STEP_13 REVIEWER_VERDICT: SOFTWARE_IMPLEMENTATION_PASS.
 CODEX_INTEGRATION_READY: YES.
+
+
+## Integration Rework 02
+
+Checkpoint:
+`checkpoints/TANGRA-FC-AUTONOMY-INTEGRATION-REWORK-02.md`
+
+Evidence classification:
+- STANDALONE_SIM_PASS
+- ADAPTER_CONTRACT_PASS
+- REAL_FC_INTEGRATION_NOT_TESTED
+- TRANSPORT_ADAPTER_REQUIRED
+
+Important corrections:
+- STEP_3 simulation fixtures are no longer evidence of real FC integration.
+- Bind `ITangraFcControllerContract`, `ITangraFcVirtualQuadXMixerContract`, and `ITangraFcEstimatorContract` to authoritative local FC components.
+- STEP_4 derives vertical velocity from timestamped altitude samples.
+- STEP_5 establishes origin, transforms geodetic observations, and derives local velocity.
+- STEP_8 separates payload codec from dialect/transport. Replace standalone fixture IDs/CRC-extra with the actual TANGRA MAVLink dialect.
+- Do not claim REAL_FC_INTEGRATION_PASS until those local adapters are compiled and tested against the authoritative Windows FC source.
