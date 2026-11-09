@@ -70,3 +70,16 @@ Target repositories/runtime evidence remain authoritative for implementation sta
 - Planner/Worker/Reviewer/checkpoint are not eligible until source access is established.
 - STEP_3 and later remain locked.
 - Blocker record: `blockers/TANGRA-FC-SA-02-01-EXECUTION-ACCESS.md`.
+
+
+## 2026-11-09 TANGRA FC Software Autonomy — software campaign completion
+
+- STEP_1 Mission Lifecycle v1: COMPLETE (pre-existing/protected).
+- STEP_2 through STEP_12: standalone repository software COMPLETE / independent SOFTWARE_IMPLEMENTATION_PASS / checkpointed.
+- Cross-module integration test: PASS.
+- Final review: `review/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md`.
+- Final checkpoint: `checkpoints/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md`.
+- Real Windows-local FC integration: NOT_YET_PERFORMED.
+- ESP32 firmware/hardware qualification: NOT_PERFORMED.
+- Physical actuator output and arming: outside campaign / OFF.
+- Next route: consolidated later Codex integration only; do not recreate standalone modules.
