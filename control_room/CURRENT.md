@@ -1,7 +1,7 @@
 # WORKSHOP Control Room Current Handoff
 
-STATUS: ACTIVE_REPOSITORY_SAFE_CAMPAIGN / WAITING_FOR_NEXT_CANONICAL_TASK
-DATE: 2026-10-06
+STATUS: ACTIVE_REPOSITORY_SAFE_CAMPAIGN / TANGRA_FC_STEP_2_SCOUT_PREP
+DATE: 2026-11-09
 
 ## TANGRA Research Lab campaign
 
@@ -39,3 +39,16 @@ DATE: 2026-10-06
 
 ## Authority
 Target repositories/runtime evidence remain authoritative for implementation state. `status/WORKSHOP_STATE.yaml` is coordination state and must be reconciled against newer evidence before routing work.
+
+## TANGRA FC Software Autonomy campaign — current handoff
+
+- Explicit human authorization recorded 2026-11-09.
+- Campaign record: `control_room/TANGRA_FC_SOFTWARE_AUTONOMY_CAMPAIGN.md`.
+- Canonical TANGRA docs PR #13 verified OPEN at head `1ce87e6a76822c757029be67ee9bccb342774d0a` at campaign creation.
+- STEP_1 Mission Lifecycle v1 is already complete in current TANGRA evidence.
+- STEP_2 command-source arbitration + Safety Supervisor ownership is the active dependency.
+- First canonical task: `tasks/TANGRA-FC-SA-02-01-COMMAND-ARBITRATION.md`.
+- Current state: READY -> SCOUT/PREP.
+- Scout assignment: `evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md`.
+- Planner, Worker and Reviewer are not yet routed; Planner waits for Scout evidence. Worker may not start before Planner. STEP_3 remains locked until STEP_2 independent PASS + checkpoint.
+- Physical actuator authority/arming remain OFF. Production Pi5 modification remains unauthorized.
