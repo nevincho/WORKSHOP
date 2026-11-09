@@ -1,6 +1,6 @@
 # TANGRA FC Software Autonomy — Codex Integration Handoff
 
-STATUS: READY_FOR_LATER_CODEX_INTEGRATION
+STATUS: READY_FOR_CODEX_REVIEW
 DATE: 2026-11-09
 
 ## Objective
@@ -66,3 +66,30 @@ HARDWARE_QUALIFICATION_NOT_PERFORMED.
 
 Final review: `review/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md`
 Final checkpoint: `checkpoints/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md`
+
+
+## 2026-11-09 Codex acceptance rework
+
+Prior Codex acceptance: ACCEPT=NO.
+
+Blocking rework checkpoint:
+`checkpoints/TANGRA-FC-SA-ACCEPTANCE-REWORK-01.md`
+
+Independent review:
+`review/TANGRA-FC-SA-ACCEPTANCE-REWORK-01.md`
+
+Result:
+- 8/8 supplied blockers CLOSED;
+- 11/11 standalone module tests PASS;
+- actual STEP_2-12 closed-loop end-to-end qualification PASS;
+- STEP_3 Quad-X plant participates in the real software loop;
+- STEP_4/5 state producers added;
+- STEP_2 duplicate/out-of-order replay semantics defined;
+- STEP_7 consumes shared Mission Lifecycle v1 contract;
+- STEP_8 includes configurable MAVLink goal/ACK/telemetry software binding;
+- STEP_9 malformed numeric parsing is fail-closed;
+- STEP_10/11/12 participate meaningfully in end-to-end qualification.
+
+Remaining boundary:
+REAL_FC_INTEGRATION_NOT_YET_PERFORMED.
+Concrete local MAVLink IDs/frame transport and binding to the existing local Lifecycle v1 implementation remain Codex integration adapters.
