@@ -59,3 +59,14 @@ Target repositories/runtime evidence remain authoritative for implementation sta
 - Current source-tree and arbitration implementation details: `NOT_VERIFIED` in available execution environment.
 - Task status: `BLOCKED / CONTROL_ROOM_RECONCILE`; Planner and Worker not dispatched; independent review and checkpoint not performed.
 - STEP_3 remains locked.
+
+
+## 2026-11-09 FC campaign execution stop
+
+- Current task remains `TANGRA-FC-SA-02-01-COMMAND-ARBITRATION`.
+- State: `BLOCKED_EXECUTION_ACCESS`.
+- Exact authoritative Windows FC source inspection is unavailable in the present execution environment.
+- GitHub-accessible repositories do not contain an authoritative copy of the FC implementation.
+- Planner/Worker/Reviewer/checkpoint are not eligible until source access is established.
+- STEP_3 and later remain locked.
+- Blocker record: `blockers/TANGRA-FC-SA-02-01-EXECUTION-ACCESS.md`.
