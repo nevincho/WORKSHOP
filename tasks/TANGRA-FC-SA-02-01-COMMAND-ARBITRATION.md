@@ -4,9 +4,9 @@ PROJECT: TANGRA
 CAMPAIGN: TANGRA-FC-SOFTWARE-AUTONOMY
 STEP: 2
 STATUS: BLOCKED
-ROUTE: CONTROL_ROOM_RECONCILE
+ROUTE: BLOCKED_EXECUTION_ACCESS
 SCOUT_EVIDENCE: evidence/TANGRA-FC-SA-02-01/SCOUT.md
-BLOCKER: Windows-local FC implementation source not inspected; exact arbitration gap NOT_VERIFIED
+BLOCKER: authoritative Windows-local FC source at D:\\RaspberryPi5\\TANGRA\\WORKSPACE\\TANGRA_FC_ESP32 is not accessible in the current execution environment; exact arbitration implementation/gap remains NOT_VERIFIED
 CREATED: 2026-11-09
 AUTHORIZATION: EXPLICIT_HUMAN_AUTHORIZATION
 
@@ -129,3 +129,23 @@ SCOUT/PREP -> PLANNER.
 
 Do not route directly to Worker.
 Do not create or start STEP_3.
+
+
+## 2026-11-09 Control Room execution-access reconciliation
+
+Verified:
+- TANGRA-DOCS PR #13 remains OPEN at head `1ce87e6a76822c757029be67ee9bccb342774d0a`.
+- GitHub code search found no authoritative copy of `TANGRA_FC_ESP32`, build `TANGRA-FC-HW-DIAG-MPU-SCHED-02`, or its lifecycle/arbitration source in the connected GitHub repositories.
+- Browser/local-computer access is unavailable in the current execution context.
+- No Codex execution tool is available in this Control Room context.
+
+Classification:
+- BLOCKED_EXECUTION_ACCESS
+- SOURCE_STATE: NOT VERIFIED
+- PLANNER: NOT ELIGIBLE
+- WORKER: NOT ELIGIBLE
+- REVIEWER: NOT ELIGIBLE
+- STEP_3+: LOCKED
+
+Unblock condition:
+Provide an execution route that can directly inspect the authoritative Windows source tree, or place an exact source-controlled copy of that tree in an authorized repository accessible to WORKSHOP. The route must preserve source identity and rollback evidence.
