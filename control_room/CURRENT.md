@@ -110,3 +110,16 @@ Target repositories/runtime evidence remain authoritative for implementation sta
 - Route: READY_FOR_CODEX_INTEGRATION.
 - Remaining work is local adapter integration only.
 - Physical outputs/arming remain OFF.
+
+
+## 2026-11-09 TANGRA FC Integration Rework 02
+
+- Task: TANGRA-FC-AUTONOMY-INTEGRATION-REWORK-02 COMPLETE.
+- Reviewer: PASS_WITH_EXPLICIT_LOCAL_ADAPTER_BOUNDARY.
+- STEP_2–12 clean module suites: PASS.
+- Integration: STANDALONE_SIM_PASS + ADAPTER_CONTRACT_PASS.
+- REAL_FC_INTEGRATION_NOT_TESTED.
+- STEP_8 real dialect/transport: TRANSPORT_ADAPTER_REQUIRED.
+- Checkpoint: `checkpoints/TANGRA-FC-AUTONOMY-INTEGRATION-REWORK-02.md`.
+- Route: READY_FOR_CODEX_REVIEW.
+- No local FC edits, flash, hardware operation or physical output.
