@@ -3,10 +3,9 @@
 PROJECT: TANGRA
 CAMPAIGN: TANGRA-FC-SOFTWARE-AUTONOMY
 STEP: 2
-STATUS: BLOCKED
-ROUTE: BLOCKED_EXECUTION_ACCESS
+STATUS: REVIEW
+ROUTE: INDEPENDENT_REVIEW
 SCOUT_EVIDENCE: evidence/TANGRA-FC-SA-02-01/SCOUT.md
-BLOCKER: authoritative Windows-local FC source at D:\\RaspberryPi5\\TANGRA\\WORKSPACE\\TANGRA_FC_ESP32 is not accessible in the current execution environment; exact arbitration implementation/gap remains NOT_VERIFIED
 CREATED: 2026-11-09
 AUTHORIZATION: EXPLICIT_HUMAN_AUTHORIZATION
 
@@ -149,3 +148,14 @@ Classification:
 
 Unblock condition:
 Provide an execution route that can directly inspect the authoritative Windows source tree, or place an exact source-controlled copy of that tree in an authorized repository accessible to WORKSHOP. The route must preserve source identity and rollback evidence.
+
+
+## Standalone engineering reconciliation
+
+Human decision: local Windows FC access is not required for standalone implementation. Previous execution-access blocker is cleared for this campaign objective.
+
+Planner: `planning/TANGRA-FC-SA-02-01.md`.
+Implementation package: `handoffs/TANGRA-FC-SA-02-01_COMMAND_ARBITRATION_PACKAGE`.
+Local FC integration: `INTEGRATION_ADAPTER_REQUIRED`.
+Host validation: GCC 14.2 / CMake 3.31.6, CTest 1/1 PASS.
+Current route: INDEPENDENT_REVIEW.
