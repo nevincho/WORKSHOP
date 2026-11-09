@@ -5,6 +5,7 @@ set(ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
 add_executable(test_autonomy_stack
   test_autonomy_stack.cpp
   ${ROOT}/TANGRA-FC-SA-02-01_COMMAND_ARBITRATION_PACKAGE/src/command_arbitration.cpp
+  ${ROOT}/TANGRA-FC-SA-03-01-QUADX-SIM_PACKAGE/src/quadx_simulation.cpp
   ${ROOT}/TANGRA-FC-SA-04-01-VERTICAL_PACKAGE/src/vertical_control.cpp
   ${ROOT}/TANGRA-FC-SA-05-01-LOCAL-STATE_PACKAGE/src/local_navigation_state.cpp
   ${ROOT}/TANGRA-FC-SA-06-01-GUIDANCE_PACKAGE/src/horizontal_guidance.cpp
@@ -15,7 +16,9 @@ add_executable(test_autonomy_stack
   ${ROOT}/TANGRA-FC-SA-11-01-GNSS-COMPASS_PACKAGE/src/navigation_observations.cpp
   ${ROOT}/TANGRA-FC-SA-12-01-MISSION-PLANNER_PACKAGE/src/mission_planner_adapter.cpp)
 target_include_directories(test_autonomy_stack PRIVATE
+  ${ROOT}/TANGRA-FC-SOFTWARE-AUTONOMY_COMMON/include
   ${ROOT}/TANGRA-FC-SA-02-01_COMMAND_ARBITRATION_PACKAGE/include
+  ${ROOT}/TANGRA-FC-SA-03-01-QUADX-SIM_PACKAGE/include
   ${ROOT}/TANGRA-FC-SA-04-01-VERTICAL_PACKAGE/include
   ${ROOT}/TANGRA-FC-SA-05-01-LOCAL-STATE_PACKAGE/include
   ${ROOT}/TANGRA-FC-SA-06-01-GUIDANCE_PACKAGE/include
