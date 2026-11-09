@@ -96,3 +96,17 @@ Target repositories/runtime evidence remain authoritative for implementation sta
 - Route: READY_FOR_CODEX_REVIEW.
 - Real local FC integration: NOT_YET_PERFORMED.
 - Physical outputs/arming: OFF.
+
+
+## 2026-11-09 TANGRA FC STEP_13 USB configuration extension
+
+- STEP_13 USB configuration: COMPLETE / independent SOFTWARE_IMPLEMENTATION_PASS.
+- Uses STEP_9 as the single parameter/persistence backend.
+- Quad-X remains default and implemented; future profiles are descriptors only and fail closed.
+- Existing STEP_2-12 regression: 11/11 PASS.
+- STEP_13 test: PASS.
+- Existing autonomy_stack end-to-end: PASS.
+- Checkpoint: `checkpoints/TANGRA-FC-SA-13-01-USB-CONFIGURATION.md`.
+- Route: READY_FOR_CODEX_INTEGRATION.
+- Remaining work is local adapter integration only.
+- Physical outputs/arming remain OFF.
