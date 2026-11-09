@@ -1,6 +1,6 @@
 workshop_version: 0.1
 status: ACTIVE_REPOSITORY_SAFE_CAMPAIGN
-updated: 2026-10-06
+updated: 2026-11-09
 active_project_priority:
   - TANGRA
   - VK
@@ -15,6 +15,16 @@ hold_projects:
     runtime_actions_allowed: false
     repository_safe_research_allowed: true
 active_campaigns:
+  TANGRA_FC_SOFTWARE_AUTONOMY:
+    current_task: TANGRA-FC-SA-02-01-COMMAND-ARBITRATION
+    state: READY
+    route: SCOUT_PREP
+    authorization: EXPLICIT_HUMAN_AUTHORIZATION_2026-11-09
+    campaign_record: control_room/TANGRA_FC_SOFTWARE_AUTONOMY_CAMPAIGN.md
+    scout_assignment: evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md
+    physical_actuator_authority: OFF
+    production_pi5_authority: NONE
+    next_action: Scout current TANGRA FC arbitration and safety ownership before Planner routing
   TANGRA_RESEARCH_LAB:
     current_task: TANGRA-RESEARCH-LAB-03
     state: WAITING_FOR_CONTROL_ROOM_NEXT_TASK
@@ -25,6 +35,14 @@ active_campaigns:
     codex_allowed: false
 active_tests: []
 ready_tasks:
+  TANGRA-FC-SA-02-01-COMMAND-ARBITRATION:
+    project: TANGRA
+    campaign: TANGRA-FC-SOFTWARE-AUTONOMY
+    state: READY
+    route: SCOUT_PREP
+    task: tasks/TANGRA-FC-SA-02-01-COMMAND-ARBITRATION.md
+    scout_assignment: evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md
+    objective: reconcile and prepare smallest STEP_2 command-source arbitration plus Safety Supervisor implementation boundary
   TASK-046:
     project: ESP32 MICROBLOG / AGENT 32
     state: READY_FOR_CODEX_REVIEW
@@ -145,6 +163,7 @@ protected:
   vk_canonical_personality: true
   vk_approved_memory_promotion: true
   tangra_hold: true
+  tangra_fc_physical_actuation: true
 connections:
   tangra_repo: nevincho/TANGRA-DOCS
   tangra_repo_read: VERIFIED
