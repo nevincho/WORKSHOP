@@ -93,3 +93,25 @@ Result:
 Remaining boundary:
 REAL_FC_INTEGRATION_NOT_YET_PERFORMED.
 Concrete local MAVLink IDs/frame transport and binding to the existing local Lifecycle v1 implementation remain Codex integration adapters.
+
+
+## STEP_13 USB configuration extension
+
+Checkpoint:
+`checkpoints/TANGRA-FC-SA-13-01-USB-CONFIGURATION.md`
+
+Package:
+`handoffs/TANGRA-FC-SA-13-01-USB-CONFIGURATION_PACKAGE/`
+
+Reuse requirement:
+STEP_9 ParameterStore/IParameterStorage remains the single configuration persistence backend.
+
+Codex local adapters:
+- bind IUsbConfigurationTransport to the actual ESP32 USB/MAVLink stream/multiplexer;
+- provide real firmware/build identity;
+- map schema values into existing local FC components without bypassing validated control/safety layers;
+- bind STEP_9 IParameterStorage to real ESP32 persistence;
+- preserve Quad-X default behavior and do not enable reserved future profiles until their control implementations exist.
+
+STEP_13 REVIEWER_VERDICT: SOFTWARE_IMPLEMENTATION_PASS.
+CODEX_INTEGRATION_READY: YES.
