@@ -1,0 +1,13 @@
+# TANGRA-FC-SA-05-01-LOCAL-STATE — Local-frame position and velocity model
+
+PROJECT: TANGRA
+CAMPAIGN: TANGRA-FC-SOFTWARE-AUTONOMY
+STEP: 5
+STATUS: IN_PROGRESS
+MODE: STANDALONE_SOFTWARE_ENGINEERING
+
+OBJECTIVE: Create versioned internal local-frame state contract for X/Y/Z and VX/VY/VZ with origin, timestamps, freshness, validity, health and uncertainty.
+LOCAL_FC_INTEGRATION: NOT_YET_PERFORMED
+INTEGRATION_ADAPTER_REQUIRED: YES
+PHYSICAL_OUTPUTS: OFF
+ARMING: OFF
