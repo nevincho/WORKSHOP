@@ -17,18 +17,18 @@ hold_projects:
 active_campaigns:
   TANGRA_FC_SOFTWARE_AUTONOMY:
     current_task: NONE
-    state: SOFTWARE_CAMPAIGN_COMPLETE
-    route: READY_FOR_LATER_CODEX_INTEGRATION
+    state: SOFTWARE_REWORK_COMPLETE
+    route: READY_FOR_CODEX_REVIEW
     authorization: EXPLICIT_HUMAN_AUTHORIZATION_2026-11-09
     campaign_record: control_room/TANGRA_FC_SOFTWARE_AUTONOMY_CAMPAIGN.md
     final_review: review/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md
-    final_checkpoint: checkpoints/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md
+    final_checkpoint: checkpoints/TANGRA-FC-SA-ACCEPTANCE-REWORK-01.md
     integration_evidence: evidence/TANGRA-FC-SOFTWARE-AUTONOMY/INTEGRATION.md
     physical_actuator_authority: OFF
     production_pi5_authority: NONE
     local_fc_integration: NOT_YET_PERFORMED
     hardware_qualification: NOT_PERFORMED
-    next_action: later Codex integration against authoritative Windows-local FC using consolidated handoff
+    next_action: Codex acceptance review of repaired standalone package, then local FC integration if accepted
   TANGRA_RESEARCH_LAB:
     current_task: TANGRA-RESEARCH-LAB-03
     state: WAITING_FOR_CONTROL_ROOM_NEXT_TASK
