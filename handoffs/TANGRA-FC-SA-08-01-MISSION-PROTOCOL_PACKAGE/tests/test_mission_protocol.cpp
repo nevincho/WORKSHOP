@@ -1,0 +1,6 @@
+#include "tangra_fc/mission_protocol.hpp"
+#include <cassert>
+#include <iostream>
+using namespace tangra::fc;
+struct Sink:IMissionCommandSink{int n=0;bool accept_goal(const MissionGoalCommand&)override{++n;return true;}};
+int main(){Sink s;MissionProtocolEndpoint e(s);MissionGoalCommand c;c.sequence=1;c.timestamp_ms=100;c.ttl_ms=50;c.x=1;auto a=e.receive(c,120,MissionStateWire::READY);assert(a.status==ProtocolStatus::Accepted&&s.n==1);a=e.receive(c,121,MissionStateWire::READY);assert(a.status==ProtocolStatus::OutOfOrder);MissionGoalCommand stale=c;stale.sequence=2;stale.timestamp_ms=0;stale.ttl_ms=10;a=e.receive(stale,100,MissionStateWire::READY);assert(a.status==ProtocolStatus::Stale);e.on_disconnect();MissionGoalCommand c3=c;c3.sequence=3;a=e.receive(c3,120,MissionStateWire::HOLD);assert(a.status==ProtocolStatus::NotSynchronized);e.on_reconnect();a=e.receive(c3,120,MissionStateWire::HOLD);assert(a.status==ProtocolStatus::NotSynchronized);e.resynchronize(1);a=e.receive(c3,120,MissionStateWire::HOLD);assert(a.status==ProtocolStatus::Accepted);auto t=e.telemetry(MissionStateWire::ACTIVE,1.2,MissionFault::None);assert(t.synchronized&&t.progress==1.0&&t.last_accepted_sequence==3);std::cout<<"PASS: mission supervisor protocol contract\n";}
