@@ -7,6 +7,7 @@ ACTIVE_CAMPAIGNS:
 - WIDE-EW
 - TAI
 - TANGRA_RESEARCH_LAB
+- TANGRA-FC-SOFTWARE-AUTONOMY
 
 ## TANGRA Research Lab campaign
 
@@ -77,3 +78,17 @@ Production/Pi5 runtime actions remain prohibited for current WIDE-EW and TAI Pha
 ## Codex
 
 No Codex work is authorized for either current TAI Phase A engineering or WIDE-EW unless a separate explicit human gate opens it.
+
+## TANGRA FC Software Autonomy campaign
+
+CAMPAIGN_STATE: ACTIVE
+AUTHORIZATION: EXPLICIT_HUMAN_AUTHORIZATION_2026-11-09
+CURRENT_STEP: STEP_2_COMMAND_SOURCE_ARBITRATION_SAFETY
+CURRENT_TASK: TANGRA-FC-SA-02-01-COMMAND-ARBITRATION
+CURRENT_ROUTE: SCOUT_PREP
+CANONICAL_CAMPAIGN_RECORD: control_room/TANGRA_FC_SOFTWARE_AUTONOMY_CAMPAIGN.md
+PRODUCTION_PI5_AUTHORITY: NONE
+PHYSICAL_ACTUATOR_AUTHORITY: OFF
+PHYSICAL_FLIGHT_AUTHORITY: NONE
+
+Repository-safe FC software development, deterministic simulation/host tests, non-actuating firmware work, bench-safe diagnostics, review and checkpointing are authorized. Physical motor/ESC operation, propulsive/autonomous flight, targeting/interception, production Pi5 modification and unrelated TANGRA production changes remain prohibited.
