@@ -16,15 +16,19 @@ hold_projects:
     repository_safe_research_allowed: true
 active_campaigns:
   TANGRA_FC_SOFTWARE_AUTONOMY:
-    current_task: TANGRA-FC-SA-02-01-COMMAND-ARBITRATION
-    state: BLOCKED
-    route: BLOCKED_EXECUTION_ACCESS
+    current_task: NONE
+    state: SOFTWARE_CAMPAIGN_COMPLETE
+    route: READY_FOR_LATER_CODEX_INTEGRATION
     authorization: EXPLICIT_HUMAN_AUTHORIZATION_2026-11-09
     campaign_record: control_room/TANGRA_FC_SOFTWARE_AUTONOMY_CAMPAIGN.md
-    scout_assignment: evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md
+    final_review: review/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md
+    final_checkpoint: checkpoints/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md
+    integration_evidence: evidence/TANGRA-FC-SOFTWARE-AUTONOMY/INTEGRATION.md
     physical_actuator_authority: OFF
     production_pi5_authority: NONE
-    next_action: obtain verified access to authoritative Windows FC source or authorized source-controlled copy; resume existing STEP_2 Scout task
+    local_fc_integration: NOT_YET_PERFORMED
+    hardware_qualification: NOT_PERFORMED
+    next_action: later Codex integration against authoritative Windows-local FC using consolidated handoff
   TANGRA_RESEARCH_LAB:
     current_task: TANGRA-RESEARCH-LAB-03
     state: WAITING_FOR_CONTROL_ROOM_NEXT_TASK
@@ -35,16 +39,6 @@ active_campaigns:
     codex_allowed: false
 active_tests: []
 ready_tasks:
-  TANGRA-FC-SA-02-01-COMMAND-ARBITRATION:
-    project: TANGRA
-    campaign: TANGRA-FC-SOFTWARE-AUTONOMY
-    state: BLOCKED
-    route: CONTROL_ROOM_RECONCILE
-    task: tasks/TANGRA-FC-SA-02-01-COMMAND-ARBITRATION.md
-    scout_assignment: evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md
-    scout_evidence: evidence/TANGRA-FC-SA-02-01/SCOUT.md
-    blocker: authoritative Windows-local FC source is inaccessible in current execution environment; implementation state NOT_VERIFIED
-    objective: reconcile and prepare smallest STEP_2 command-source arbitration plus Safety Supervisor implementation boundary
   TASK-046:
     project: ESP32 MICROBLOG / AGENT 32
     state: READY_FOR_CODEX_REVIEW
