@@ -7,3 +7,7 @@ LOCAL_FC_INTEGRATION: NOT_YET_PERFORMED
 HARDWARE_QUALIFICATION: NOT_PERFORMED
 
 Rollback: all implementation is repository-side standalone packages; production/hardware state was not modified.
+
+
+STEP_9_REWORK: CLOSED / PASS
+FINAL_CROSS_MODULE_REGRESSION_AFTER_REWORK: PASS
