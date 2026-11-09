@@ -52,3 +52,10 @@ Target repositories/runtime evidence remain authoritative for implementation sta
 - Scout assignment: `evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md`.
 - Planner, Worker and Reviewer are not yet routed; Planner waits for Scout evidence. Worker may not start before Planner. STEP_3 remains locked until STEP_2 independent PASS + checkpoint.
 - Physical actuator authority/arming remain OFF. Production Pi5 modification remains unauthorized.
+
+## 2026-11-09 STEP_2 Scout reconciliation
+
+- Scout evidence: `evidence/TANGRA-FC-SA-02-01/SCOUT.md`.
+- Current source-tree and arbitration implementation details: `NOT_VERIFIED` in available execution environment.
+- Task status: `BLOCKED / CONTROL_ROOM_RECONCILE`; Planner and Worker not dispatched; independent review and checkpoint not performed.
+- STEP_3 remains locked.
