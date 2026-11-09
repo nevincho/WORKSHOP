@@ -83,3 +83,16 @@ Target repositories/runtime evidence remain authoritative for implementation sta
 - ESP32 firmware/hardware qualification: NOT_PERFORMED.
 - Physical actuator output and arming: outside campaign / OFF.
 - Next route: consolidated later Codex integration only; do not recreate standalone modules.
+
+
+## 2026-11-09 TANGRA FC Codex acceptance blocking rework
+
+- Codex prior verdict: ACCEPT=NO.
+- Reopened blockers: exactly 8 supplied defects.
+- Worker validation: 11/11 module tests PASS; real STEP_2-12 closed-loop end-to-end test PASS.
+- Independent Reviewer: SOFTWARE_IMPLEMENTATION_PASS.
+- Blockers closed: 8/8.
+- Checkpoint: `checkpoints/TANGRA-FC-SA-ACCEPTANCE-REWORK-01.md`.
+- Route: READY_FOR_CODEX_REVIEW.
+- Real local FC integration: NOT_YET_PERFORMED.
+- Physical outputs/arming: OFF.
