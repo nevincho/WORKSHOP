@@ -1,19 +1,21 @@
 #include "tangra_fc/mission_protocol.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 namespace tangra::fc {
-MissionAck MissionProtocolEndpoint::receive(const MissionGoalCommand& c,std::uint64_t now,MissionStateWire state){
- MissionAck a{};a.sequence=c.sequence;a.mission_state=state;
- if(c.protocol_version!=kMissionProtocolVersion){a.status=ProtocolStatus::VersionMismatch;a.fault=MissionFault::Protocol;return a;}
- if(!connected_||!synchronized_){a.status=ProtocolStatus::NotSynchronized;a.fault=MissionFault::LinkLoss;return a;}
- if(!c.valid||c.ttl_ms==0||!std::isfinite(c.x)||!std::isfinite(c.y)||!std::isfinite(c.z)){a.status=ProtocolStatus::Rejected;a.fault=MissionFault::InvalidGoal;return a;}
- if(now<c.timestamp_ms||now-c.timestamp_ms>c.ttl_ms){a.status=ProtocolStatus::Stale;return a;}
- if(has_sequence_&&c.sequence<=last_sequence_){a.status=ProtocolStatus::OutOfOrder;return a;}
- if(!sink_.accept_goal(c)){a.status=ProtocolStatus::Rejected;a.fault=MissionFault::NotReady;return a;}
- last_sequence_=c.sequence;has_sequence_=true;a.status=ProtocolStatus::Accepted;return a;
-}
+MissionAck MissionProtocolEndpoint::receive(const MissionGoalCommand&c,std::uint64_t now,MissionStateWire state){MissionAck a{};a.sequence=c.sequence;a.mission_state=state;if(c.protocol_version!=kMissionProtocolVersion){a.status=ProtocolStatus::VersionMismatch;a.fault=MissionFault::Protocol;return a;}if(!connected_||!synchronized_){a.status=ProtocolStatus::NotSynchronized;a.fault=MissionFault::LinkLoss;return a;}if(!c.valid||c.ttl_ms==0||!std::isfinite(c.x)||!std::isfinite(c.y)||!std::isfinite(c.z)){a.status=ProtocolStatus::Rejected;a.fault=MissionFault::InvalidGoal;return a;}if(now<c.timestamp_ms||now-c.timestamp_ms>c.ttl_ms){a.status=ProtocolStatus::Stale;return a;}if(has_sequence_&&c.sequence<=last_sequence_){a.status=ProtocolStatus::OutOfOrder;return a;}if(!sink_.accept_goal(c)){a.status=ProtocolStatus::Rejected;a.fault=MissionFault::NotReady;return a;}last_sequence_=c.sequence;has_sequence_=true;a.status=ProtocolStatus::Accepted;return a;}
 void MissionProtocolEndpoint::on_disconnect(){connected_=false;synchronized_=false;}
 void MissionProtocolEndpoint::on_reconnect(){connected_=true;synchronized_=false;}
-void MissionProtocolEndpoint::resynchronize(std::uint64_t peer_last){ if(connected_){ if(!has_sequence_||peer_last>=last_sequence_) {last_sequence_=peer_last;has_sequence_=true;} synchronized_=true; } }
-MissionTelemetry MissionProtocolEndpoint::telemetry(MissionStateWire s,double p,MissionFault f) const{MissionTelemetry t;t.last_accepted_sequence=last_sequence_;t.mission_state=s;t.progress=std::max(0.0,std::min(1.0,p));t.fault=f;t.synchronized=synchronized_&&connected_;return t;}
+void MissionProtocolEndpoint::resynchronize(std::uint64_t peer_last){if(connected_){if(!has_sequence_||peer_last>=last_sequence_){last_sequence_=peer_last;has_sequence_=true;}synchronized_=true;}}
+MissionTelemetry MissionProtocolEndpoint::telemetry(MissionStateWire s,double p,MissionFault f)const{MissionTelemetry t;t.last_accepted_sequence=last_sequence_;t.mission_state=s;t.progress=std::max(0.0,std::min(1.0,p));t.fault=f;t.synchronized=synchronized_&&connected_;return t;}
+namespace {
+template<class T> void put(std::vector<std::uint8_t>&p,T v){std::uint8_t raw[sizeof(T)];std::memcpy(raw,&v,sizeof(T));p.insert(p.end(),raw,raw+sizeof(T));}
+template<class T> bool get(const std::vector<std::uint8_t>&p,std::size_t&off,T&v){if(off+sizeof(T)>p.size())return false;std::memcpy(&v,p.data()+off,sizeof(T));off+=sizeof(T);return true;}
+}
+std::optional<MavlinkMessage> MavlinkMissionBinding::encode_goal(const MissionGoalCommand&c)const{if(!configured())return std::nullopt;MavlinkMessage m;m.message_id=ids_.goal_message_id;put(m.payload,c.protocol_version);put(m.payload,c.sequence);put(m.payload,c.timestamp_ms);put(m.payload,c.ttl_ms);put(m.payload,c.x);put(m.payload,c.y);put(m.payload,c.z);put<std::uint8_t>(m.payload,c.valid?1:0);return m;}
+std::optional<MissionGoalCommand> MavlinkMissionBinding::decode_goal(const MavlinkMessage&m)const{if(!configured()||m.message_id!=ids_.goal_message_id)return std::nullopt;MissionGoalCommand c{};std::size_t o=0;std::uint8_t valid=0;if(!get(m.payload,o,c.protocol_version)||!get(m.payload,o,c.sequence)||!get(m.payload,o,c.timestamp_ms)||!get(m.payload,o,c.ttl_ms)||!get(m.payload,o,c.x)||!get(m.payload,o,c.y)||!get(m.payload,o,c.z)||!get(m.payload,o,valid)||o!=m.payload.size())return std::nullopt;c.valid=valid!=0;return c;}
+std::optional<MavlinkMessage> MavlinkMissionBinding::encode_ack(const MissionAck&a)const{if(!configured())return std::nullopt;MavlinkMessage m;m.message_id=ids_.ack_message_id;put(m.payload,a.sequence);put<std::uint8_t>(m.payload,static_cast<std::uint8_t>(a.status));put<std::uint8_t>(m.payload,static_cast<std::uint8_t>(a.mission_state));put<std::uint16_t>(m.payload,static_cast<std::uint16_t>(a.fault));return m;}
+std::optional<MissionAck> MavlinkMissionBinding::decode_ack(const MavlinkMessage&m)const{if(!configured()||m.message_id!=ids_.ack_message_id)return std::nullopt;MissionAck a{};std::size_t o=0;std::uint8_t st=0,ms=0;std::uint16_t f=0;if(!get(m.payload,o,a.sequence)||!get(m.payload,o,st)||!get(m.payload,o,ms)||!get(m.payload,o,f)||o!=m.payload.size())return std::nullopt;a.status=static_cast<ProtocolStatus>(st);a.mission_state=static_cast<MissionStateWire>(ms);a.fault=static_cast<MissionFault>(f);return a;}
+std::optional<MavlinkMessage> MavlinkMissionBinding::encode_telemetry(const MissionTelemetry&t)const{if(!configured())return std::nullopt;MavlinkMessage m;m.message_id=ids_.telemetry_message_id;put(m.payload,t.capability_version);put(m.payload,t.last_accepted_sequence);put<std::uint8_t>(m.payload,static_cast<std::uint8_t>(t.mission_state));put(m.payload,t.progress);put<std::uint16_t>(m.payload,static_cast<std::uint16_t>(t.fault));put<std::uint8_t>(m.payload,t.synchronized?1:0);return m;}
+std::optional<MissionTelemetry> MavlinkMissionBinding::decode_telemetry(const MavlinkMessage&m)const{if(!configured()||m.message_id!=ids_.telemetry_message_id)return std::nullopt;MissionTelemetry t{};std::size_t o=0;std::uint8_t ms=0,sync=0;std::uint16_t f=0;if(!get(m.payload,o,t.capability_version)||!get(m.payload,o,t.last_accepted_sequence)||!get(m.payload,o,ms)||!get(m.payload,o,t.progress)||!get(m.payload,o,f)||!get(m.payload,o,sync)||o!=m.payload.size())return std::nullopt;t.mission_state=static_cast<MissionStateWire>(ms);t.fault=static_cast<MissionFault>(f);t.synchronized=sync!=0;return t;}
 }
