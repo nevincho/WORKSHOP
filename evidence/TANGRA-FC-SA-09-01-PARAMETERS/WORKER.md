@@ -7,3 +7,11 @@ REPOSITORY_PAYLOAD_IDENTITY: EXACT_MATCH
 - src/parameters.cpp=6da9ed057f94af0ed3570f3d9177bdd9f58dabe8
 - tests/test_parameters.cpp=2f6844751b5324a1647cdc07b16557c129232d13
 - CMakeLists.txt=73856f385d2462ff134e559af5fecaa05581c04b
+
+
+## Bounded rework 2026-11-09
+- Added explicit `IParameterMigration` contract.
+- Added version-mismatch migration path with post-migration validation.
+- Added provenance retention and migrated provenance marking.
+- Host CTest parameters 1/1 PASS after rework.
+- Cross-module autonomy integration test PASS after rework.
