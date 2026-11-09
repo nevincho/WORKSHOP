@@ -18,13 +18,13 @@ active_campaigns:
   TANGRA_FC_SOFTWARE_AUTONOMY:
     current_task: TANGRA-FC-SA-02-01-COMMAND-ARBITRATION
     state: BLOCKED
-    route: CONTROL_ROOM_RECONCILE
+    route: BLOCKED_EXECUTION_ACCESS
     authorization: EXPLICIT_HUMAN_AUTHORIZATION_2026-11-09
     campaign_record: control_room/TANGRA_FC_SOFTWARE_AUTONOMY_CAMPAIGN.md
     scout_assignment: evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md
     physical_actuator_authority: OFF
     production_pi5_authority: NONE
-    next_action: Source inspection prerequisite not established; Scout evidence retained; no Planner or Worker implementation
+    next_action: obtain verified access to authoritative Windows FC source or authorized source-controlled copy; resume existing STEP_2 Scout task
   TANGRA_RESEARCH_LAB:
     current_task: TANGRA-RESEARCH-LAB-03
     state: WAITING_FOR_CONTROL_ROOM_NEXT_TASK
@@ -43,7 +43,7 @@ ready_tasks:
     task: tasks/TANGRA-FC-SA-02-01-COMMAND-ARBITRATION.md
     scout_assignment: evidence/TANGRA-FC-SA-02-01/SCOUT_ASSIGNMENT.md
     scout_evidence: evidence/TANGRA-FC-SA-02-01/SCOUT.md
-    blocker: Windows-local FC source inspection NOT_VERIFIED
+    blocker: authoritative Windows-local FC source is inaccessible in current execution environment; implementation state NOT_VERIFIED
     objective: reconcile and prepare smallest STEP_2 command-source arbitration plus Safety Supervisor implementation boundary
   TASK-046:
     project: ESP32 MICROBLOG / AGENT 32
