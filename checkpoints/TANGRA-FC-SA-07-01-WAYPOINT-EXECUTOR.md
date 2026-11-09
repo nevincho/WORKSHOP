@@ -1,0 +1,6 @@
+# Checkpoint — TANGRA-FC-SA-07-01-WAYPOINT-EXECUTOR
+
+STATUS: VALIDATED_STANDALONE_SOFTWARE
+REVIEWER_VERDICT: SOFTWARE_IMPLEMENTATION_PASS
+TEST: waypoint PASS
+INTEGRATION_ADAPTER_REQUIRED: bind IMissionLifecyclePort to reviewed Mission Lifecycle v1 and guidance/local-state inputs.
