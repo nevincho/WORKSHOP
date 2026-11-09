@@ -17,18 +17,18 @@ hold_projects:
 active_campaigns:
   TANGRA_FC_SOFTWARE_AUTONOMY:
     current_task: NONE
-    state: SOFTWARE_EXTENSION_COMPLETE
-    route: READY_FOR_CODEX_INTEGRATION
+    state: INTEGRATION_REWORK_COMPLETE
+    route: READY_FOR_CODEX_REVIEW
     authorization: EXPLICIT_HUMAN_AUTHORIZATION_2026-11-09
     campaign_record: control_room/TANGRA_FC_SOFTWARE_AUTONOMY_CAMPAIGN.md
     final_review: review/TANGRA-FC-SOFTWARE-AUTONOMY-FINAL.md
-    final_checkpoint: checkpoints/TANGRA-FC-SA-13-01-USB-CONFIGURATION.md
+    final_checkpoint: checkpoints/TANGRA-FC-AUTONOMY-INTEGRATION-REWORK-02.md
     integration_evidence: evidence/TANGRA-FC-SOFTWARE-AUTONOMY/INTEGRATION.md
     physical_actuator_authority: OFF
     production_pi5_authority: NONE
     local_fc_integration: NOT_YET_PERFORMED
     hardware_qualification: NOT_PERFORMED
-    next_action: Codex local-FC integration using STEP_2-13 packages and USB configuration adapters
+    next_action: Codex review and local-FC adapter integration; do not claim REAL_FC_INTEGRATION_PASS until authoritative local headers/dialect are bound and tested
   TANGRA_RESEARCH_LAB:
     current_task: TANGRA-RESEARCH-LAB-03
     state: WAITING_FOR_CONTROL_ROOM_NEXT_TASK
