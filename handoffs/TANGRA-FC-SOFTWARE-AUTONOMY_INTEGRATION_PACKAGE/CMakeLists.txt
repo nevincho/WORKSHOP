@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 project(tangra_fc_autonomy_integration LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
-add_executable(test_autonomy_stack
-  test_autonomy_stack.cpp
+set(COMMON_SOURCES
   ${ROOT}/TANGRA-FC-SA-02-01_COMMAND_ARBITRATION_PACKAGE/src/command_arbitration.cpp
   ${ROOT}/TANGRA-FC-SA-03-01-QUADX-SIM_PACKAGE/src/quadx_simulation.cpp
   ${ROOT}/TANGRA-FC-SA-04-01-VERTICAL_PACKAGE/src/vertical_control.cpp
@@ -15,7 +15,7 @@ add_executable(test_autonomy_stack
   ${ROOT}/TANGRA-FC-SA-10-01-WATCHDOG_PACKAGE/src/watchdog.cpp
   ${ROOT}/TANGRA-FC-SA-11-01-GNSS-COMPASS_PACKAGE/src/navigation_observations.cpp
   ${ROOT}/TANGRA-FC-SA-12-01-MISSION-PLANNER_PACKAGE/src/mission_planner_adapter.cpp)
-target_include_directories(test_autonomy_stack PRIVATE
+set(COMMON_INCLUDES
   ${ROOT}/TANGRA-FC-SOFTWARE-AUTONOMY_COMMON/include
   ${ROOT}/TANGRA-FC-SA-02-01_COMMAND_ARBITRATION_PACKAGE/include
   ${ROOT}/TANGRA-FC-SA-03-01-QUADX-SIM_PACKAGE/include
@@ -28,5 +28,14 @@ target_include_directories(test_autonomy_stack PRIVATE
   ${ROOT}/TANGRA-FC-SA-10-01-WATCHDOG_PACKAGE/include
   ${ROOT}/TANGRA-FC-SA-11-01-GNSS-COMPASS_PACKAGE/include
   ${ROOT}/TANGRA-FC-SA-12-01-MISSION-PLANNER_PACKAGE/include)
+add_executable(test_standalone_autonomy_sim test_autonomy_stack.cpp ${COMMON_SOURCES})
+target_include_directories(test_standalone_autonomy_sim PRIVATE ${COMMON_INCLUDES})
+add_executable(test_adapter_contracts test_adapter_contracts.cpp
+  ${ROOT}/TANGRA-FC-SA-03-01-QUADX-SIM_PACKAGE/src/quadx_simulation.cpp
+  ${ROOT}/TANGRA-FC-SA-08-01-MISSION-PROTOCOL_PACKAGE/src/mission_protocol.cpp)
+target_include_directories(test_adapter_contracts PRIVATE
+  ${ROOT}/TANGRA-FC-SA-03-01-QUADX-SIM_PACKAGE/include
+  ${ROOT}/TANGRA-FC-SA-08-01-MISSION-PROTOCOL_PACKAGE/include)
 enable_testing()
-add_test(NAME autonomy_stack COMMAND test_autonomy_stack)
+add_test(NAME standalone_autonomy_sim COMMAND test_standalone_autonomy_sim)
+add_test(NAME adapter_contracts COMMAND test_adapter_contracts)
