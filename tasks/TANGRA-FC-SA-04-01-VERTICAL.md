@@ -1,0 +1,13 @@
+# TANGRA-FC-SA-04-01-VERTICAL — Vertical state and altitude control
+
+PROJECT: TANGRA
+CAMPAIGN: TANGRA-FC-SOFTWARE-AUTONOMY
+STEP: 4
+STATUS: IN_PROGRESS
+MODE: STANDALONE_SOFTWARE_ENGINEERING
+
+OBJECTIVE: Create simulation-first vertical state/velocity target and bounded altitude-hold control contract with validity/freshness handling.
+LOCAL_FC_INTEGRATION: NOT_YET_PERFORMED
+INTEGRATION_ADAPTER_REQUIRED: YES
+PHYSICAL_OUTPUTS: OFF
+ARMING: OFF
