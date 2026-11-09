@@ -20,7 +20,11 @@ void QuadXPlant::step(const MotorMix& motors, double dt, const Disturbance& d) {
     state_.attitude.pitch += state_.attitude.q*dt;
     state_.attitude.yaw += state_.attitude.r*dt;
     const double collective=(m[0]+m[1]+m[2]+m[3])/4.0;
+    const double ax=3.0*std::sin(state_.attitude.pitch)-0.35*state_.vx;
+    const double ay=-3.0*std::sin(state_.attitude.roll)-0.35*state_.vy;
     const double az=(collective-0.5)*4.0 + d.vertical_force - 0.2*state_.vz;
+    state_.vx += ax*dt; state_.x += state_.vx*dt;
+    state_.vy += ay*dt; state_.y += state_.vy*dt;
     state_.vz += az*dt; state_.z += state_.vz*dt;
 }
 
