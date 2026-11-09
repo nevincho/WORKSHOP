@@ -1,0 +1,14 @@
+# TANGRA-FC-SA-03-01-QUADX-SIM — Closed-loop Quad-X vehicle simulation
+
+PROJECT: TANGRA
+CAMPAIGN: TANGRA-FC-SOFTWARE-AUTONOMY
+STEP: 3
+STATUS: IN_PROGRESS
+MODE: STANDALONE_SOFTWARE_ENGINEERING
+
+OBJECTIVE: Create deterministic plant and closed-loop harness around existing controller, mixer and estimator interfaces without implementing an alternate production controller.
+
+LOCAL_FC_INTEGRATION: NOT_YET_PERFORMED
+INTEGRATION_ADAPTER_REQUIRED: YES
+PHYSICAL_OUTPUTS: OFF
+ARMING: OFF
