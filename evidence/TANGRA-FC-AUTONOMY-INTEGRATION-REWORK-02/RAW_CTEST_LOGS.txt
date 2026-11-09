@@ -1,0 +1,107 @@
+INTEGRATION_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/INTEGRATION/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/INTEGRATION/build
+    Start 1: standalone_autonomy_sim
+1/2 Test #1: standalone_autonomy_sim ..........   Passed    0.00 sec
+    Start 2: adapter_contracts
+2/2 Test #2: adapter_contracts ................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 2
+Total Test time (real) =   0.01 sec
+
+STEP_02_COMMAND_ARBITRATION_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_02_COMMAND_ARBITRATION/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_02_COMMAND_ARBITRATION/build
+    Start 1: command_arbitration
+1/1 Test #1: command_arbitration ..............   Passed    0.01 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.01 sec
+
+STEP_03_QUADX_SIMULATION_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_03_QUADX_SIMULATION/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_03_QUADX_SIMULATION/build
+    Start 1: quadx_sim
+1/2 Test #1: quadx_sim ........................   Passed    0.01 sec
+    Start 2: real_fc_adapter_contracts
+2/2 Test #2: real_fc_adapter_contracts ........   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 2
+Total Test time (real) =   0.01 sec
+
+STEP_04_VERTICAL_CONTROL_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_04_VERTICAL_CONTROL/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_04_VERTICAL_CONTROL/build
+    Start 1: vertical
+1/1 Test #1: vertical .........................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_05_LOCAL_STATE_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_05_LOCAL_STATE/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_05_LOCAL_STATE/build
+    Start 1: local_state
+1/1 Test #1: local_state ......................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_06_HORIZONTAL_GUIDANCE_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_06_HORIZONTAL_GUIDANCE/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_06_HORIZONTAL_GUIDANCE/build
+    Start 1: guidance
+1/1 Test #1: guidance .........................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_07_WAYPOINT_EXECUTOR_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_07_WAYPOINT_EXECUTOR/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_07_WAYPOINT_EXECUTOR/build
+    Start 1: waypoint
+1/1 Test #1: waypoint .........................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_08_MISSION_PROTOCOL_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_08_MISSION_PROTOCOL/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_08_MISSION_PROTOCOL/build
+    Start 1: protocol
+1/1 Test #1: protocol .........................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_09_PARAMETERS_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_09_PARAMETERS/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_09_PARAMETERS/build
+    Start 1: parameters
+1/1 Test #1: parameters .......................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_10_WATCHDOG_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_10_WATCHDOG/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_10_WATCHDOG/build
+    Start 1: watchdog
+1/1 Test #1: watchdog .........................   Passed    0.01 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.01 sec
+
+STEP_11_GNSS_COMPASS_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_11_GNSS_COMPASS/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_11_GNSS_COMPASS/build
+    Start 1: navobs
+1/1 Test #1: navobs ...........................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_12_MISSION_PLANNER_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_12_MISSION_PLANNER/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_12_MISSION_PLANNER/build
+    Start 1: mp_adapter
+1/1 Test #1: mp_adapter .......................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
+
+STEP_13_USB_CONFIGURATION_test.log
+Internal ctest changing into directory: /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_13_USB_CONFIGURATION/build
+Test project /mnt/data/tangra_int_rework/TANGRA_FC_SOFTWARE_AUTONOMY_REWORKED/STEP_13_USB_CONFIGURATION/build
+    Start 1: usb_configuration
+1/1 Test #1: usb_configuration ................   Passed    0.00 sec
+100% tests passed, 0 tests failed out of 1
+Total Test time (real) =   0.00 sec
