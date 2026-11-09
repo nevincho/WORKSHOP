@@ -1,0 +1,35 @@
+# Checkpoint — TANGRA-FC-AUTONOMY-INTEGRATION-REWORK-02
+
+STATUS: REVIEWED_REWORK_COMPLETE
+REVIEWER_VERDICT: PASS_WITH_EXPLICIT_LOCAL_ADAPTER_BOUNDARY
+READY_FOR_CODEX_REVIEW: YES
+
+QUALIFICATION:
+- STEP_2–STEP_12 module suites: PASS
+- STEP_3 standalone simulation: PASS
+- STEP_3 real-FC adapter contract: PASS
+- STEP_4 stateful vertical producer: PASS
+- STEP_5 stateful local-frame producer: PASS
+- STEP_8 payload/dialect adapter contract: PASS
+- integration tests: 2/2 PASS
+- STEP_13 regression: PASS
+
+EVIDENCE_CLASSIFICATION:
+- STANDALONE_SIM_PASS
+- ADAPTER_CONTRACT_PASS
+- REAL_FC_INTEGRATION_NOT_TESTED
+- TRANSPORT_ADAPTER_REQUIRED
+- REAL_CONTROLLER_MIXER_ESTIMATOR_ADAPTER_REQUIRED
+
+TEST_PROVENANCE:
+- evidence/TANGRA-FC-AUTONOMY-INTEGRATION-REWORK-02/TEST_PROVENANCE.md
+- evidence/TANGRA-FC-AUTONOMY-INTEGRATION-REWORK-02/RAW_CTEST_LOGS.txt
+
+PROTECTED:
+- no local FC edits;
+- no flashing;
+- no hardware operations;
+- physical outputs OFF;
+- no architecture redesign.
+
+STOP: reviewed checkpoint reached.
